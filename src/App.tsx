@@ -1,0 +1,59 @@
+import { useEffect, useMemo, useState } from 'react';
+import { AppShell } from './components/layout/AppShell';
+import { useAuth } from './hooks/useAuth';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { TicketPredictionPage } from './pages/TicketPredictionPage';
+import { RankingPage } from './pages/RankingPage';
+import { AdminHomePage } from './pages/AdminHomePage';
+import { AdminSalesPage } from './pages/AdminSalesPage';
+import { AdminTicketsPage } from './pages/AdminTicketsPage';
+import { AdminResultsPage } from './pages/AdminResultsPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { ProtectedRoute } from './routes/ProtectedRoute';
+import { AdminRoute } from './routes/AdminRoute';
+
+function currentRoute() {
+  return window.location.hash || '#/dashboard';
+}
+
+export default function App() {
+  const [route, setRoute] = useState(currentRoute());
+  const auth = useAuth();
+
+  function navigate(to: string) {
+    window.location.hash = to.replace(/^#?/, '#');
+    setRoute(currentRoute());
+  }
+
+  useEffect(() => {
+    const handler = () => setRoute(currentRoute());
+    window.addEventListener('hashchange', handler);
+    return () => window.removeEventListener('hashchange', handler);
+  }, []);
+
+  const content = useMemo(() => {
+    if (route === '#/login') return <LoginPage onLogin={auth.signIn} onNavigate={navigate} loading={auth.loading} error={auth.error} />;
+    if (route === '#/register') return <RegisterPage onRegister={auth.register} onNavigate={navigate} loading={auth.loading} error={auth.error} />;
+    if (route === '#/ranking') return <RankingPage />;
+
+    if (route.startsWith('#/prediction/')) {
+      const ticketId = route.split('/').pop() ?? '';
+      return <ProtectedRoute user={auth.user} onLogin={() => navigate('#/login')}><TicketPredictionPage ticketId={ticketId} /></ProtectedRoute>;
+    }
+
+    if (route === '#/admin') return <AdminRoute user={auth.user}><AdminHomePage onNavigate={navigate} /></AdminRoute>;
+    if (route === '#/admin/sales') return <AdminRoute user={auth.user}><AdminSalesPage onNavigate={navigate} /></AdminRoute>;
+    if (route === '#/admin/tickets') return <AdminRoute user={auth.user}><AdminTicketsPage onNavigate={navigate} /></AdminRoute>;
+    if (route === '#/admin/results') return <AdminRoute user={auth.user}><AdminResultsPage onNavigate={navigate} /></AdminRoute>;
+
+    if (route === '#/dashboard' || route === '#/') {
+      return <ProtectedRoute user={auth.user} onLogin={() => navigate('#/login')}>{auth.user && <DashboardPage user={auth.user} onNavigate={navigate} />}</ProtectedRoute>;
+    }
+
+    return <NotFoundPage onNavigate={navigate} />;
+  }, [route, auth.user, auth.loading, auth.error]);
+
+  return <AppShell user={auth.user} onNavigate={navigate} onSignOut={() => void auth.signOut()}>{content}</AppShell>;
+}

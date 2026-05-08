@@ -1,0 +1,26 @@
+import { Home, Medal, Ticket, UserCog } from 'lucide-react';
+import type { AppUser } from '../../types/domain';
+
+export function BottomNav({ user, onNavigate }: { user: AppUser | null; onNavigate: (to: string) => void }) {
+  const items = [
+    { label: 'Inicio', icon: Home, route: '#/dashboard' },
+    { label: 'Tickets', icon: Ticket, route: '#/dashboard' },
+    { label: 'Ranking', icon: Medal, route: '#/ranking' },
+    ...(user?.role !== 'collaborator' ? [{ label: 'Admin', icon: UserCog, route: '#/admin' }] : [])
+  ];
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-pitch-950/85 px-2 py-2 backdrop-blur-xl md:hidden">
+      <div className="grid grid-cols-4 gap-1">
+        {items.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button key={item.route} onClick={() => onNavigate(item.route)} className="rounded-2xl px-2 py-2 text-xs font-bold text-white/70 hover:bg-white/10 hover:text-white">
+              <Icon className="mx-auto mb-1" size={18} />
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
