@@ -26,9 +26,8 @@ export function TicketPredictionPage({ ticketId }: { ticketId: string }) {
   const prediction = usePrediction(ticketId);
   const locked = isPredictionLocked(DEFAULT_DEADLINE_ISO);
   const bracketMatches: BracketMatch[] = useMemo(() => {
-    const ids = [...prediction.qualified.direct, ...prediction.qualified.bestThirds].map((row) => row.teamId);
-    return [0, 1, 2, 3].map((i) => ({ id: `R32-${i + 1}`, stage: 'R32', homeTeamId: ids[i * 2], awayTeamId: ids[i * 2 + 1] }));
-  }, [prediction.qualified]);
+    return prediction.matches.filter((match) => match.stage !== 'GROUP');
+  }, [prediction.matches]);
 
   return (
     <div className="space-y-5">

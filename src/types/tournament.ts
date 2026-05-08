@@ -51,11 +51,14 @@ export interface StandingRow {
 
 export interface BracketMatch {
   id: string;
+  matchNo?: number;
   stage: Stage;
   homeTeamId?: string | null;
   awayTeamId?: string | null;
   homeSlot?: string | null;
   awaySlot?: string | null;
+  matchDatetime?: string | null;
+  venue?: string | null;
   homeScore?: number | null;
   awayScore?: number | null;
   penaltyWinnerTeamId?: string | null;
