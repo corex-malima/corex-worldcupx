@@ -25,10 +25,10 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange }: {
 
       <div className="space-y-2">
         <div className="min-w-0 rounded-2xl bg-white/10 px-3 py-2">
-          <TeamIdentity team={home} label={match.homeSlot ?? 'Slot pendiente'} size="sm" />
+          <TeamIdentity team={home} label={match.homeSlot ?? 'Slot pendiente'} size="sm" truncate={false} />
         </div>
         <div className="min-w-0 rounded-2xl bg-white/10 px-3 py-2">
-          <TeamIdentity team={away} label={match.awaySlot ?? 'Slot pendiente'} size="sm" />
+          <TeamIdentity team={away} label={match.awaySlot ?? 'Slot pendiente'} size="sm" truncate={false} />
         </div>
       </div>
 

@@ -1,15 +1,19 @@
 # Flujo colaborador
 
-1. Ingresa cédula y contraseña.
-2. La cédula se transforma internamente a email técnico: `cedula@polla.local`.
-3. Supabase Auth autentica.
-4. La app lee `profiles` para conocer cédula, nombre, área y rol.
-5. El colaborador ve sus tickets.
-6. Si recibió un código, lo activa por RPC `claim_ticket`.
-7. Completa predicción por ticket.
-8. Puede editar hasta `prediction_deadline`.
-9. Revisa ranking general.
+1. El colaborador se acerca a TTHH y compra uno o más tickets.
+2. TTHH registra la venta y entrega un código de ticket de 6 caracteres.
+3. Para crear cuenta, el colaborador ingresa cédula + código de ticket.
+4. La app valida el par con `validate_registration_ticket(p_cedula, p_ticket_code)`.
+5. Si el ticket es válido, vendido, no reclamado y pertenece a la cédula, el colaborador define contraseña.
+6. Supabase Auth usa un email técnico generado como `<cedula>.<apellido>@mundial.malima`; el colaborador no necesita verlo ni usarlo.
+7. `complete_registration_with_ticket(p_cedula, p_ticket_code)` crea `profiles`, reclama el ticket y crea `prediction_headers`.
+8. El colaborador entra con cédula + contraseña.
+9. Tickets adicionales se activan desde el dashboard con `claim_ticket(p_code)`.
+10. Cada ticket permite una predicción independiente.
 
-## Validaciones críticas
+Reglas de seguridad:
 
-Aunque la UI muestra bloqueo por deadline, PostgreSQL también valida que no se guarden predicciones fuera de plazo.
+- No usar `service_role` en frontend.
+- No mostrar cédula completa en ranking.
+- No mostrar código completo de ticket salvo al dueño o admin.
+- Los errores de registro deben ser genéricos si cédula y ticket no coinciden.

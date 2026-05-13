@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { AppUser } from '../types/domain';
-import { signInWithCedula, signOut as signOutRequest, registerWithCedula } from '../lib/auth';
+import { signInWithCedula, signOut as signOutRequest, registerWithTicket } from '../lib/auth';
 
 export function useAuth() {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -21,11 +21,11 @@ export function useAuth() {
     }
   }, []);
 
-  const register = useCallback(async (cedula: string, password: string) => {
+  const register = useCallback(async (cedula: string, ticketCode: string, password: string) => {
     setLoading(true);
     setError(null);
     try {
-      await registerWithCedula(cedula, password);
+      await registerWithTicket(cedula, ticketCode, password);
       const nextUser = await signInWithCedula(cedula, password);
       setUser(nextUser);
     } catch (err) {

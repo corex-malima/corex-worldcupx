@@ -1,0 +1,3 @@
+match_no,stage,group_code,home_team_code,away_team_code,home_slot,away_slot,match_datetime,venue
+1,GROUP,A,ARG,MEX,,,2026-06-11T15:00:00-05:00,Estadio Demo
+101,R32,,,,1A,2B,2026-06-28T15:00:00-05:00,Estadio Demo

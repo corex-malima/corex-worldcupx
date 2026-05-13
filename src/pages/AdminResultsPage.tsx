@@ -63,7 +63,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
       <div className="min-w-0 flex-1 space-y-5">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-gold">Resultados reales</p>
-          <h1 className="text-3xl font-black text-white">Operación de marcadores oficiales</h1>
+          <h1 className="text-3xl font-black text-white">Carga de resultados oficiales</h1>
         </div>
         <Card><p className="text-sm text-white/65">Modo mock: TTHH puede practicar carga de grupos, asignación de terceros, eliminatorias y recálculo. En Supabase esto debe pasar por RPCs con validación PostgreSQL y rol admin.</p></Card>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">

@@ -1,0 +1,3 @@
+cedula,person_id,person_name,area_id,cost_area,job_title,is_active
+0102030405,2888,David Rivera,CAMPO,COSECHA,Analista de datos,true
+0912345678,3001,Andrea Molina,TTHH,ADMINISTRACION,Trabajadora social,true

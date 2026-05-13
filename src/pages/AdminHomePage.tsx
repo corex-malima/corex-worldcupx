@@ -9,7 +9,7 @@ export function AdminHomePage({ onNavigate }: { onNavigate: (to: string) => void
     <div className="flex gap-5">
       <AdminSidebar onNavigate={onNavigate} />
       <div className="min-w-0 flex-1 space-y-5">
-        <div><p className="text-xs font-black uppercase tracking-widest text-cup-gold">Panel TTHH</p><h1 className="text-3xl font-black text-white">Operación de la polla</h1></div>
+        <div><p className="text-xs font-black uppercase tracking-widest text-cup-gold">Panel TTHH</p><h1 className="text-3xl font-black text-white">Panel de control TTHH</h1></div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <AdminMetricCard label="Tickets vendidos" value={128} icon={<Ticket />} />
           <AdminMetricCard label="Tickets reclamados" value={94} icon={<ClipboardCheck />} />

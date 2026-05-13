@@ -88,7 +88,7 @@ VITE_SUPABASE_URL=https://TU_PROYECTO.supabase.co
 VITE_SUPABASE_ANON_KEY=TU_ANON_KEY
 ```
 
-3. Ejecutar los SQL de Supabase si existe una carpeta `supabase/` en este repositorio. En esta copia no se detecta esa carpeta; si se agrega luego, documentar aquí la ruta exacta, por ejemplo `supabase/sql`.
+3. Ejecutar los SQL de Supabase desde `supabase/sql` en el orden indicado por `supabase/README.md`.
 4. Cargar colaboradores desde la plantilla CSV del proyecto si existe.
 5. Cargar o ajustar equipos y fixture.
 6. Crear usuarios colaboradores desde la pantalla de registro.
@@ -96,7 +96,8 @@ VITE_SUPABASE_ANON_KEY=TU_ANON_KEY
 
 ## Seguridad aplicada desde el frontend
 
-- Login visual con cédula, convertido internamente a email técnico: `cedula@polla.local`.
+- Login visual con cédula. Supabase Auth usa internamente un email técnico generado como `<cedula>.<apellido>@mundial.malima`.
+- El registro exige cédula + código de ticket vendido por TTHH; el ticket se reclama durante el registro.
 - Solo variables públicas de Supabase en `.env`.
 - No usar ni subir `service_role`, `SUPABASE_SERVICE_ROLE`, `VITE_SUPABASE_SERVICE_ROLE` ni variantes equivalentes en frontend.
 - Venta, reclamo, cancelación, resultados y scoring pasan por RPC.

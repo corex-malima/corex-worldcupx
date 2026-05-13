@@ -1,6 +1,6 @@
 # Plan Supabase
 
-La app sigue en modo mock hasta cerrar UX, bracket y scoring. El frontend solo debe usar:
+El frontend solo debe usar:
 
 ```text
 VITE_SUPABASE_URL
@@ -9,25 +9,31 @@ VITE_SUPABASE_ANON_KEY
 
 Nunca usar `service_role` en frontend.
 
-## Tablas previstas
+## Tablas base
 
 - `employees`
+- `profiles`
 - `tickets`
+- `prediction_headers`
 - `prediction_match_scores`
 - `predicted_group_standings`
-- `predicted_bracket_matches`
-- `actual_results`
-- `actual_bracket_matches`
+- `predicted_bracket_slots`
+- `actual_group_standings`
+- `actual_bracket_slots`
 - `score_details`
 - `ticket_scores`
-- `scoring_rules` o `app_config`
+- `app_config`
 
-## RPCs previstas
+## RPCs principales
 
+- `validate_registration_ticket(p_cedula, p_ticket_code)`
+- `complete_registration_with_ticket(p_cedula, p_ticket_code)`
+- `resolve_auth_email_by_cedula(p_cedula)`
+- `validate_active_employee(p_cedula)`
+- `sell_ticket(p_cedula, p_purchase_amount)`
 - `claim_ticket(p_code)`
-- `sell_ticket(p_cedula)`
-- `register_profile_by_cedula(p_cedula)`
-- `save_prediction_draft(...)`
+- `cancel_ticket(p_ticket_id, p_reason)`
+- `save_prediction_match_score(...)`
 - `submit_prediction(...)`
 - `save_actual_result(...)`
 - `build_actual_bracket(...)`
@@ -37,5 +43,6 @@ Nunca usar `service_role` en frontend.
 
 - Ranking público no muestra cédula completa.
 - Código completo de ticket solo lo ve dueño o admin.
+- Registro inicial exige cédula + ticket vendido válido.
 - Resultados reales solo los guarda `admin_tthh` o `super_admin`.
 - Validaciones críticas viven en PostgreSQL/RLS/RPC, no solo en UI.

@@ -12,3 +12,5 @@ The app reads these files through `Team.flagUrl` at `/assets/flags/circle/{teamI
 If an image is missing, the UI falls back to the existing emoji flag inside the same circular frame.
 
 Do not scrape Flaticon automatically. Add only assets downloaded with a valid license and keep attribution details in `docs/11-flag-assets.md`.
+
+Expected files are listed in `docs/11-flag-assets.md`. Missing images intentionally fall back to the FIFA code in the UI.
