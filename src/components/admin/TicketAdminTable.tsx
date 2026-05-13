@@ -10,9 +10,9 @@ const rows = [
 
 export function TicketAdminTable() {
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06]">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-pitch-900">
       <table className="w-full min-w-[720px] text-sm">
-        <thead className="bg-white/10 text-left text-white/50"><tr><th className="p-4">Código</th><th>Colaborador</th><th>Área</th><th>Estado</th><th>Puntos</th><th></th></tr></thead>
+        <thead className="bg-pitch-800 text-left text-white/50"><tr><th className="p-4">Código</th><th>Colaborador</th><th>Área</th><th>Estado</th><th>Puntos</th><th></th></tr></thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.code} className="border-t border-white/10 text-white/80">

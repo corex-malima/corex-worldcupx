@@ -51,9 +51,9 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
           <h2 className="mt-1 text-2xl font-black text-white">{employee.personName}</h2>
           <p className="mt-1 text-sm text-white/60">{employee.cedulaMasked} · {employee.areaId} · {employee.jobTitle}</p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
-            <div className="rounded-2xl bg-white/10 p-3"><b>{employee.ticketsSold}</b><br /><span className="text-white/45">Vendidos</span></div>
-            <div className="rounded-2xl bg-white/10 p-3"><b>{employee.ticketsClaimed}</b><br /><span className="text-white/45">Reclamados</span></div>
-            <div className="rounded-2xl bg-white/10 p-3"><b>{employee.ticketsPending}</b><br /><span className="text-white/45">Pendientes</span></div>
+            <div className="rounded-2xl bg-pitch-800 p-3"><b>{employee.ticketsSold}</b><br /><span className="text-white/45">Vendidos</span></div>
+            <div className="rounded-2xl bg-pitch-800 p-3"><b>{employee.ticketsClaimed}</b><br /><span className="text-white/45">Reclamados</span></div>
+            <div className="rounded-2xl bg-pitch-800 p-3"><b>{employee.ticketsPending}</b><br /><span className="text-white/45">Pendientes</span></div>
           </div>
           <Button className="mt-5 w-full" disabled={loading} onClick={() => void sellTicket()} icon={<TicketPlus size={17} />}>{loading ? 'Generando código' : 'Agregar compra y generar código'}</Button>
           <p className="mt-3 text-xs text-white/55">En producción este botón llama la RPC `sell_ticket(p_cedula)`, que genera el código dentro de PostgreSQL.</p>

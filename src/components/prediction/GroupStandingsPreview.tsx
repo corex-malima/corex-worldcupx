@@ -4,8 +4,8 @@ import { TeamIdentity } from '../ui/TeamIdentity';
 
 export function GroupStandingsPreview({ groupCode, rows, teams }: { groupCode: string; rows: StandingRow[]; teams: Team[] }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/15">
-      <div className="flex items-center justify-between bg-white/10 px-4 py-3">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-pitch-950/40">
+      <div className="flex items-center justify-between bg-pitch-800 px-4 py-3">
         <h3 className="font-black text-white">Grupo {groupCode}</h3>
         <Badge tone="blue">Top 3 visible</Badge>
       </div>

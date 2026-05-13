@@ -3,11 +3,11 @@ import type { ReactNode } from 'react';
 type Tone = 'green' | 'gold' | 'blue' | 'red' | 'slate';
 
 const tones: Record<Tone, string> = {
-  green: 'border-cup-green/40 bg-cup-green/15 text-green-200',
-  gold: 'border-cup-blue/40 bg-cup-blue/15 text-sky-100',
-  blue: 'border-cup-blue/40 bg-cup-blue/15 text-blue-100',
-  red: 'border-cup-red/40 bg-cup-red/15 text-red-100',
-  slate: 'border-white/15 bg-white/10 text-white/70'
+  green: 'border-cup-green/35 bg-cup-green/10 text-green-100',
+  gold: 'border-cup-blue/35 bg-cup-blue/10 text-sky-100',
+  blue: 'border-cup-blue/35 bg-cup-blue/10 text-sky-100',
+  red: 'border-cup-red/35 bg-cup-red/10 text-red-100',
+  slate: 'border-white/10 bg-pitch-800 text-white/70'
 };
 
 export function Badge({ children, tone = 'slate', className = '' }: { children: ReactNode; tone?: Tone; className?: string }) {

@@ -11,7 +11,7 @@ function findTeam(teams: Team[], teamId: string | null) {
 
 function TeamLine({ label, team }: { label: string; team?: Team }) {
   return (
-    <div className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-white/10 px-3 py-2">
+    <div className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-pitch-800 px-3 py-2">
       <span className="shrink-0 text-sm font-bold text-white/55">{label}</span>
       <TeamIdentity team={team} label="Pendiente" align="right" />
     </div>
@@ -23,7 +23,7 @@ export function PredictionSummaryStep({ ticketId, draft, teams, summary, disable
 
   return (
     <div className="grid gap-4 lg:grid-cols-[.8fr_1.2fr]">
-      <Card className="bg-gradient-to-br from-cup-blue/20 to-white/[0.06]">
+      <Card>
         <Trophy className="mb-4 text-cup-blue" size={42} />
         <p className="text-xs font-black uppercase tracking-widest text-white/45">Ticket {ticketId}</p>
         <div className="mt-2">
@@ -42,7 +42,7 @@ export function PredictionSummaryStep({ ticketId, draft, teams, summary, disable
         <h3 className="text-xl font-black text-white">Predicción completa</h3>
         <div className="mt-4 grid gap-2 md:grid-cols-2">
           {draft.bracketMatches.filter((match) => match.advancingTeamId).map((match) => (
-            <div key={match.id} className="min-w-0 rounded-2xl bg-white/10 p-3 text-sm text-white/75">
+            <div key={match.id} className="min-w-0 rounded-2xl bg-pitch-800 p-3 text-sm text-white/75">
               <b>Partido {match.matchNo}</b>
               <TeamIdentity team={findTeam(teams, match.advancingTeamId)} label="Pendiente" size="sm" className="mt-2" />
             </div>

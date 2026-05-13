@@ -17,7 +17,7 @@ export function AdminGroupResultsPanel({ matches, teams, results, onChange }: {
         const result = results.find((item) => item.matchId === match.id);
         const isSaved = result?.homeScore !== null && result?.homeScore !== undefined && result?.awayScore !== null && result?.awayScore !== undefined;
         return (
-          <div key={match.id} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+          <div key={match.id} className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
             <div className="mb-4 flex flex-wrap items-start justify-between gap-2 text-xs font-bold text-white/45">
               <div>
                 <span className="block">Partido {match.matchNo} - Grupo {match.groupCode}</span>
@@ -27,7 +27,7 @@ export function AdminGroupResultsPanel({ matches, teams, results, onChange }: {
             </div>
 
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_minmax(0,1fr)] lg:items-center">
-              <div className="min-w-0 rounded-2xl bg-white/10 px-3 py-2 lg:justify-self-end">
+              <div className="min-w-0 rounded-2xl bg-pitch-800 px-3 py-2 lg:justify-self-end">
                 <TeamIdentity team={home} label="Equipo local" align="right" />
               </div>
 
@@ -55,7 +55,7 @@ export function AdminGroupResultsPanel({ matches, teams, results, onChange }: {
                 />
               </div>
 
-              <div className="min-w-0 rounded-2xl bg-white/10 px-3 py-2">
+              <div className="min-w-0 rounded-2xl bg-pitch-800 px-3 py-2">
                 <TeamIdentity team={away} label="Equipo visitante" />
               </div>
             </div>

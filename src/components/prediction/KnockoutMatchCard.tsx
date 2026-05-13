@@ -17,17 +17,17 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange }: {
   const isDraw = match.homeScore !== null && match.awayScore !== null && match.homeScore === match.awayScore;
 
   return (
-    <div className={`min-w-0 rounded-2xl border p-3 sm:p-4 ${isReady ? 'border-white/10 bg-white/[0.07]' : 'border-white/5 bg-white/[0.03]'}`}>
+    <div className={`min-w-0 rounded-2xl border p-3 sm:p-4 ${isReady ? 'border-white/10 bg-pitch-900' : 'border-white/5 bg-pitch-900/70'}`}>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2 text-xs font-bold text-white/45">
         <span>Partido {match.matchNo}</span>
         <Badge tone={match.advancingTeamId ? 'green' : isReady ? 'gold' : 'slate'}>{match.advancingTeamId ? 'Definido' : isReady ? 'Pendiente' : 'Esperando'}</Badge>
       </div>
 
       <div className="space-y-2">
-        <div className="min-w-0 rounded-2xl bg-white/10 px-3 py-2">
+        <div className="min-w-0 rounded-2xl bg-pitch-800 px-3 py-2">
           <TeamIdentity team={home} label={match.homeSlot ?? 'Slot pendiente'} size="sm" truncate={false} />
         </div>
-        <div className="min-w-0 rounded-2xl bg-white/10 px-3 py-2">
+        <div className="min-w-0 rounded-2xl bg-pitch-800 px-3 py-2">
           <TeamIdentity team={away} label={match.awaySlot ?? 'Slot pendiente'} size="sm" truncate={false} />
         </div>
       </div>

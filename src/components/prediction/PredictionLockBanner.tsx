@@ -3,7 +3,7 @@ import { Badge } from '../ui/Badge';
 
 export function PredictionLockBanner({ locked, submitted }: { locked: boolean; submitted: boolean }) {
   return (
-    <div className={`rounded-2xl border p-4 ${locked ? 'border-cup-red/30 bg-cup-red/10' : submitted ? 'border-cup-green/30 bg-cup-green/10' : 'border-cup-blue/30 bg-cup-blue/10'}`}>
+    <div className={`rounded-2xl border bg-pitch-900 p-4 ${locked ? 'border-cup-red/30' : submitted ? 'border-cup-green/30' : 'border-cup-blue/30'}`}>
       <div className="flex flex-wrap items-center gap-3">
         {locked ? <AlertTriangle className="text-cup-red" /> : <CheckCircle2 className={submitted ? 'text-cup-green' : 'text-cup-blue'} />}
         <div className="min-w-0 flex-1">

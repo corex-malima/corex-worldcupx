@@ -52,12 +52,12 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
     <div className="grid min-h-[72vh] place-items-center">
       <Card className="w-full max-w-2xl">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-3xl bg-cup-green text-pitch-950 shadow-glow"><UserPlus /></div>
+          <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-cup-blue/25 bg-pitch-800 text-cup-blue"><UserPlus /></div>
           <h1 className="text-3xl font-black text-white">Crear cuenta</h1>
           <p className="mt-2 text-sm text-white/60">Primero compra tu ticket con TTHH. Luego registra tu cuenta con tu cédula y el código recibido.</p>
         </div>
 
-        <div className="mb-5 rounded-2xl border border-cup-blue/25 bg-cup-blue/10 p-4 text-sm text-sky-50">
+        <div className="mb-5 rounded-2xl border border-white/10 bg-pitch-800 p-4 text-sm text-sky-50">
           <b>Flujo seguro:</b> validamos que el ticket esté vendido, activo y asignado a tu cédula antes de crear tu contraseña.
         </div>
 
@@ -72,7 +72,7 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
           </Button>
 
           {validation?.ok && (
-            <div className="rounded-2xl border border-cup-green/25 bg-cup-green/10 p-4">
+            <div className="rounded-2xl border border-cup-green/25 bg-pitch-800 p-4">
               <p className="text-sm font-black text-green-100">{validation.employeeName ?? 'Colaborador validado'}</p>
               <p className="mt-1 text-xs text-white/60">{validation.cedulaMasked} · {validation.areaId ?? 'Área pendiente'}</p>
               <p className="mt-2 text-xs text-white/45">El email técnico de Supabase se genera automáticamente y no necesitas usarlo para entrar.</p>

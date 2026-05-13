@@ -29,7 +29,7 @@ export function ClaimTicketForm({ onClaim }: { onClaim: (code: string) => Promis
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-3xl border border-cup-blue/25 bg-cup-blue/10 p-4">
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
       <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <Input label="Activar nuevo ticket" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} maxLength={6} placeholder="ABC123" helper="Ingresa el código de 6 caracteres entregado por TTHH." />
         <Button type="submit" disabled={loading} icon={<KeyRound size={17} />}>{loading ? 'Validando' : 'Activar'}</Button>

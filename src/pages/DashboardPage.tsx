@@ -16,7 +16,7 @@ export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate:
   return (
     <div className="space-y-6">
       <section className="grid gap-4 lg:grid-cols-[1.4fr_.6fr]">
-        <Card className="overflow-hidden bg-gradient-to-br from-white/[0.10] to-cup-green/10">
+        <Card className="overflow-hidden">
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Hola, {user.name}</p>
           <h1 className="mt-2 text-3xl font-black text-white md:text-5xl">Tus tickets para competir por el ranking</h1>
           <p className="mt-3 max-w-2xl text-white/65">Cada ticket es una jugada independiente. Activa el código que te entregó TTHH y completa marcadores, clasificados, cruces y campeón antes del deadline.</p>
@@ -28,9 +28,9 @@ export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate:
         <Card>
           <p className="text-xs font-black uppercase tracking-widest text-white/45">Resumen</p>
           <div className="mt-4 grid grid-cols-2 gap-3 text-center">
-            <div className="rounded-3xl bg-white/10 p-4"><TicketIcon className="mx-auto text-cup-blue" /><p className="mt-2 text-3xl font-black">{tickets.length}</p><p className="text-xs text-white/45">Total</p></div>
-            <div className="rounded-3xl bg-white/10 p-4"><Trophy className="mx-auto text-cup-green" /><p className="mt-2 text-3xl font-black">{claimed}</p><p className="text-xs text-white/45">Activos</p></div>
-            <div className="col-span-2 rounded-3xl bg-cup-blue/10 p-4 text-left"><b className="text-cup-blue">{pending}</b> tickets vendidos pendientes de activar.</div>
+            <div className="rounded-2xl bg-pitch-800 p-4"><TicketIcon className="mx-auto text-cup-blue" /><p className="mt-2 text-3xl font-black">{tickets.length}</p><p className="text-xs text-white/45">Total</p></div>
+            <div className="rounded-2xl bg-pitch-800 p-4"><Trophy className="mx-auto text-cup-green" /><p className="mt-2 text-3xl font-black">{claimed}</p><p className="text-xs text-white/45">Activos</p></div>
+            <div className="col-span-2 rounded-2xl border border-cup-blue/20 bg-pitch-800 p-4 text-left"><b className="text-cup-blue">{pending}</b> tickets vendidos pendientes de activar.</div>
           </div>
         </Card>
       </section>

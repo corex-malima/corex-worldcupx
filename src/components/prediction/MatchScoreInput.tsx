@@ -17,7 +17,7 @@ export function MatchScoreInput({ match, teams, prediction, disabled, onChange, 
   const awayValue = prediction?.awayScore ?? '';
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-4">
+    <div className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
       <div className="mb-3 flex items-center justify-between gap-2 text-xs text-white/45">
         <span>Partido {match.matchNo}</span>
         <span>{match.venue}</span>

@@ -7,7 +7,7 @@ export function TicketReceipt({ code, employeeName }: { code: string; employeeNa
   }
 
   return (
-    <div className="rounded-3xl border border-dashed border-cup-blue/60 bg-gradient-to-br from-cup-blue/25 to-white/10 p-5 text-white">
+    <div className="rounded-2xl border border-dashed border-cup-blue/45 bg-pitch-900 p-5 text-white">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-white/55">Comprobante de ticket</p>
@@ -15,7 +15,7 @@ export function TicketReceipt({ code, employeeName }: { code: string; employeeNa
         </div>
         <Ticket className="text-cup-blue" />
       </div>
-      <p className="my-5 rounded-2xl bg-black/20 px-4 py-3 text-center text-3xl font-black tracking-[0.35em] text-cup-blue">{code}</p>
+      <p className="my-5 rounded-2xl bg-pitch-950/50 px-4 py-3 text-center text-3xl font-black tracking-[0.35em] text-cup-blue">{code}</p>
       <div className="grid grid-cols-2 gap-2">
         <Button variant="secondary" onClick={copyCode} icon={<Copy size={16} />}>Copiar</Button>
         <Button variant="secondary" onClick={() => window.print()} icon={<Printer size={16} />}>Imprimir</Button>

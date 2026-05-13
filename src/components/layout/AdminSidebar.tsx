@@ -9,7 +9,7 @@ export function AdminSidebar({ onNavigate }: { onNavigate: (to: string) => void 
     { label: 'Resultados', route: '#/admin/results', icon: BarChart3 }
   ];
   return (
-    <aside className="hidden w-64 shrink-0 rounded-3xl border border-white/10 bg-white/[0.06] p-3 md:block">
+    <aside className="hidden w-64 shrink-0 rounded-2xl border border-white/10 bg-pitch-900 p-3 md:block">
       <p className="px-3 py-2 text-xs font-black uppercase tracking-widest text-white/45">TTHH / Admin</p>
       <div className="space-y-2">
         {items.map((item) => {

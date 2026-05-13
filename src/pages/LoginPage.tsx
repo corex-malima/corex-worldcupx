@@ -31,7 +31,7 @@ export function LoginPage({ onLogin, onNavigate, loading, error }: { onLogin: (c
     <div className="grid min-h-[72vh] place-items-center">
       <Card className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-3xl bg-cup-blue text-pitch-950 shadow-glow"><LockKeyhole /></div>
+          <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-cup-blue/25 bg-pitch-800 text-cup-blue"><LockKeyhole /></div>
           <h1 className="text-3xl font-black text-white">Ingresa a tu quiniela mundialista</h1>
           <p className="mt-2 text-sm text-white/60">Usa tu cédula y contraseña. No verás el email técnico de Supabase.</p>
         </div>

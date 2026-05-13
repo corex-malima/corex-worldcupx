@@ -2,8 +2,8 @@ import type { StandingRow, Team } from '../../types/tournament';
 
 export function GroupStandingsTable({ groupCode, rows, teams }: { groupCode: string; rows: StandingRow[]; teams: Team[] }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06]">
-      <div className="bg-white/10 px-4 py-3 font-black text-white">Grupo {groupCode}</div>
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-pitch-900">
+      <div className="bg-pitch-800 px-4 py-3 font-black text-white">Grupo {groupCode}</div>
       <table className="w-full text-sm">
         <thead className="text-white/45">
           <tr><th className="p-3 text-left">#</th><th className="p-3 text-left">Equipo</th><th>Pts</th><th>DG</th><th>GF</th></tr>

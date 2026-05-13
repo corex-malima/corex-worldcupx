@@ -8,10 +8,10 @@ export function RankingTable({ rows }: { rows: RankingRow[] }) {
   const [selected, setSelected] = useState<RankingRow | null>(null);
   return (
     <>
-      <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.06]">
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-pitch-900">
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full min-w-[780px] text-sm">
-            <thead className="bg-white/10 text-left text-white/50">
+            <thead className="bg-pitch-800 text-left text-white/50">
               <tr><th className="p-4">#</th><th>Ticket</th><th>Colaborador</th><th>Área</th><th>Puntos</th><th>Exactos</th><th>Resultado</th><th>Bonus</th><th></th></tr>
             </thead>
             <tbody>

@@ -62,7 +62,7 @@ export function EmployeeSearch({ onSelect }: { onSelect: (employee: EmployeeSear
   }
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.06] p-4">
+    <div className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
       <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <Input label="Buscar colaborador por cédula" value={cedula} onChange={(event) => setCedula(event.target.value)} placeholder="0102030405" />
         <Button onClick={() => void search()} disabled={loading} icon={<Search size={17} />}>{loading ? 'Buscando' : 'Buscar'}</Button>

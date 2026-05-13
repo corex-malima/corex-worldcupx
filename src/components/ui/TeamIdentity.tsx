@@ -19,7 +19,7 @@ export function TeamIdentity({ team, label, size = 'md', align = 'left', truncat
   return (
     <span className={`flex min-w-0 items-center gap-2 ${align === 'right' ? 'justify-end text-right' : ''} ${className}`}>
       {align === 'right' && <span className={`min-w-0 font-black text-white ${textClass}`}>{name}</span>}
-      <span className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15 ${sizes[size]}`}>
+      <span className={`grid shrink-0 place-items-center overflow-hidden rounded-full bg-pitch-800 ring-1 ring-white/15 ${sizes[size]}`}>
         {showImage ? <img src={team!.flagUrl} alt="" className="h-full w-full object-cover" onError={() => setImageFailed(true)} /> : <span className="text-[10px] font-black tracking-tight text-white/90">{fallbackText}</span>}
       </span>
       {align === 'left' && <span className={`min-w-0 font-black text-white ${textClass}`}>{name}</span>}

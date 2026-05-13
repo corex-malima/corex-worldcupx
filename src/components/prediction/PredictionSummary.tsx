@@ -5,9 +5,9 @@ import { Card } from '../ui/Card';
 export function PredictionSummary({ standings, teams }: { standings: StandingRow[]; teams: Team[] }) {
   const championCandidate = standings[0] ? teams.find((team) => team.id === standings[0].teamId) : null;
   return (
-    <Card className="bg-gradient-to-br from-cup-blue/20 to-white/[0.06]">
+    <Card>
       <div className="flex items-center gap-3">
-        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-cup-blue text-pitch-950"><Trophy /></span>
+        <span className="grid h-12 w-12 place-items-center rounded-2xl border border-cup-blue/25 bg-pitch-800 text-cup-blue"><Trophy /></span>
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-white/45">Resumen preliminar</p>
           <h3 className="text-2xl font-black text-white">Campeón simulado: {championCandidate ? `${championCandidate.flagEmoji} ${championCandidate.name}` : 'pendiente'}</h3>
