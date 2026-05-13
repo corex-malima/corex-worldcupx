@@ -1,10 +1,16 @@
 import type { Match, ScorePrediction, StandingRow } from '../types/tournament';
 import type { PredictedBracketMatch, ThirdPlaceSlot } from '../types/prediction';
-import { isGroupStageComplete } from './standings';
+import { getGroupsNeedingManualTieBreaker, isGroupStageComplete } from './standings';
+import { validateThirdPlaceAssignmentSolvability } from './thirdPlaceAssignment';
 
-export function validateGroupStep(matches: Match[], predictions: ScorePrediction[]): string[] {
-  if (isGroupStageComplete(matches, predictions)) return [];
-  return ['Completa todos los marcadores de fase de grupos antes de construir eliminatorias.'];
+export function validateGroupStep(matches: Match[], predictions: ScorePrediction[], standings: StandingRow[] = []): string[] {
+  const errors: string[] = [];
+  const complete = isGroupStageComplete(matches, predictions);
+  if (!complete) errors.push('Completa todos los marcadores de fase de grupos antes de construir eliminatorias.');
+  if (!complete) return errors;
+  const pendingTieBreakers = getGroupsNeedingManualTieBreaker(standings);
+  if (pendingTieBreakers.length) errors.push(`Resuelve desempates por fair play o sorteo/manual en: Grupo ${pendingTieBreakers.join(', Grupo ')}.`);
+  return errors;
 }
 
 export function validateThirdPlaceAssignments(slots: ThirdPlaceSlot[], bestThirds: StandingRow[]): string[] {
@@ -12,14 +18,23 @@ export function validateThirdPlaceAssignments(slots: ThirdPlaceSlot[], bestThird
   const bestThirdByTeam = new Map(bestThirds.map((row) => [row.teamId, row]));
   const validTeamIds = new Set(bestThirdByTeam.keys());
   const assigned = slots.map((slot) => slot.assignedTeamId).filter(Boolean) as string[];
+
+  if (bestThirds.length < slots.length) {
+    errors.push('Calcula los mejores terceros antes de asignar cruces.');
+  } else {
+    const solvability = validateThirdPlaceAssignmentSolvability(slots, bestThirds);
+    if (!solvability.ok) {
+      errors.push(`Esta asignacion deja cruces sin terceros validos${solvability.blockedSlotLabels.length ? `: ${solvability.blockedSlotLabels.join(', ')}` : ''}. Usa asignacion automatica o ajusta los grupos.`);
+    }
+  }
   if (slots.some((slot) => !slot.assignedTeamId)) errors.push('Asigna un tercero clasificado a cada slot disponible.');
   if (new Set(assigned).size !== assigned.length) errors.push('No puedes repetir el mismo tercero en dos slots.');
-  if (assigned.some((teamId) => !validTeamIds.has(teamId))) errors.push('Solo puedes usar equipos que estén entre los mejores terceros.');
+  if (assigned.some((teamId) => !validTeamIds.has(teamId))) errors.push('Solo puedes usar equipos que esten entre los mejores terceros.');
   if (slots.some((slot) => {
     if (!slot.assignedTeamId || !slot.allowedGroupCodes?.length) return false;
     const row = bestThirdByTeam.get(slot.assignedTeamId);
     return !row || !slot.allowedGroupCodes.includes(row.groupCode);
-  })) errors.push('Hay terceros asignados a cruces donde su grupo no está permitido.');
+  })) errors.push('Hay terceros asignados a cruces donde su grupo no esta permitido.');
   return errors;
 }
 

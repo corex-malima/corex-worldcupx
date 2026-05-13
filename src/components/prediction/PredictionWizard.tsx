@@ -31,6 +31,11 @@ export function PredictionWizard({ ticketId }: { ticketId: string }) {
     if (!nextErrors.length) setTab('bracket');
   }
 
+  function autoAssignThirds() {
+    const nextErrors = prediction.autoAssignThirdPlaces();
+    setErrors(nextErrors);
+  }
+
   async function submit() {
     const nextErrors = await prediction.submitPrediction();
     setErrors(nextErrors);
@@ -66,9 +71,13 @@ export function PredictionWizard({ ticketId }: { ticketId: string }) {
           standings={prediction.standings}
           bestThirds={prediction.qualified.bestThirds}
           thirdPlaceSlots={prediction.thirdPlaceSlots}
+          manualTieBreakers={prediction.draft.manualTieBreakers}
+          groupsNeedingManualTieBreaker={prediction.groupsNeedingManualTieBreaker}
           disabled={locked}
           onChange={prediction.setScore}
           onAssignThird={prediction.setThirdAssignment}
+          onAutoAssignThirds={autoAssignThirds}
+          onManualTieBreaker={prediction.setManualTieBreaker}
           onBuildBracket={buildBracket}
         />
       )}

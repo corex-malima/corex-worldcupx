@@ -1,48 +1,85 @@
+import { Wand2 } from 'lucide-react';
 import type { ThirdPlaceSlot } from '../../types/prediction';
 import type { StandingRow, Team } from '../../types/tournament';
+import { getThirdPlaceOptionState, validateThirdPlaceAssignmentSolvability } from '../../lib/thirdPlaceAssignment';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
 import { TeamIdentity } from '../ui/TeamIdentity';
 
-export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, onAssign }: {
+export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, onAssign, onAutoAssign }: {
   slots: ThirdPlaceSlot[];
   bestThirds: StandingRow[];
   teams: Team[];
   disabled?: boolean;
   onAssign: (slotId: string, teamId: string | null) => void;
+  onAutoAssign?: () => void;
 }) {
+  const hasEnoughThirds = bestThirds.length >= slots.length;
+  const solvability = hasEnoughThirds ? validateThirdPlaceAssignmentSolvability(slots, bestThirds) : { ok: true, blockedSlotLabels: [] };
+
   return (
-    <div className="rounded-2xl border border-cup-gold/25 bg-cup-gold/10 p-4">
+    <div className="rounded-2xl border border-cup-blue/25 bg-cup-blue/10 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-black text-white">Asignación manual de terceros</h3>
-          <p className="text-sm text-white/60">Versión base configurable. Se puede reemplazar por matriz oficial luego.</p>
+          <h3 className="font-black text-white">Asignacion manual de terceros</h3>
+          <p className="text-sm text-white/60">Cada cruce respeta los grupos permitidos. Puedes autocompletar una combinacion valida.</p>
         </div>
-        <Badge tone="gold">{slots.filter((slot) => slot.assignedTeamId).length}/{slots.length}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={solvability.ok ? 'blue' : 'red'}>{slots.filter((slot) => slot.assignedTeamId).length}/{slots.length}</Badge>
+          {onAutoAssign && (
+            <Button type="button" variant="secondary" className="min-h-9 rounded-xl px-3 text-xs" disabled={disabled} onClick={onAutoAssign} icon={<Wand2 size={14} />}>
+              Asignar automaticamente
+            </Button>
+          )}
+        </div>
       </div>
+      {!hasEnoughThirds && (
+        <div className="mb-3 rounded-xl border border-white/10 bg-black/15 p-3 text-sm font-bold text-white/60">
+          Completa todos los grupos para calcular los mejores terceros.
+        </div>
+      )}
+      {!solvability.ok && (
+        <div className="mb-3 rounded-xl border border-cup-red/30 bg-cup-red/10 p-3 text-sm font-bold text-red-100">
+          Esta asignacion deja cruces sin terceros validos{solvability.blockedSlotLabels.length ? `: ${solvability.blockedSlotLabels.join(', ')}` : ''}.
+        </div>
+      )}
       <div className="grid gap-3 sm:grid-cols-2">
         {slots.map((slot) => {
           const selectedIds = new Set(slots.filter((item) => item.slotId !== slot.slotId).map((item) => item.assignedTeamId).filter(Boolean));
-          const allowedRows = bestThirds.filter((row) => !slot.allowedGroupCodes?.length || slot.allowedGroupCodes.includes(row.groupCode));
           const assignedTeam = teams.find((team) => team.id === slot.assignedTeamId);
           return (
             <label key={slot.slotId} className="block min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
               <span className="block text-xs font-black uppercase tracking-widest text-white/45">Partido {slot.matchNo}</span>
-              <span className="mt-1 block truncate text-sm font-black text-white">{slot.label}</span>
-              <span className="mt-1 block text-xs font-bold text-cup-gold/80">
+              <span className="mt-1 block text-sm font-black text-white">{slot.label}</span>
+              <span className="mt-1 block text-xs font-bold text-cup-blue">
                 Permitidos: {slot.allowedGroupCodes?.length ? slot.allowedGroupCodes.join('/') : 'Todos'}
               </span>
               <select
                 disabled={disabled}
                 value={slot.assignedTeamId ?? ''}
                 onChange={(event) => onAssign(slot.slotId, event.target.value || null)}
-                className="mt-3 min-h-12 w-full rounded-2xl border border-white/10 bg-pitch-900 px-3 text-white outline-none focus:border-cup-gold"
+                className="mt-3 min-h-12 w-full rounded-2xl border border-white/10 bg-pitch-900 px-3 text-white outline-none focus:border-cup-blue"
               >
                 <option value="">Seleccionar tercero</option>
-                {allowedRows.map((row) => {
+                {bestThirds.map((row) => {
                   const team = teams.find((item) => item.id === row.teamId);
-                  return <option key={row.teamId} value={row.teamId} disabled={selectedIds.has(row.teamId)}>{team?.name} - Grupo {row.groupCode}</option>;
+                  const state = getThirdPlaceOptionState(slot, row, slots, bestThirds);
+                  const optionDisabled = selectedIds.has(row.teamId) || state.disabled;
+                  return (
+                    <option key={row.teamId} value={row.teamId} disabled={optionDisabled}>
+                      {team?.name} - Grupo {row.groupCode}{state.reason ? ` (${state.reason})` : ''}
+                    </option>
+                  );
                 })}
               </select>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {bestThirds.map((row) => {
+                  const team = teams.find((item) => item.id === row.teamId);
+                  const state = getThirdPlaceOptionState(slot, row, slots, bestThirds);
+                  if (!state.disabled) return null;
+                  return <span key={row.teamId} className="rounded-full bg-black/20 px-2 py-1 text-[11px] font-bold text-white/45">{team?.fifaCode ?? row.groupCode}: {state.reason}</span>;
+                })}
+              </div>
               {assignedTeam && <TeamIdentity team={assignedTeam} size="sm" className="mt-3 rounded-xl bg-black/20 px-3 py-2" />}
             </label>
           );

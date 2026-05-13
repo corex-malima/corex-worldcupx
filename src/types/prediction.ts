@@ -40,6 +40,7 @@ export interface PredictedBracketMatch {
 export interface PredictionDraft {
   ticketId: string;
   groupScores: Record<string, MatchScoreDraft>;
+  manualTieBreakers: Record<string, string[]>;
   thirdPlaceAssignments: ThirdPlaceSlot[];
   bracketMatches: PredictedBracketMatch[];
   status: PredictionDraftStatus;

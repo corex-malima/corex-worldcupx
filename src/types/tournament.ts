@@ -38,6 +38,8 @@ export interface ScorePrediction {
   penaltyWinnerTeamId?: string | null;
 }
 
+export type TieBreakerStatus = 'clear' | 'head_to_head' | 'fair_play' | 'manual' | 'needs_manual';
+
 export interface StandingRow {
   teamId: string;
   groupCode: string;
@@ -47,6 +49,10 @@ export interface StandingRow {
   goalsAgainst: number;
   goalDifference: number;
   position: number;
+  tieStatus?: TieBreakerStatus;
+  tieBreakerReason?: string;
+  fairPlayPoints?: number;
+  manualRank?: number;
 }
 
 export interface BracketMatch {

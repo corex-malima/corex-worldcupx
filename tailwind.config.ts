@@ -6,23 +6,23 @@ const config: Config = {
     extend: {
       colors: {
         pitch: {
-          950: '#06110d',
-          900: '#071b14',
-          800: '#0b2b20',
-          700: '#124331'
+          950: '#061224',
+          900: '#0b1f38',
+          800: '#123456',
+          700: '#1b4f7d'
         },
         cup: {
-          gold: '#f6c453',
-          green: '#1fbf75',
-          blue: '#4f8cff',
-          red: '#ef476f'
+          gold: '#f4c95d',
+          green: '#22c55e',
+          blue: '#38bdf8',
+          red: '#fb7185'
         }
       },
       boxShadow: {
-        glow: '0 24px 80px rgba(31, 191, 117, 0.20)'
+        glow: '0 24px 80px rgba(56, 189, 248, 0.22)'
       },
       backgroundImage: {
-        'stadium': 'radial-gradient(circle at 20% 20%, rgba(31,191,117,.22), transparent 28%), radial-gradient(circle at 80% 5%, rgba(246,196,83,.18), transparent 30%), linear-gradient(135deg,#06110d,#071b14 45%,#0b2139)'
+        'stadium': 'radial-gradient(circle at 18% 18%, rgba(56,189,248,.20), transparent 30%), radial-gradient(circle at 82% 5%, rgba(96,165,250,.14), transparent 32%), linear-gradient(135deg,#061224,#0b1f38 48%,#111c32)'
       },
       animation: {
         float: 'float 5s ease-in-out infinite',

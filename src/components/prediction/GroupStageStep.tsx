@@ -6,22 +6,27 @@ import { Button } from '../ui/Button';
 import { BestThirdsSummary } from './BestThirdsSummary';
 import { GroupMatchCard } from './GroupMatchCard';
 import { GroupStandingsPreview } from './GroupStandingsPreview';
+import { ManualTieBreakerPanel } from './ManualTieBreakerPanel';
 import { ThirdPlaceSlotAssignment } from './ThirdPlaceSlotAssignment';
 
-export function GroupStageStep({ teams, matches, predictions, standings, bestThirds, thirdPlaceSlots, disabled, onChange, onAssignThird, onBuildBracket }: {
+export function GroupStageStep({ teams, matches, predictions, standings, bestThirds, thirdPlaceSlots, manualTieBreakers, groupsNeedingManualTieBreaker, disabled, onChange, onAssignThird, onAutoAssignThirds, onManualTieBreaker, onBuildBracket }: {
   teams: Team[];
   matches: Match[];
   predictions: ScorePrediction[];
   standings: StandingRow[];
   bestThirds: StandingRow[];
   thirdPlaceSlots: ThirdPlaceSlot[];
+  manualTieBreakers: Record<string, string[]>;
+  groupsNeedingManualTieBreaker: string[];
   disabled?: boolean;
   onChange: (matchId: string, home: number | null, away: number | null) => void;
   onAssignThird: (slotId: string, teamId: string | null) => void;
+  onAutoAssignThirds: () => void;
+  onManualTieBreaker: (groupCode: string, orderedTeamIds: string[]) => void;
   onBuildBracket: () => void;
 }) {
   const groupCodes = Array.from(new Set(teams.map((team) => team.groupCode))).sort();
-  const errors = [...validateGroupStep(matches, predictions), ...validateThirdPlaceAssignments(thirdPlaceSlots, bestThirds)];
+  const errors = [...validateGroupStep(matches, predictions, standings), ...validateThirdPlaceAssignments(thirdPlaceSlots, bestThirds)];
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.25fr_.75fr]">
@@ -36,8 +41,9 @@ export function GroupStageStep({ teams, matches, predictions, standings, bestThi
         ))}
       </div>
       <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+        <ManualTieBreakerPanel groupCodes={groupsNeedingManualTieBreaker} standings={standings} teams={teams} manualTieBreakers={manualTieBreakers} disabled={disabled} onChange={onManualTieBreaker} />
         <BestThirdsSummary rows={bestThirds} teams={teams} />
-        <ThirdPlaceSlotAssignment slots={thirdPlaceSlots} bestThirds={bestThirds} teams={teams} disabled={disabled} onAssign={onAssignThird} />
+        <ThirdPlaceSlotAssignment slots={thirdPlaceSlots} bestThirds={bestThirds} teams={teams} disabled={disabled} onAssign={onAssignThird} onAutoAssign={onAutoAssignThirds} />
         {errors.length > 0 && (
           <div className="rounded-2xl border border-cup-red/25 bg-cup-red/10 p-4 text-sm font-bold text-red-100">
             <AlertTriangle className="mb-2" />

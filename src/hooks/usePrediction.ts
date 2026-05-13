@@ -3,15 +3,17 @@ import type { PredictionDraft } from '../types/prediction';
 import type { ScorePrediction } from '../types/tournament';
 import { mockMatches } from '../data/mock/matches';
 import { mockTeams } from '../data/mock/teams';
-import { calculateGroupStandings, getQualifiedTeams } from '../lib/tournament';
+import { calculateGroupStandings, getGroupsNeedingManualTieBreaker, getQualifiedTeams, isGroupStageComplete } from '../lib/tournament';
 import { calculateProgress } from '../lib/scoring';
 import { buildInitialBracket, createThirdPlaceSlots, summarizeFinalPrediction, updateBracketScore } from '../lib/bracketBuilder';
 import { sanitizeThirdPlaceAssignments, validateGroupStep, validateKnockout, validateThirdPlaceAssignments } from '../lib/predictionValidation';
+import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
 
 function createInitialDraft(ticketId: string): PredictionDraft {
   return {
     ticketId,
     groupScores: {},
+    manualTieBreakers: {},
     thirdPlaceAssignments: [],
     bracketMatches: [],
     status: 'draft',
@@ -24,7 +26,17 @@ function loadDraft(ticketId: string): PredictionDraft {
   const key = `polla_prediction_${ticketId}`;
   try {
     const raw = window.localStorage.getItem(key);
-    return raw ? JSON.parse(raw) as PredictionDraft : createInitialDraft(ticketId);
+    if (!raw) return createInitialDraft(ticketId);
+    const parsed = JSON.parse(raw) as Partial<PredictionDraft>;
+    return {
+      ...createInitialDraft(ticketId),
+      ...parsed,
+      ticketId,
+      groupScores: parsed.groupScores ?? {},
+      manualTieBreakers: parsed.manualTieBreakers ?? {},
+      thirdPlaceAssignments: parsed.thirdPlaceAssignments ?? [],
+      bracketMatches: parsed.bracketMatches ?? []
+    };
   } catch {
     return createInitialDraft(ticketId);
   }
@@ -51,7 +63,22 @@ export function usePrediction(ticketId: string) {
         ...current.groupScores,
         [matchId]: { matchId, homeScore, awayScore }
       },
+      thirdPlaceAssignments: [],
+      bracketMatches: [],
       status: current.status === 'submitted' ? 'draft' : current.status
+    }));
+  }
+
+  function setManualTieBreaker(groupCode: string, orderedTeamIds: string[]) {
+    setDraft((current) => touch({
+      ...current,
+      manualTieBreakers: {
+        ...current.manualTieBreakers,
+        [groupCode]: orderedTeamIds
+      },
+      thirdPlaceAssignments: [],
+      bracketMatches: [],
+      status: 'draft'
     }));
   }
 
@@ -71,7 +98,7 @@ export function usePrediction(ticketId: string) {
   }
 
   function buildKnockoutBracket(): string[] {
-    const groupErrors = validateGroupStep(groupMatches, predictions);
+    const groupErrors = validateGroupStep(groupMatches, predictions, standings);
     const assignmentSlots = sanitizeThirdPlaceAssignments(
       draft.thirdPlaceAssignments.length ? draft.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches),
       qualified.bestThirds
@@ -87,6 +114,22 @@ export function usePrediction(ticketId: string) {
     return [];
   }
 
+  function autoAssignThirdPlaces(): string[] {
+    const sourceSlots = sanitizeThirdPlaceAssignments(
+      draft.thirdPlaceAssignments.length ? draft.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches),
+      qualified.bestThirds
+    );
+    const assignment = findValidThirdPlaceAssignment(sourceSlots, qualified.bestThirds);
+    if (!assignment) return ['No existe una combinacion valida con estos terceros. Ajusta desempates o asignaciones manuales.'];
+    setDraft((current) => touch({
+      ...current,
+      thirdPlaceAssignments: assignment,
+      bracketMatches: [],
+      status: 'draft'
+    }));
+    return [];
+  }
+
   function setKnockoutScore(matchId: string, homeScore: number | null, awayScore: number | null, advancingTeamId?: string | null) {
     setDraft((current) => touch({
       ...current,
@@ -96,7 +139,7 @@ export function usePrediction(ticketId: string) {
   }
 
   async function submitPrediction(): Promise<string[]> {
-    const errors = [...validateGroupStep(groupMatches, predictions), ...validateThirdPlaceAssignments(thirdPlaceSlots, qualified.bestThirds), ...validateKnockout(draft.bracketMatches)];
+    const errors = [...validateGroupStep(groupMatches, predictions, standings), ...validateThirdPlaceAssignments(thirdPlaceSlots, qualified.bestThirds), ...validateKnockout(draft.bracketMatches)];
     if (errors.length) return errors;
     setSaving(true);
     try {
@@ -108,8 +151,9 @@ export function usePrediction(ticketId: string) {
   }
 
   const predictions = useMemo<ScorePrediction[]>(() => Object.values(draft.groupScores), [draft.groupScores]);
-  const standings = useMemo(() => calculateGroupStandings(mockTeams, groupMatches, predictions), [groupMatches, predictions]);
+  const standings = useMemo(() => calculateGroupStandings(mockTeams, groupMatches, predictions, { manualTieBreakers: draft.manualTieBreakers }), [draft.manualTieBreakers, groupMatches, predictions]);
   const qualified = useMemo(() => getQualifiedTeams(standings), [standings]);
+  const groupsNeedingManualTieBreaker = useMemo(() => isGroupStageComplete(groupMatches, predictions) ? getGroupsNeedingManualTieBreaker(standings) : [], [groupMatches, predictions, standings]);
   const thirdPlaceSlots = useMemo(
     () => sanitizeThirdPlaceAssignments(draft.thirdPlaceAssignments.length ? draft.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches), qualified.bestThirds),
     [draft.thirdPlaceAssignments, knockoutMatches, qualified.bestThirds]
@@ -130,12 +174,15 @@ export function usePrediction(ticketId: string) {
     knockoutMatches,
     predictions,
     setScore,
+    setManualTieBreaker,
     setThirdAssignment,
+    autoAssignThirdPlaces,
     buildKnockoutBracket,
     setKnockoutScore,
     submitPrediction,
     standings,
     qualified,
+    groupsNeedingManualTieBreaker,
     thirdPlaceSlots,
     finalSummary,
     progress,

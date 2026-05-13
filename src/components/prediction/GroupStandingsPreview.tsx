@@ -19,7 +19,14 @@ export function GroupStandingsPreview({ groupCode, rows, teams }: { groupCode: s
             return (
               <tr key={row.teamId} className="border-t border-white/10 text-white/80">
                 <td className="p-3 font-black">{row.position}</td>
-                <td className="min-w-0 p-3 font-bold"><TeamIdentity team={team} size="sm" /></td>
+                <td className="min-w-0 p-3 font-bold">
+                  <TeamIdentity team={team} size="sm" />
+                  {row.tieStatus && row.tieStatus !== 'clear' && (
+                    <p className={`mt-1 text-[11px] font-bold ${row.tieStatus === 'needs_manual' ? 'text-cup-red' : 'text-cup-blue'}`}>
+                      {row.tieBreakerReason}
+                    </p>
+                  )}
+                </td>
                 <td className="text-center font-black">{row.points}</td>
                 <td className="text-center">{row.goalDifference}</td>
                 <td className="text-center">{row.goalsFor}</td>

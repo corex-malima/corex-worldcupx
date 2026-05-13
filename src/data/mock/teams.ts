@@ -1,6 +1,6 @@
 import type { Team } from '../../types/tournament';
 
-const flagUrl = (id: string) => `${import.meta.env.BASE_URL}assets/flags/circle/${id}.png`;
+const flagUrl = (id: string) => `${import.meta.env.BASE_URL}assets/flags/circle/${id}.svg`;
 
 export const mockTeams: Team[] = ([
   { id: 'mex', fifaCode: 'MEX', name: 'México', groupCode: 'A', flagEmoji: '🇲🇽', seedOrder: 1 },

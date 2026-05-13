@@ -7,6 +7,7 @@ import { AdminGroupStandingsPanel } from '../components/admin/AdminGroupStanding
 import { AdminKnockoutResultsPanel } from '../components/admin/AdminKnockoutResultsPanel';
 import { AdminRecalculateScoresPanel } from '../components/admin/AdminRecalculateScoresPanel';
 import { AdminThirdPlaceAssignmentPanel } from '../components/admin/AdminThirdPlaceAssignmentPanel';
+import { AdminTieBreakersPanel } from '../components/admin/AdminTieBreakersPanel';
 import { AdminSidebar } from '../components/layout/AdminSidebar';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -14,6 +15,7 @@ import type { ScorePrediction } from '../types/tournament';
 import { buildInitialBracket, createThirdPlaceSlots, updateBracketScore } from '../lib/bracketBuilder';
 import { validateGroupStep, validateThirdPlaceAssignments } from '../lib/predictionValidation';
 import { calculateGroupStandings, getQualifiedTeams } from '../lib/standings';
+import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
 
 type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking';
 
@@ -22,14 +24,16 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
   const [results, setResults] = useState<Record<string, ScorePrediction>>({});
   const [thirdSlots, setThirdSlots] = useState(() => createThirdPlaceSlots(mockMatches));
   const [bracket, setBracket] = useState(() => buildInitialBracket(mockMatches, [], thirdSlots));
+  const [fairPlayPoints, setFairPlayPoints] = useState<Record<string, number>>({});
+  const [manualTieBreakers, setManualTieBreakers] = useState<Record<string, string[]>>({});
   const [rankingStatus, setRankingStatus] = useState<'pending' | 'calculating' | 'calculated' | 'error'>('pending');
   const [rankingUpdatedAt, setRankingUpdatedAt] = useState<string | null>(null);
 
   const groupMatches = useMemo(() => mockMatches.filter((match) => match.stage === 'GROUP'), []);
   const resultRows = useMemo(() => Object.values(results), [results]);
-  const standings = useMemo(() => calculateGroupStandings(mockTeams, groupMatches, resultRows), [groupMatches, resultRows]);
+  const standings = useMemo(() => calculateGroupStandings(mockTeams, groupMatches, resultRows, { fairPlayPoints, manualTieBreakers }), [fairPlayPoints, groupMatches, manualTieBreakers, resultRows]);
   const qualified = useMemo(() => getQualifiedTeams(standings), [standings]);
-  const canBuildBracket = validateGroupStep(groupMatches, resultRows).length === 0 && validateThirdPlaceAssignments(thirdSlots, qualified.bestThirds).length === 0;
+  const canBuildBracket = validateGroupStep(groupMatches, resultRows, standings).length === 0 && validateThirdPlaceAssignments(thirdSlots, qualified.bestThirds).length === 0;
 
   function setGroupResult(matchId: string, homeScore: number | null, awayScore: number | null) {
     setResults((current) => ({ ...current, [matchId]: { matchId, homeScore, awayScore } }));
@@ -37,6 +41,24 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
 
   function assignThird(slotId: string, teamId: string | null) {
     setThirdSlots((current) => current.map((slot) => slot.slotId === slotId ? { ...slot, assignedTeamId: teamId } : slot));
+  }
+
+  function autoAssignThirds() {
+    const assignment = findValidThirdPlaceAssignment(thirdSlots, qualified.bestThirds);
+    if (assignment) setThirdSlots(assignment);
+  }
+
+  function setFairPlay(teamId: string, points: number | null) {
+    setFairPlayPoints((current) => {
+      const next = { ...current };
+      if (points === null || Number.isNaN(points)) delete next[teamId];
+      else next[teamId] = points;
+      return next;
+    });
+  }
+
+  function setManualTieBreaker(groupCode: string, orderedTeamIds: string[]) {
+    setManualTieBreakers((current) => ({ ...current, [groupCode]: orderedTeamIds }));
   }
 
   function buildRealBracket() {
@@ -77,10 +99,15 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         </div>
 
         {tab === 'groups' && <AdminGroupResultsPanel matches={groupMatches} teams={mockTeams} results={resultRows} onChange={setGroupResult} />}
-        {tab === 'standings' && <AdminGroupStandingsPanel standings={standings} bestThirds={qualified.bestThirds} teams={mockTeams} />}
+        {tab === 'standings' && (
+          <div className="space-y-4">
+            <AdminTieBreakersPanel standings={standings} teams={mockTeams} fairPlayPoints={fairPlayPoints} manualTieBreakers={manualTieBreakers} onFairPlayChange={setFairPlay} onManualTieBreaker={setManualTieBreaker} />
+            <AdminGroupStandingsPanel standings={standings} bestThirds={qualified.bestThirds} teams={mockTeams} />
+          </div>
+        )}
         {tab === 'thirds' && (
           <div className="space-y-4">
-            <AdminThirdPlaceAssignmentPanel slots={thirdSlots} bestThirds={qualified.bestThirds} teams={mockTeams} onAssign={assignThird} />
+            <AdminThirdPlaceAssignmentPanel slots={thirdSlots} bestThirds={qualified.bestThirds} teams={mockTeams} onAssign={assignThird} onAutoAssign={autoAssignThirds} />
             <Button disabled={!canBuildBracket} onClick={buildRealBracket}>Construir dieciseisavos reales</Button>
           </div>
         )}
