@@ -1,6 +1,8 @@
 import type { Team } from '../../types/tournament';
 
-export const mockTeams: Team[] = [
+const flagUrl = (id: string) => `${import.meta.env.BASE_URL}assets/flags/circle/${id}.png`;
+
+export const mockTeams: Team[] = ([
   { id: 'mex', fifaCode: 'MEX', name: 'México', groupCode: 'A', flagEmoji: '🇲🇽', seedOrder: 1 },
   { id: 'rsa', fifaCode: 'RSA', name: 'Sudáfrica', groupCode: 'A', flagEmoji: '🇿🇦', seedOrder: 2 },
   { id: 'kor', fifaCode: 'KOR', name: 'República de Corea', groupCode: 'A', flagEmoji: '🇰🇷', seedOrder: 3 },
@@ -49,4 +51,4 @@ export const mockTeams: Team[] = [
   { id: 'cro', fifaCode: 'CRO', name: 'Croacia', groupCode: 'L', flagEmoji: '🇭🇷', seedOrder: 2 },
   { id: 'gha', fifaCode: 'GHA', name: 'Ghana', groupCode: 'L', flagEmoji: '🇬🇭', seedOrder: 3 },
   { id: 'pan', fifaCode: 'PAN', name: 'Panamá', groupCode: 'L', flagEmoji: '🇵🇦', seedOrder: 4 }
-];
+] satisfies Team[]).map((team) => ({ ...team, flagUrl: flagUrl(team.id) }));

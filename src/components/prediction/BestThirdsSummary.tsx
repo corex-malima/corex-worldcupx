@@ -1,5 +1,6 @@
 import type { StandingRow, Team } from '../../types/tournament';
 import { Badge } from '../ui/Badge';
+import { TeamIdentity } from '../ui/TeamIdentity';
 
 export function BestThirdsSummary({ rows, teams }: { rows: StandingRow[]; teams: Team[] }) {
   return (
@@ -11,7 +12,13 @@ export function BestThirdsSummary({ rows, teams }: { rows: StandingRow[]; teams:
       <div className="flex flex-wrap gap-2">
         {rows.map((row) => {
           const team = teams.find((item) => item.id === row.teamId);
-          return <Badge key={row.teamId} tone="blue">{team?.flagEmoji} {team?.name} · {row.points} pts · DG {row.goalDifference}</Badge>;
+          return (
+            <div key={row.teamId} className="flex min-w-0 items-center gap-2 rounded-full border border-cup-blue/25 bg-cup-blue/15 px-3 py-2 text-xs font-black text-white">
+              <TeamIdentity team={team} size="sm" className="max-w-40" />
+              <span className="shrink-0 text-white/65">{row.points} pts</span>
+              <span className="shrink-0 text-white/45">DG {row.goalDifference}</span>
+            </div>
+          );
         })}
       </div>
     </div>

@@ -1,5 +1,6 @@
 import type { StandingRow, Team } from '../../types/tournament';
 import { Badge } from '../ui/Badge';
+import { TeamIdentity } from '../ui/TeamIdentity';
 
 export function GroupStandingsPreview({ groupCode, rows, teams }: { groupCode: string; rows: StandingRow[]; teams: Team[] }) {
   return (
@@ -18,7 +19,7 @@ export function GroupStandingsPreview({ groupCode, rows, teams }: { groupCode: s
             return (
               <tr key={row.teamId} className="border-t border-white/10 text-white/80">
                 <td className="p-3 font-black">{row.position}</td>
-                <td className="p-3 font-bold">{team?.flagEmoji} {team?.name}</td>
+                <td className="min-w-0 p-3 font-bold"><TeamIdentity team={team} size="sm" /></td>
                 <td className="text-center font-black">{row.points}</td>
                 <td className="text-center">{row.goalDifference}</td>
                 <td className="text-center">{row.goalsFor}</td>

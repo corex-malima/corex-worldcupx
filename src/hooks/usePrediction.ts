@@ -6,7 +6,7 @@ import { mockTeams } from '../data/mock/teams';
 import { calculateGroupStandings, getQualifiedTeams } from '../lib/tournament';
 import { calculateProgress } from '../lib/scoring';
 import { buildInitialBracket, createThirdPlaceSlots, summarizeFinalPrediction, updateBracketScore } from '../lib/bracketBuilder';
-import { validateGroupStep, validateKnockout, validateThirdPlaceAssignments } from '../lib/predictionValidation';
+import { sanitizeThirdPlaceAssignments, validateGroupStep, validateKnockout, validateThirdPlaceAssignments } from '../lib/predictionValidation';
 
 function createInitialDraft(ticketId: string): PredictionDraft {
   return {
@@ -57,7 +57,10 @@ export function usePrediction(ticketId: string) {
 
   function setThirdAssignment(slotId: string, teamId: string | null) {
     setDraft((current) => {
-      const sourceSlots = current.thirdPlaceAssignments.length ? current.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches);
+      const sourceSlots = sanitizeThirdPlaceAssignments(
+        current.thirdPlaceAssignments.length ? current.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches),
+        qualified.bestThirds
+      );
       return touch({
         ...current,
         thirdPlaceAssignments: sourceSlots.map((slot) => slot.slotId === slotId ? { ...slot, assignedTeamId: teamId } : slot),
@@ -69,7 +72,10 @@ export function usePrediction(ticketId: string) {
 
   function buildKnockoutBracket(): string[] {
     const groupErrors = validateGroupStep(groupMatches, predictions);
-    const assignmentSlots = draft.thirdPlaceAssignments.length ? draft.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches);
+    const assignmentSlots = sanitizeThirdPlaceAssignments(
+      draft.thirdPlaceAssignments.length ? draft.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches),
+      qualified.bestThirds
+    );
     const thirdErrors = validateThirdPlaceAssignments(assignmentSlots, qualified.bestThirds);
     if (groupErrors.length || thirdErrors.length) return [...groupErrors, ...thirdErrors];
     setDraft((current) => touch({
@@ -104,7 +110,10 @@ export function usePrediction(ticketId: string) {
   const predictions = useMemo<ScorePrediction[]>(() => Object.values(draft.groupScores), [draft.groupScores]);
   const standings = useMemo(() => calculateGroupStandings(mockTeams, groupMatches, predictions), [groupMatches, predictions]);
   const qualified = useMemo(() => getQualifiedTeams(standings), [standings]);
-  const thirdPlaceSlots = useMemo(() => draft.thirdPlaceAssignments.length ? draft.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches), [draft.thirdPlaceAssignments, knockoutMatches]);
+  const thirdPlaceSlots = useMemo(
+    () => sanitizeThirdPlaceAssignments(draft.thirdPlaceAssignments.length ? draft.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches), qualified.bestThirds),
+    [draft.thirdPlaceAssignments, knockoutMatches, qualified.bestThirds]
+  );
   const finalSummary = useMemo(() => summarizeFinalPrediction(draft.bracketMatches), [draft.bracketMatches]);
   const completedKnockout = draft.bracketMatches.filter((match) => match.homeScore !== null && match.awayScore !== null && match.advancingTeamId).length;
   const completedThirdSlots = thirdPlaceSlots.filter((slot) => slot.assignedTeamId).length;

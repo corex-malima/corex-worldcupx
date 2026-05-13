@@ -1,6 +1,7 @@
 import type { ThirdPlaceSlot } from '../../types/prediction';
 import type { StandingRow, Team } from '../../types/tournament';
 import { Badge } from '../ui/Badge';
+import { TeamIdentity } from '../ui/TeamIdentity';
 
 export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, onAssign }: {
   slots: ThirdPlaceSlot[];
@@ -18,24 +19,31 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
         </div>
         <Badge tone="gold">{slots.filter((slot) => slot.assignedTeamId).length}/{slots.length}</Badge>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         {slots.map((slot) => {
           const selectedIds = new Set(slots.filter((item) => item.slotId !== slot.slotId).map((item) => item.assignedTeamId).filter(Boolean));
+          const allowedRows = bestThirds.filter((row) => !slot.allowedGroupCodes?.length || slot.allowedGroupCodes.includes(row.groupCode));
+          const assignedTeam = teams.find((team) => team.id === slot.assignedTeamId);
           return (
-            <label key={slot.slotId} className="block rounded-2xl border border-white/10 bg-white/[0.06] p-3">
-              <span className="mb-2 block text-xs font-black uppercase tracking-widest text-white/45">Partido {slot.matchNo} · {slot.label}</span>
+            <label key={slot.slotId} className="block min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+              <span className="block text-xs font-black uppercase tracking-widest text-white/45">Partido {slot.matchNo}</span>
+              <span className="mt-1 block truncate text-sm font-black text-white">{slot.label}</span>
+              <span className="mt-1 block text-xs font-bold text-cup-gold/80">
+                Permitidos: {slot.allowedGroupCodes?.length ? slot.allowedGroupCodes.join('/') : 'Todos'}
+              </span>
               <select
                 disabled={disabled}
                 value={slot.assignedTeamId ?? ''}
                 onChange={(event) => onAssign(slot.slotId, event.target.value || null)}
-                className="min-h-12 w-full rounded-2xl border border-white/10 bg-pitch-900 px-3 text-white outline-none focus:border-cup-gold"
+                className="mt-3 min-h-12 w-full rounded-2xl border border-white/10 bg-pitch-900 px-3 text-white outline-none focus:border-cup-gold"
               >
                 <option value="">Seleccionar tercero</option>
-                {bestThirds.map((row) => {
+                {allowedRows.map((row) => {
                   const team = teams.find((item) => item.id === row.teamId);
-                  return <option key={row.teamId} value={row.teamId} disabled={selectedIds.has(row.teamId)}>{team?.name} · Grupo {row.groupCode}</option>;
+                  return <option key={row.teamId} value={row.teamId} disabled={selectedIds.has(row.teamId)}>{team?.name} - Grupo {row.groupCode}</option>;
                 })}
               </select>
+              {assignedTeam && <TeamIdentity team={assignedTeam} size="sm" className="mt-3 rounded-xl bg-black/20 px-3 py-2" />}
             </label>
           );
         })}
