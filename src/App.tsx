@@ -33,6 +33,19 @@ export default function App() {
     return () => window.removeEventListener('hashchange', handler);
   }, []);
 
+  // Si ya hay sesión y estamos en login/register, mandamos al dashboard.
+  useEffect(() => {
+    if (auth.user && (route === '#/login' || route === '#/register')) {
+      window.location.hash = '#/dashboard';
+    }
+  }, [auth.user, route]);
+
+  // Tras cerrar sesión, mandamos al login.
+  async function handleSignOut() {
+    await auth.signOut();
+    window.location.hash = '#/login';
+  }
+
   const content = useMemo(() => {
     if (route === '#/login') return <LoginPage onLogin={auth.signIn} onNavigate={navigate} loading={auth.loading} error={auth.error} />;
     if (route === '#/register') return <RegisterPage onRegister={auth.register} onNavigate={navigate} loading={auth.loading} error={auth.error} />;
@@ -55,5 +68,5 @@ export default function App() {
     return <NotFoundPage onNavigate={navigate} />;
   }, [route, auth.user, auth.loading, auth.error]);
 
-  return <AppShell user={auth.user} onNavigate={navigate} onSignOut={() => void auth.signOut()}>{content}</AppShell>;
+  return <AppShell user={auth.user} onNavigate={navigate} onSignOut={() => void handleSignOut()}>{content}</AppShell>;
 }
