@@ -40,6 +40,10 @@ interface DbMatchRow {
   winner_team_id: string | null;
 }
 
+function flagUrlForCode(fifaCode: string): string {
+  return `${import.meta.env.BASE_URL}assets/flags/circle/${fifaCode.toLowerCase()}.svg`;
+}
+
 function mapTeam(row: DbTeamRow): Team {
   return {
     id: row.id,
@@ -47,7 +51,7 @@ function mapTeam(row: DbTeamRow): Team {
     name: row.name,
     groupCode: row.group_code ?? '',
     flagEmoji: row.flag_emoji ?? '',
-    flagUrl: row.flag_url ?? undefined,
+    flagUrl: row.flag_url ?? flagUrlForCode(row.fifa_code),
     primaryColor: row.primary_color ?? undefined,
     secondaryColor: row.secondary_color ?? undefined,
     seedOrder: row.seed_order ?? 999

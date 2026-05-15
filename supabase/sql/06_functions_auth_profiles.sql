@@ -131,21 +131,29 @@ set search_path = public
 as $$
 declare
     v_cedula text := regexp_replace(coalesce(p_cedula, ''), '\D', '', 'g');
-    v_profile public.profiles%rowtype;
+    v_user_id uuid;
+    v_email text;
 begin
-    select * into v_profile
+    select user_id into v_user_id
     from public.profiles
     where cedula = v_cedula
     limit 1;
 
-    if not found then
+    if v_user_id is null then
         return jsonb_build_object('ok', false, 'message', 'Credenciales inválidas.');
     end if;
 
-    return jsonb_build_object(
-        'ok', true,
-        'technical_email', public.technical_email_for_employee(v_profile.cedula, v_profile.display_name)
-    );
+    -- Lee el email real desde auth.users (robusto frente a cualquier convención de naming).
+    select email into v_email
+    from auth.users
+    where id = v_user_id
+    limit 1;
+
+    if v_email is null then
+        return jsonb_build_object('ok', false, 'message', 'Credenciales inválidas.');
+    end if;
+
+    return jsonb_build_object('ok', true, 'technical_email', v_email);
 end;
 $$;
 
@@ -196,3 +204,38 @@ comment on function public.resolve_auth_email_by_cedula(text) is 'Resuelve el em
 
 grant execute on function public.validate_registration_ticket(text, text) to anon, authenticated;
 grant execute on function public.resolve_auth_email_by_cedula(text) to anon, authenticated;
+
+-- Reemplazo de políticas admin con is_admin() para evitar recursión RLS.
+-- (Las versiones inline de 05_rls_policies.sql introducían un subselect a profiles
+-- que rompía el SELECT del propio dueño cuando se evaluaban las dos políticas juntas.)
+do $$
+begin
+    if exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'profiles') then
+        drop policy if exists profiles_admin_select on public.profiles;
+        create policy profiles_admin_select on public.profiles for select using (public.is_admin());
+    end if;
+    if exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'employees') then
+        drop policy if exists employees_admin_select on public.employees;
+        create policy employees_admin_select on public.employees for select using (public.is_admin());
+    end if;
+    if exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'tickets') then
+        drop policy if exists tickets_admin_select on public.tickets;
+        create policy tickets_admin_select on public.tickets for select using (public.is_admin());
+    end if;
+    if exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'prediction_headers') then
+        drop policy if exists prediction_admin_select on public.prediction_headers;
+        create policy prediction_admin_select on public.prediction_headers for select using (public.is_admin());
+    end if;
+    if exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'prediction_match_scores') then
+        drop policy if exists prediction_scores_admin_select on public.prediction_match_scores;
+        create policy prediction_scores_admin_select on public.prediction_match_scores for select using (public.is_admin());
+    end if;
+    if exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'prediction_third_place_assignments') then
+        drop policy if exists third_place_admin_select on public.prediction_third_place_assignments;
+        create policy third_place_admin_select on public.prediction_third_place_assignments for select using (public.is_admin());
+    end if;
+    if exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'admin_audit_log') then
+        drop policy if exists audit_admin_select on public.admin_audit_log;
+        create policy audit_admin_select on public.admin_audit_log for select using (public.is_admin());
+    end if;
+end $$;

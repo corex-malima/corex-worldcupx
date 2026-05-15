@@ -119,6 +119,10 @@ export interface Database {
         Args: { p_code: string };
         Returns: Json;
       };
+      cancel_ticket: {
+        Args: { p_ticket_id: string; p_reason: string };
+        Returns: Json;
+      };
       save_prediction_match_score: {
         Args: {
           p_ticket_id: string;
