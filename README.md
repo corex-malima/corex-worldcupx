@@ -1,6 +1,8 @@
-# Polla Mundialista · Vite + Supabase
+# WorldCupX · Polla Mundialista
 
-Aplicación interna para gestionar una polla mundialista empresarial con dos experiencias: colaborador y TTHH/Admin.
+> Producto **WorldCupX** · plataforma **CoreX** · _by P&P_ · **Malima**
+
+Aplicación interna para gestionar la polla mundialista empresarial con dos experiencias: colaborador y TTHH/Admin. Diseño sobre la familia visual CoreX (paleta slate-blue dark, símbolo orbital).
 
 ## Stack
 

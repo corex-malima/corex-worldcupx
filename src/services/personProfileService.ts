@@ -35,6 +35,37 @@ const demoProfiles: PersonProfile[] = [
   }
 ];
 
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 400;
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function invokeWithRetries(params: { limit: number; offset: number }): Promise<PersonProfileApiResponse> {
+  if (!supabase) {
+    throw new Error('Supabase no está configurado.');
+  }
+  let attempt = 0;
+  let lastError: Error | null = null;
+  while (attempt < MAX_RETRIES) {
+    const { data, error } = await supabase.functions.invoke<PersonProfileApiResponse>(FUNCTION_NAME, {
+      body: { limit: params.limit, offset: params.offset }
+    });
+
+    if (!error && data && Array.isArray(data.data)) {
+      return data;
+    }
+
+    lastError = new Error(error?.message || 'La Edge Function devolvio una respuesta invalida.');
+    attempt += 1;
+    if (attempt < MAX_RETRIES) {
+      await sleep(BASE_DELAY_MS * 2 ** (attempt - 1));
+    }
+  }
+  throw lastError ?? new Error('No se pudo consultar la base de colaboradores.');
+}
+
 export async function fetchPersonProfilesPage(params: { limit?: number; offset?: number } = {}): Promise<PersonProfileApiResponse> {
   const limit = params.limit ?? DEFAULT_LIMIT;
   const offset = params.offset ?? 0;
@@ -44,19 +75,7 @@ export async function fetchPersonProfilesPage(params: { limit?: number; offset?:
     return { data, limit, offset, count: data.length };
   }
 
-  const { data, error } = await supabase.functions.invoke<PersonProfileApiResponse>(FUNCTION_NAME, {
-    body: { limit, offset }
-  });
-
-  if (error) {
-    throw new Error(error.message || 'No se pudo consultar la base de colaboradores.');
-  }
-
-  if (!data || !Array.isArray(data.data)) {
-    throw new Error('La Edge Function devolvio una respuesta invalida.');
-  }
-
-  return data;
+  return invokeWithRetries({ limit, offset });
 }
 
 export async function fetchAllPersonProfiles(): Promise<PersonProfile[]> {

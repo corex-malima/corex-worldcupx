@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/worldcupx/',
+  base: '/corex-worldcupx/',
   build: {
     outDir: 'dist',
     sourcemap: true

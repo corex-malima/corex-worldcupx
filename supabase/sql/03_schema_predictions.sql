@@ -30,11 +30,14 @@ create table if not exists public.prediction_headers (
     status text not null default 'pending',
     champion_team_id uuid references public.teams(id),
     runner_up_team_id uuid references public.teams(id),
+    third_place_team_id uuid references public.teams(id),
     submitted_at timestamptz,
     locked_at timestamptz,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
+
+alter table public.prediction_headers add column if not exists third_place_team_id uuid references public.teams(id);
 
 create table if not exists public.prediction_match_scores (
     id uuid primary key default gen_random_uuid(),
@@ -73,6 +76,14 @@ create table if not exists public.predicted_bracket_slots (
     match_id uuid references public.matches(id),
     team_id uuid references public.teams(id),
     source text,
+    created_at timestamptz not null default now()
+);
+
+create table if not exists public.prediction_third_place_assignments (
+    id uuid primary key default gen_random_uuid(),
+    prediction_id uuid not null references public.prediction_headers(id) on delete cascade,
+    slot_match_id uuid not null references public.matches(id) on delete cascade,
+    team_id uuid not null references public.teams(id),
     created_at timestamptz not null default now()
 );
 

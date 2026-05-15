@@ -14,11 +14,19 @@ function isNumericQuery(value: string): boolean {
 }
 
 function ResultCard({ result, onSelect }: { result: CollaboratorSearchResult; onSelect: (employee: EmployeeSearchResult) => void }) {
+  const hasCedula = Boolean(result.national_id && result.national_id.replace(/\D/g, '').length > 0);
+
   return (
     <button
       type="button"
-      onClick={() => onSelect(collaboratorToEmployeeSearchResult(result))}
-      className="w-full rounded-2xl border border-white/10 bg-pitch-800 p-4 text-left transition hover:border-cup-blue/40 hover:bg-pitch-700"
+      onClick={() => hasCedula && onSelect(collaboratorToEmployeeSearchResult(result))}
+      disabled={!hasCedula}
+      title={hasCedula ? undefined : 'Este colaborador no tiene cédula registrada en HR. Cárgala antes de vender el ticket.'}
+      className={`w-full rounded-2xl border p-4 text-left transition ${
+        hasCedula
+          ? 'border-white/10 bg-pitch-800 hover:border-cup-blue/40 hover:bg-pitch-700'
+          : 'cursor-not-allowed border-cup-red/30 bg-pitch-900/60 opacity-60'
+      }`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
@@ -27,8 +35,8 @@ function ResultCard({ result, onSelect }: { result: CollaboratorSearchResult; on
             Cedula {result.masked_national_id ?? 'sin registro'} · Codigo {result.person_id}
           </p>
         </div>
-        <span className="inline-flex w-fit items-center rounded-full border border-cup-blue/25 px-3 py-1 text-xs font-bold text-cup-blue">
-          Seleccionar
+        <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-bold ${hasCedula ? 'border-cup-blue/25 text-cup-blue' : 'border-cup-red/40 text-red-200'}`}>
+          {hasCedula ? 'Seleccionar' : 'Sin cédula'}
         </span>
       </div>
       <div className="mt-3 grid gap-2 text-sm text-white/60 md:grid-cols-2">

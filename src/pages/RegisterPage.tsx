@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, TicketCheck, UserPlus } from 'lucide-react';
+import { CheckCircle2, TicketCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
+import { WorldCupXMark } from '../components/brand/WorldCupXMark';
 import { normalizeCedula } from '../lib/format';
 import { validateCedulaBasic, validateRegistrationTicket, validateTicketCodeBasic, type RegistrationTicketValidation } from '../lib/auth';
+import { APP_DESCRIPTOR, APP_NAME, BRAND, COMPANY, SIGNATURE } from '../lib/constants';
 
 export function RegisterPage({ onRegister, onNavigate, loading, error }: { onRegister: (cedula: string, ticketCode: string, password: string) => Promise<void>; onNavigate: (to: string) => void; loading?: boolean; error?: string | null }) {
   const [cedula, setCedula] = useState('');
@@ -52,8 +54,9 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
     <div className="grid min-h-[72vh] place-items-center">
       <Card className="w-full max-w-2xl">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-cup-blue/25 bg-pitch-800 text-cup-blue"><UserPlus /></div>
-          <h1 className="text-3xl font-black text-white">Crear cuenta</h1>
+          <WorldCupXMark size={72} className="mx-auto mb-4 rounded-2xl border border-white/10" />
+          <p className="text-[11px] font-black uppercase tracking-[0.32em] text-white/45">{APP_NAME} · {APP_DESCRIPTOR}</p>
+          <h1 className="mt-1 text-3xl font-black text-white">Crear cuenta</h1>
           <p className="mt-2 text-sm text-white/60">Primero compra tu ticket con TTHH. Luego registra tu cuenta con tu cédula y el código recibido.</p>
         </div>
 
@@ -88,6 +91,7 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
           <Button className="w-full" disabled={loading || !validation?.ok}>{loading ? 'Registrando' : 'Crear cuenta y reclamar ticket'}</Button>
         </form>
         <button onClick={() => onNavigate('#/login')} className="mt-5 w-full text-sm font-bold text-cup-blue hover:underline">Ya tengo cuenta</button>
+        <p className="mt-6 text-center text-[10px] uppercase tracking-[0.3em] text-white/30">{BRAND} · {SIGNATURE} · {COMPANY}</p>
       </Card>
     </div>
   );

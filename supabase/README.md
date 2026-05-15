@@ -24,6 +24,49 @@ Ejecutar en Supabase SQL Editor, en este orden:
 
 `sql/99_reset_dev.sql` es destructivo y solo debe usarse en desarrollo.
 
+Cada archivo es idempotente: se puede ejecutar dos veces seguidas sin errores (usa `if not exists` / `on conflict` / `create or replace`). Para reset completo: ejecutar `99_reset_dev.sql` y volver a correr `00 → 14`.
+
+## Datos clave que cargan los seeds
+
+- `13_seed_demo_worldcup.sql` crea **48 selecciones**, **12 grupos (A–L)** y los **104 partidos** del Mundial 2026 (72 de grupos + 16 R32 + 8 R16 + 4 QF + 2 SF + 1 3.º puesto + 1 Final). También crea la tabla `r32_third_place_rules` con la matriz oficial de mejores terceros para los 8 cruces R32 que la usan (partidos 74, 77, 79, 80, 81, 82, 85, 87).
+- Los partidos de eliminatorias se crean con `home_slot`/`away_slot` textuales (p. ej. `'1E'`, `'3A/B/C/D/F'`, `'Ganador Partido 73'`, `'Perdedor Partido 101'`). La RPC `resolve_actual_knockout_teams()` los resuelve a `home_team_id`/`away_team_id` automáticamente conforme se cargan los resultados oficiales.
+- Las sedes y horarios son aproximados; sustituirlos cuando la FIFA publique los oficiales.
+
+## Submit atómico de predicción
+
+La app envía la predicción completa en un único `jsonb`:
+
+```sql
+select public.submit_complete_prediction(
+  '00000000-0000-0000-0000-000000000000'::uuid,
+  jsonb_build_object(
+    'group_scores',            jsonb_build_array(),
+    'third_place_assignments', jsonb_build_array(),
+    'knockout_matches',        jsonb_build_array(),
+    'champion_team_id',        null,
+    'third_place_team_id',     null
+  )
+);
+```
+
+La función valida deadline + ownership del ticket, limpia drafts previos, inserta marcadores y asignaciones, recalcula standings predichos y materializa el bracket predicho.
+
+## Reglas de puntuación
+
+Tabla oficial implementada en `10_functions_scoring.sql`:
+
+| Concepto | Puntos |
+|---|---|
+| Marcador exacto (grupo o eliminatoria) | 3 |
+| Resultado correcto (1X2) | 1 |
+| Posición exacta de equipo en grupo (1.º/2.º/3.º) | 1 por equipo |
+| Cruce correcto por ronda (par exacto, sin orden) | 1 |
+| Selección que avanza | R32=1, R16=2, QF=3, SF=4 |
+| Bono campeón | 10 |
+| Bono 3.º puesto | 5 |
+
+Tras cargar un resultado, `recalculate_ticket_score(p_ticket_id)` regenera `score_details` y `ticket_scores`. El total que aparece en `v_ranking_public.points` es la suma de todas las categorías.
+
 ## Carga de CSV
 
 Usar Supabase Table Editor o SQL `COPY` según permisos.

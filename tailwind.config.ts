@@ -16,6 +16,13 @@ const config: Config = {
           green: '#4f9d72',
           blue: '#5b9bd5',
           red: '#d86f7a'
+        },
+        corex: {
+          coal: '#0B0B0D',
+          graphite: '#1A1B1E',
+          bone: '#F5F4F1',
+          slate: '#5C6F89',
+          mist: '#8A9099'
         }
       },
       boxShadow: {

@@ -36,7 +36,12 @@ begin
     if not exists (select 1 from pg_constraint where conname = 'ticket_scores_ticket_unique') then
         alter table public.ticket_scores add constraint ticket_scores_ticket_unique unique (ticket_id);
     end if;
+    if not exists (select 1 from pg_constraint where conname = 'prediction_third_place_assignments_unique') then
+        alter table public.prediction_third_place_assignments add constraint prediction_third_place_assignments_unique unique (prediction_id, slot_match_id);
+    end if;
 end $$;
+
+create index if not exists idx_prediction_third_place_assignments_prediction on public.prediction_third_place_assignments (prediction_id);
 
 alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles add constraint profiles_role_check check (role in ('collaborator', 'admin_tthh', 'super_admin'));

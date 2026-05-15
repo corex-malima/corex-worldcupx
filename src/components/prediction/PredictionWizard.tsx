@@ -3,6 +3,7 @@ import { Grid2X2, Network, Trophy } from 'lucide-react';
 import { DEFAULT_DEADLINE_ISO } from '../../lib/constants';
 import { isPredictionLocked } from '../../lib/tournament';
 import { usePrediction } from '../../hooks/usePrediction';
+import { useTournamentFixture } from '../../hooks/useTournamentFixture';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { GroupStageStep } from './GroupStageStep';
@@ -22,7 +23,8 @@ type Tab = typeof tabs[number]['key'];
 export function PredictionWizard({ ticketId }: { ticketId: string }) {
   const [tab, setTab] = useState<Tab>('groups');
   const [errors, setErrors] = useState<string[]>([]);
-  const prediction = usePrediction(ticketId);
+  const { fixture } = useTournamentFixture();
+  const prediction = usePrediction(ticketId, { teams: fixture.teams, matches: fixture.matches });
   const locked = isPredictionLocked(DEFAULT_DEADLINE_ISO);
 
   function buildBracket() {
@@ -46,7 +48,7 @@ export function PredictionWizard({ ticketId }: { ticketId: string }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Ticket {ticketId}</p>
-          <h1 className="text-3xl font-black text-white">Predicción mundialista</h1>
+          <h1 className="text-3xl font-black text-white">Tu predicción WorldCupX</h1>
         </div>
         <Badge tone={locked ? 'red' : prediction.draft.status === 'submitted' ? 'green' : 'gold'}>{locked ? 'Solo lectura' : prediction.draft.status === 'submitted' ? 'Enviado' : 'Editable'}</Badge>
       </div>

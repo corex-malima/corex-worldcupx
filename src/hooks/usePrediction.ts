@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { USE_MOCKS } from '../lib/constants';
+import { supabase } from '../lib/supabase';
 import type { PredictionDraft } from '../types/prediction';
-import type { ScorePrediction } from '../types/tournament';
+import type { Match, ScorePrediction, Team } from '../types/tournament';
 import { mockMatches } from '../data/mock/matches';
 import { mockTeams } from '../data/mock/teams';
 import { calculateGroupStandings, getGroupsNeedingManualTieBreaker, getQualifiedTeams, isGroupStageComplete } from '../lib/tournament';
@@ -8,6 +10,11 @@ import { calculateProgress } from '../lib/scoring';
 import { buildInitialBracket, createThirdPlaceSlots, summarizeFinalPrediction, updateBracketScore } from '../lib/bracketBuilder';
 import { sanitizeThirdPlaceAssignments, validateGroupStep, validateKnockout, validateThirdPlaceAssignments } from '../lib/predictionValidation';
 import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
+
+interface UsePredictionOptions {
+  teams?: Team[];
+  matches?: Match[];
+}
 
 function createInitialDraft(ticketId: string): PredictionDraft {
   return {
@@ -42,11 +49,13 @@ function loadDraft(ticketId: string): PredictionDraft {
   }
 }
 
-export function usePrediction(ticketId: string) {
+export function usePrediction(ticketId: string, options: UsePredictionOptions = {}) {
+  const teams = options.teams ?? mockTeams;
+  const matches = options.matches ?? mockMatches;
   const [draft, setDraft] = useState<PredictionDraft>(() => loadDraft(ticketId));
   const [saving, setSaving] = useState(false);
-  const groupMatches = useMemo(() => mockMatches.filter((match) => match.stage === 'GROUP'), []);
-  const knockoutMatches = useMemo(() => mockMatches.filter((match) => match.stage !== 'GROUP'), []);
+  const groupMatches = useMemo(() => matches.filter((match) => match.stage === 'GROUP'), [matches]);
+  const knockoutMatches = useMemo(() => matches.filter((match) => match.stage !== 'GROUP'), [matches]);
 
   useEffect(() => {
     window.localStorage.setItem(`polla_prediction_${ticketId}`, JSON.stringify(draft));
@@ -139,10 +148,55 @@ export function usePrediction(ticketId: string) {
   }
 
   async function submitPrediction(): Promise<string[]> {
-    const errors = [...validateGroupStep(groupMatches, predictions, standings), ...validateThirdPlaceAssignments(thirdPlaceSlots, qualified.bestThirds), ...validateKnockout(draft.bracketMatches)];
+    const errors = [
+      ...validateGroupStep(groupMatches, predictions, standings),
+      ...validateThirdPlaceAssignments(thirdPlaceSlots, qualified.bestThirds),
+      ...validateKnockout(draft.bracketMatches)
+    ];
     if (errors.length) return errors;
     setSaving(true);
     try {
+      if (!USE_MOCKS && supabase) {
+        // Construye payload para submit_complete_prediction.
+        const payload = {
+          group_scores: groupMatches
+            .map((match) => {
+              const score = draft.groupScores[match.id];
+              if (!score || score.homeScore === null || score.awayScore === null) return null;
+              return { match_id: match.id, home_score: score.homeScore, away_score: score.awayScore };
+            })
+            .filter((row): row is { match_id: string; home_score: number; away_score: number } => row !== null),
+          third_place_assignments: thirdPlaceSlots
+            .filter((slot) => slot.assignedTeamId)
+            .map((slot) => {
+              // Localiza el partido R32 por matchNo para mapear slot_match_id (uuid).
+              const r32 = knockoutMatches.find((match) => match.matchNo === slot.matchNo);
+              return r32 ? { slot_match_id: r32.id, team_id: slot.assignedTeamId as string } : null;
+            })
+            .filter((row): row is { slot_match_id: string; team_id: string } => row !== null),
+          knockout_matches: draft.bracketMatches
+            .filter((match) => match.homeTeamId && match.awayTeamId && match.homeScore !== null && match.awayScore !== null)
+            .map((match) => ({
+              match_id: match.id,
+              home_team_id: match.homeTeamId,
+              away_team_id: match.awayTeamId,
+              home_score: match.homeScore,
+              away_score: match.awayScore,
+              penalty_winner_team_id: match.homeScore === match.awayScore ? match.advancingTeamId : null
+            })),
+          champion_team_id: finalSummary.championTeamId,
+          third_place_team_id: finalSummary.thirdPlaceTeamId
+        };
+
+        const { error } = await supabase.rpc('submit_complete_prediction', {
+          p_ticket_id: ticketId,
+          p_payload: payload
+        });
+        if (error) {
+          setSaving(false);
+          return [error.message];
+        }
+      }
       setDraft((current) => touch({ ...current, status: 'submitted', submittedAt: new Date().toISOString() }));
     } finally {
       setSaving(false);
@@ -151,7 +205,7 @@ export function usePrediction(ticketId: string) {
   }
 
   const predictions = useMemo<ScorePrediction[]>(() => Object.values(draft.groupScores), [draft.groupScores]);
-  const standings = useMemo(() => calculateGroupStandings(mockTeams, groupMatches, predictions, { manualTieBreakers: draft.manualTieBreakers }), [draft.manualTieBreakers, groupMatches, predictions]);
+  const standings = useMemo(() => calculateGroupStandings(teams, groupMatches, predictions, { manualTieBreakers: draft.manualTieBreakers }), [draft.manualTieBreakers, groupMatches, predictions, teams]);
   const qualified = useMemo(() => getQualifiedTeams(standings), [standings]);
   const groupsNeedingManualTieBreaker = useMemo(() => isGroupStageComplete(groupMatches, predictions) ? getGroupsNeedingManualTieBreaker(standings) : [], [groupMatches, predictions, standings]);
   const thirdPlaceSlots = useMemo(
@@ -168,8 +222,8 @@ export function usePrediction(ticketId: string) {
 
   return {
     draft,
-    teams: mockTeams,
-    matches: mockMatches,
+    teams,
+    matches,
     groupMatches,
     knockoutMatches,
     predictions,

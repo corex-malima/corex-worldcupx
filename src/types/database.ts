@@ -119,6 +119,40 @@ export interface Database {
         Args: { p_code: string };
         Returns: Json;
       };
+      save_prediction_match_score: {
+        Args: {
+          p_ticket_id: string;
+          p_match_id: string;
+          p_home_score: number;
+          p_away_score: number;
+          p_penalty_winner_team_id?: string | null;
+          p_home_team_id?: string | null;
+          p_away_team_id?: string | null;
+        };
+        Returns: Json;
+      };
+      submit_prediction: {
+        Args: { p_ticket_id: string };
+        Returns: Json;
+      };
+      submit_complete_prediction: {
+        Args: { p_ticket_id: string; p_payload: Json };
+        Returns: Json;
+      };
+      save_actual_result: {
+        Args: {
+          p_match_id: string;
+          p_home_score: number;
+          p_away_score: number;
+          p_penalty_winner_team_id?: string | null;
+        };
+        Returns: Json;
+      };
+      recalculate_actual_group_standings: { Args: Record<string, never>; Returns: Json };
+      resolve_actual_knockout_teams: { Args: Record<string, never>; Returns: Json };
+      build_actual_bracket: { Args: Record<string, never>; Returns: Json };
+      recalculate_ticket_score: { Args: { p_ticket_id: string }; Returns: Json };
+      recalculate_all_scores: { Args: Record<string, never>; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

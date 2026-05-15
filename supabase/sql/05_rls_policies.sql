@@ -14,6 +14,7 @@ alter table public.prediction_headers enable row level security;
 alter table public.prediction_match_scores enable row level security;
 alter table public.predicted_group_standings enable row level security;
 alter table public.predicted_bracket_slots enable row level security;
+alter table public.prediction_third_place_assignments enable row level security;
 alter table public.actual_group_standings enable row level security;
 alter table public.actual_bracket_slots enable row level security;
 alter table public.ticket_scores enable row level security;
@@ -40,6 +41,8 @@ drop policy if exists prediction_scores_owner_write on public.prediction_match_s
 drop policy if exists prediction_scores_admin_select on public.prediction_match_scores;
 drop policy if exists standings_owner_select on public.predicted_group_standings;
 drop policy if exists bracket_owner_select on public.predicted_bracket_slots;
+drop policy if exists third_place_owner_all on public.prediction_third_place_assignments;
+drop policy if exists third_place_admin_select on public.prediction_third_place_assignments;
 drop policy if exists actual_authenticated_select on public.actual_group_standings;
 drop policy if exists actual_bracket_authenticated_select on public.actual_bracket_slots;
 drop policy if exists scores_owner_select on public.ticket_scores;
@@ -102,6 +105,15 @@ create policy standings_owner_select on public.predicted_group_standings for sel
 create policy bracket_owner_select on public.predicted_bracket_slots for select using (
     exists (select 1 from public.prediction_headers h where h.id = prediction_id and h.user_id = auth.uid())
     or exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.role in ('admin_tthh', 'super_admin'))
+);
+
+create policy third_place_owner_all on public.prediction_third_place_assignments for all using (
+    exists (select 1 from public.prediction_headers h where h.id = prediction_id and h.user_id = auth.uid())
+) with check (
+    exists (select 1 from public.prediction_headers h where h.id = prediction_id and h.user_id = auth.uid())
+);
+create policy third_place_admin_select on public.prediction_third_place_assignments for select using (
+    exists (select 1 from public.profiles p where p.user_id = auth.uid() and p.role in ('admin_tthh', 'super_admin'))
 );
 
 create policy actual_authenticated_select on public.actual_group_standings for select using (auth.uid() is not null);
