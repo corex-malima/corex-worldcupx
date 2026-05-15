@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Grid2X2, Network, Trophy } from 'lucide-react';
+import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Trophy } from 'lucide-react';
 import { DEFAULT_DEADLINE_ISO } from '../../lib/constants';
 import { isPredictionLocked } from '../../lib/tournament';
 import { usePrediction } from '../../hooks/usePrediction';
@@ -20,11 +20,11 @@ const tabs = [
 
 type Tab = typeof tabs[number]['key'];
 
-export function PredictionWizard({ ticketId }: { ticketId: string }) {
+export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: string; adminMode?: boolean }) {
   const [tab, setTab] = useState<Tab>('groups');
   const [errors, setErrors] = useState<string[]>([]);
   const { fixture } = useTournamentFixture();
-  const prediction = usePrediction(ticketId, { teams: fixture.teams, matches: fixture.matches });
+  const prediction = usePrediction(ticketId, { teams: fixture.teams, matches: fixture.matches, adminMode });
   const locked = isPredictionLocked(DEFAULT_DEADLINE_ISO);
 
   function buildBracket() {
@@ -43,14 +43,25 @@ export function PredictionWizard({ ticketId }: { ticketId: string }) {
     setErrors(nextErrors);
   }
 
+  function SaveStatusBadge() {
+    if (prediction.hydrating) return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/55"><Loader2 size={13} className="animate-spin" /> Cargando…</span>;
+    if (prediction.autoSaveStatus === 'saving') return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/65"><Loader2 size={13} className="animate-spin" /> Guardando</span>;
+    if (prediction.autoSaveStatus === 'saved') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-green"><CheckCircle2 size={13} /> Guardado</span>;
+    if (prediction.autoSaveStatus === 'error') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-red" title={prediction.autoSaveError ?? undefined}><CloudOff size={13} /> Error al guardar</span>;
+    return null;
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Ticket {ticketId}</p>
-          <h1 className="text-3xl font-black text-white">Tu predicción WorldCupX</h1>
+          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? 'Modo TTHH · editando ticket' : `Ticket ${ticketId.slice(0, 8)}`}</p>
+          <h1 className="text-3xl font-black text-white">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
         </div>
-        <Badge tone={locked ? 'red' : prediction.draft.status === 'submitted' ? 'green' : 'gold'}>{locked ? 'Solo lectura' : prediction.draft.status === 'submitted' ? 'Enviado' : 'Editable'}</Badge>
+        <div className="flex items-center gap-3">
+          <SaveStatusBadge />
+          <Badge tone={locked ? 'red' : prediction.draft.status === 'submitted' ? 'green' : 'gold'}>{locked ? 'Solo lectura' : prediction.draft.status === 'submitted' ? 'Enviado' : 'Editable'}</Badge>
+        </div>
       </div>
 
       <PredictionLockBanner locked={locked} submitted={prediction.draft.status === 'submitted'} />

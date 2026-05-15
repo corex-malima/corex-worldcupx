@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { mockRanking } from '../data/mock/ranking';
 import { AdminGroupResultsPanel } from '../components/admin/AdminGroupResultsPanel';
 import { AdminGroupStandingsPanel } from '../components/admin/AdminGroupStandingsPanel';
@@ -28,7 +28,27 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
   const [tab, setTab] = useState<Tab>('groups');
   const [results, setResults] = useState<Record<string, ScorePrediction>>({});
   const [thirdSlots, setThirdSlots] = useState(() => createThirdPlaceSlots(allMatches));
-  const [bracket, setBracket] = useState(() => buildInitialBracket(allMatches, [], thirdSlots));
+  const [bracket, setBracket] = useState(() => buildInitialBracket(allMatches, [], thirdSlots, { loadOfficial: true }));
+
+  // Re-derivar bracket cuando el fixture cambia (después de save_actual_result + reload).
+  // Así los equipos resueltos por resolve_actual_knockout_teams llegan a la UI y los
+  // marcadores oficiales se restauran tras un refresh de página.
+  useEffect(() => {
+    setBracket(buildInitialBracket(allMatches, [], thirdSlots, { loadOfficial: true }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allMatches]);
+
+  // Sync initial group results from fixture for any matches already marked 'official'.
+  useEffect(() => {
+    const officialGroupResults: Record<string, ScorePrediction> = {};
+    allMatches.forEach((match) => {
+      if (match.stage === 'GROUP' && match.status === 'official' && match.homeScore !== null && match.awayScore !== null) {
+        officialGroupResults[match.id] = { matchId: match.id, homeScore: match.homeScore ?? null, awayScore: match.awayScore ?? null };
+      }
+    });
+    setResults((current) => ({ ...officialGroupResults, ...current }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allMatches]);
   const [fairPlayPoints, setFairPlayPoints] = useState<Record<string, number>>({});
   const [manualTieBreakers, setManualTieBreakers] = useState<Record<string, string[]>>({});
   const [rankingStatus, setRankingStatus] = useState<'pending' | 'calculating' | 'calculated' | 'error'>('pending');
@@ -49,7 +69,12 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         p_away_score: awayScore,
         p_penalty_winner_team_id: null
       });
-      if (error) setRankingStatus('error');
+      if (error) {
+        setRankingStatus('error');
+      } else {
+        // Recarga el fixture: Supabase ya resolvió standings + knockout teams para R32.
+        await reloadFixture();
+      }
     }
   }
 
@@ -91,7 +116,11 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         p_away_score: awayScore,
         p_penalty_winner_team_id: penaltyWinner
       });
-      if (error) setRankingStatus('error');
+      if (error) {
+        setRankingStatus('error');
+      } else {
+        await reloadFixture();
+      }
     }
   }
 

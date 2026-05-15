@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { USE_MOCKS } from '../lib/constants';
 import { supabase } from '../lib/supabase';
-import type { PredictionDraft } from '../types/prediction';
+import type { PredictionDraft, ThirdPlaceSlot } from '../types/prediction';
 import type { Match, ScorePrediction, Team } from '../types/tournament';
 import { mockMatches } from '../data/mock/matches';
 import { mockTeams } from '../data/mock/teams';
@@ -10,10 +10,14 @@ import { calculateProgress } from '../lib/scoring';
 import { buildInitialBracket, createThirdPlaceSlots, summarizeFinalPrediction, updateBracketScore } from '../lib/bracketBuilder';
 import { sanitizeThirdPlaceAssignments, validateGroupStep, validateKnockout, validateThirdPlaceAssignments } from '../lib/predictionValidation';
 import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
+import { useTicketPrediction } from './useTicketPrediction';
+import { usePredictionAutoSave } from './usePredictionAutoSave';
 
 interface UsePredictionOptions {
   teams?: Team[];
   matches?: Match[];
+  /** Si true, el wizard es controlado por TTHH (admin/super_admin) editando una predicción ajena. */
+  adminMode?: boolean;
 }
 
 function createInitialDraft(ticketId: string): PredictionDraft {
@@ -52,14 +56,95 @@ function loadDraft(ticketId: string): PredictionDraft {
 export function usePrediction(ticketId: string, options: UsePredictionOptions = {}) {
   const teams = options.teams ?? mockTeams;
   const matches = options.matches ?? mockMatches;
+  const adminMode = options.adminMode === true;
   const [draft, setDraft] = useState<PredictionDraft>(() => loadDraft(ticketId));
+  const [hydrated, setHydrated] = useState<boolean>(USE_MOCKS); // mock no necesita hidratación
   const [saving, setSaving] = useState(false);
   const groupMatches = useMemo(() => matches.filter((match) => match.stage === 'GROUP'), [matches]);
   const knockoutMatches = useMemo(() => matches.filter((match) => match.stage !== 'GROUP'), [matches]);
 
+  const autoSave = usePredictionAutoSave(ticketId);
+  const remote = useTicketPrediction(!USE_MOCKS && supabase ? ticketId : null);
+
+  // Persiste localStorage como cache rápido (solo modo usuario; admin no necesita).
   useEffect(() => {
+    if (adminMode) return;
     window.localStorage.setItem(`polla_prediction_${ticketId}`, JSON.stringify(draft));
-  }, [draft, ticketId]);
+  }, [adminMode, draft, ticketId]);
+
+  // Hidratación inicial desde Supabase (tanto user como admin).
+  // Sobrescribe el estado local si Supabase tiene datos para ese ticket.
+  useEffect(() => {
+    if (USE_MOCKS || !supabase) return;
+    if (remote.loading || hydrated) return;
+    const r = remote.data;
+    if (!r || r.ticketId !== ticketId) return;
+
+    const hasRemoteData =
+      r.groupScores.length > 0 ||
+      r.knockoutScores.length > 0 ||
+      r.thirdPlaceAssignments.length > 0;
+    if (!hasRemoteData) {
+      // Sin datos remotos: en modo admin partimos vacío; en modo user mantenemos el draft
+      // local (que pudo venir de localStorage).
+      if (adminMode) {
+        setDraft(createInitialDraft(ticketId));
+      }
+      setHydrated(true);
+      return;
+    }
+
+    // Hidratar groupScores
+    const groupScoresMap: Record<string, { matchId: string; homeScore: number | null; awayScore: number | null }> = {};
+    r.groupScores.forEach((s) => {
+      groupScoresMap[s.match_id] = {
+        matchId: s.match_id,
+        homeScore: s.home_score,
+        awayScore: s.away_score
+      };
+    });
+
+    // Hidratar thirdPlaceAssignments mapeando slot_match_id → ThirdPlaceSlot
+    const slots = createThirdPlaceSlots(knockoutMatches);
+    const slotsByMatchId = new Map<string, ThirdPlaceSlot>();
+    slots.forEach((slot) => {
+      const match = knockoutMatches.find((m) => m.matchNo === slot.matchNo);
+      if (match) slotsByMatchId.set(match.id, slot);
+    });
+    const hydratedSlots = slots.map((slot) => {
+      const match = knockoutMatches.find((m) => m.matchNo === slot.matchNo);
+      if (!match) return slot;
+      const assignment = r.thirdPlaceAssignments.find((a) => a.slot_match_id === match.id);
+      return assignment ? { ...slot, assignedTeamId: assignment.team_id } : slot;
+    });
+
+    // Hidratar bracket: para cada knockout match, si hay row en r.knockoutScores, aplicar
+    const initialBracket = buildInitialBracket(knockoutMatches, [], hydratedSlots);
+    const bracketWithScores = initialBracket.map((m) => {
+      const score = r.knockoutScores.find((s) => s.match_id === m.id);
+      if (!score) return m;
+      return {
+        ...m,
+        homeTeamId: score.home_team_id ?? m.homeTeamId,
+        awayTeamId: score.away_team_id ?? m.awayTeamId,
+        homeScore: score.home_score ?? null,
+        awayScore: score.away_score ?? null,
+        advancingTeamId: score.winner_team_id ?? null
+      };
+    });
+
+    setDraft({
+      ticketId,
+      groupScores: groupScoresMap,
+      manualTieBreakers: {},
+      thirdPlaceAssignments: hydratedSlots,
+      bracketMatches: bracketWithScores,
+      status: r.status === 'submitted' ? 'submitted' : r.status === 'locked' ? 'locked' : 'ready_for_knockout',
+      updatedAt: new Date().toISOString(),
+      submittedAt: r.status === 'submitted' ? new Date().toISOString() : null
+    });
+    setHydrated(true);
+  }, [adminMode, hydrated, knockoutMatches, remote.data, remote.loading, ticketId]);
 
   function touch(next: PredictionDraft): PredictionDraft {
     return { ...next, updatedAt: new Date().toISOString() };
@@ -76,6 +161,7 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
       bracketMatches: [],
       status: current.status === 'submitted' ? 'draft' : current.status
     }));
+    autoSave.saveGroupScore({ matchId, homeScore, awayScore });
   }
 
   function setManualTieBreaker(groupCode: string, orderedTeamIds: string[]) {
@@ -97,6 +183,11 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
         current.thirdPlaceAssignments.length ? current.thirdPlaceAssignments : createThirdPlaceSlots(knockoutMatches),
         qualified.bestThirds
       );
+      const targetSlot = sourceSlots.find((s) => s.slotId === slotId);
+      const match = targetSlot ? knockoutMatches.find((m) => m.matchNo === targetSlot.matchNo) : null;
+      if (match) {
+        autoSave.saveThirdAssignment({ slotMatchId: match.id, teamId });
+      }
       return touch({
         ...current,
         thirdPlaceAssignments: sourceSlots.map((slot) => slot.slotId === slotId ? { ...slot, assignedTeamId: teamId } : slot),
@@ -130,6 +221,11 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
     );
     const assignment = findValidThirdPlaceAssignment(sourceSlots, qualified.bestThirds);
     if (!assignment) return ['No existe una combinacion valida con estos terceros. Ajusta desempates o asignaciones manuales.'];
+    // Auto-save: persistir todas las asignaciones nuevas
+    assignment.forEach((slot) => {
+      const match = knockoutMatches.find((m) => m.matchNo === slot.matchNo);
+      if (match) autoSave.saveThirdAssignment({ slotMatchId: match.id, teamId: slot.assignedTeamId });
+    });
     setDraft((current) => touch({
       ...current,
       thirdPlaceAssignments: assignment,
@@ -140,11 +236,25 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
   }
 
   function setKnockoutScore(matchId: string, homeScore: number | null, awayScore: number | null, advancingTeamId?: string | null) {
-    setDraft((current) => touch({
-      ...current,
-      bracketMatches: updateBracketScore(current.bracketMatches, matchId, homeScore, awayScore, advancingTeamId),
-      status: current.status === 'submitted' ? 'ready_for_knockout' : current.status
-    }));
+    setDraft((current) => {
+      const nextBracket = updateBracketScore(current.bracketMatches, matchId, homeScore, awayScore, advancingTeamId);
+      const updatedMatch = nextBracket.find((m) => m.id === matchId);
+      if (updatedMatch) {
+        autoSave.saveKnockoutScore({
+          matchId,
+          homeScore,
+          awayScore,
+          homeTeamId: updatedMatch.homeTeamId,
+          awayTeamId: updatedMatch.awayTeamId,
+          advancingTeamId: updatedMatch.advancingTeamId
+        });
+      }
+      return touch({
+        ...current,
+        bracketMatches: nextBracket,
+        status: current.status === 'submitted' ? 'ready_for_knockout' : current.status
+      });
+    });
   }
 
   async function submitPrediction(): Promise<string[]> {
@@ -157,7 +267,6 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
     setSaving(true);
     try {
       if (!USE_MOCKS && supabase) {
-        // Construye payload para submit_complete_prediction.
         const payload = {
           group_scores: groupMatches
             .map((match) => {
@@ -169,7 +278,6 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
           third_place_assignments: thirdPlaceSlots
             .filter((slot) => slot.assignedTeamId)
             .map((slot) => {
-              // Localiza el partido R32 por matchNo para mapear slot_match_id (uuid).
               const r32 = knockoutMatches.find((match) => match.matchNo === slot.matchNo);
               return r32 ? { slot_match_id: r32.id, team_id: slot.assignedTeamId as string } : null;
             })
@@ -240,6 +348,13 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
     thirdPlaceSlots,
     finalSummary,
     progress,
-    saving
+    saving,
+    /** Estado del auto-save remoto: idle | saving | saved | error */
+    autoSaveStatus: autoSave.status,
+    /** Mensaje del último error de auto-save si lo hubo */
+    autoSaveError: autoSave.lastError,
+    /** ¿La hidratación inicial desde Supabase ya terminó? */
+    hydrating: !hydrated && !USE_MOCKS && supabase !== null,
+    adminMode
   };
 }

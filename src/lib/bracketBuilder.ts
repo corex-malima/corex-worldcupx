@@ -101,27 +101,50 @@ export function createThirdPlaceSlots(knockoutMatches: Match[]): ThirdPlaceSlot[
     });
 }
 
-export function buildInitialBracket(knockoutMatches: Match[], standings: StandingRow[], thirdSlots: ThirdPlaceSlot[]): PredictedBracketMatch[] {
+/**
+ * Construye el bracket inicial a partir del fixture.
+ *
+ * - Para R32 intenta resolver los equipos con (standings + thirdSlots) y, si el match ya tiene
+ *   home_team_id/away_team_id (porque save_actual_result en Supabase ya disparó
+ *   resolve_actual_knockout_teams), prioriza esos.
+ * - Para R16+ no resuelve por slots; usa home_team_id/away_team_id si están y deja que
+ *   propagateBracket llene desde la ronda previa cuando estén nulos.
+ * - Si loadOfficial=true, además precarga los marcadores y advancingTeamId del fixture
+ *   (lo que ya está en `matches` con status='official'), para que la pantalla de admin
+ *   muestre los resultados oficiales tras un refresh.
+ */
+export function buildInitialBracket(
+  knockoutMatches: Match[],
+  standings: StandingRow[],
+  thirdSlots: ThirdPlaceSlot[],
+  options: { loadOfficial?: boolean } = {}
+): PredictedBracketMatch[] {
+  const loadOfficial = options.loadOfficial === true;
   return knockoutMatches
     .filter((match) => match.stage !== 'GROUP')
     .sort((a, b) => a.matchNo - b.matchNo)
-    .map((match) => ({
-      id: match.id,
-      matchNo: match.matchNo,
-      roundCode: match.stage as RoundCode,
-      matchOrder: match.matchNo,
-      homeTeamId: match.stage === 'R32' ? rankSlotTeamId(match.homeSlot, standings, thirdSlots) : null,
-      awayTeamId: match.stage === 'R32' ? rankSlotTeamId(match.awaySlot, standings, thirdSlots) : null,
-      homeSlot: match.homeSlot ?? null,
-      awaySlot: match.awaySlot ?? null,
-      sourceSlotHome: match.homeSlot ?? null,
-      sourceSlotAway: match.awaySlot ?? null,
-      homeScore: null,
-      awayScore: null,
-      advancingTeamId: null,
-      venue: match.venue,
-      matchDatetime: match.matchDatetime
-    }));
+    .map((match) => {
+      const resolvedHome = match.stage === 'R32' ? rankSlotTeamId(match.homeSlot, standings, thirdSlots) : null;
+      const resolvedAway = match.stage === 'R32' ? rankSlotTeamId(match.awaySlot, standings, thirdSlots) : null;
+      const isOfficial = loadOfficial && match.status === 'official';
+      return {
+        id: match.id,
+        matchNo: match.matchNo,
+        roundCode: match.stage as RoundCode,
+        matchOrder: match.matchNo,
+        homeTeamId: match.homeTeamId ?? resolvedHome,
+        awayTeamId: match.awayTeamId ?? resolvedAway,
+        homeSlot: match.homeSlot ?? null,
+        awaySlot: match.awaySlot ?? null,
+        sourceSlotHome: match.homeSlot ?? null,
+        sourceSlotAway: match.awaySlot ?? null,
+        homeScore: isOfficial ? (match.homeScore ?? null) : null,
+        awayScore: isOfficial ? (match.awayScore ?? null) : null,
+        advancingTeamId: isOfficial ? (match.winnerTeamId ?? null) : null,
+        venue: match.venue,
+        matchDatetime: match.matchDatetime
+      };
+    });
 }
 
 export function updateBracketScore(matches: PredictedBracketMatch[], matchId: string, homeScore: number | null, awayScore: number | null, advancingTeamId?: string | null): PredictedBracketMatch[] {

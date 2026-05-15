@@ -27,7 +27,7 @@ export function AdminTicketsPage({ onNavigate }: { onNavigate: (to: string) => v
           <ExportCsvButton filename="tickets.csv" rows={csvRows} />
         </div>
         <div className="overflow-x-auto scrollbar-thin">
-          <TicketAdminTable rows={rows} loading={loading} error={error} onCancel={cancelTicket} />
+          <TicketAdminTable rows={rows} loading={loading} error={error} onCancel={cancelTicket} onEdit={(id) => onNavigate(`#/admin/tickets/${id}/edit`)} />
         </div>
       </div>
     </div>

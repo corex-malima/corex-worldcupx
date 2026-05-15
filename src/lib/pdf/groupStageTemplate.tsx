@@ -59,9 +59,10 @@ const GROUP_CODES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 interface Props {
   teams: Team[];
   matches: Match[];
+  ticket?: { code: string | null; ownerName: string | null; alias?: string | null } | null;
 }
 
-export function GroupStageTemplateDocument({ teams, matches }: Props) {
+export function GroupStageTemplateDocument({ teams, matches, ticket }: Props) {
   const teamById = new Map(teams.map((t) => [t.id, t]));
   const groupMatches = matches
     .filter((m) => m.stage === 'GROUP' && m.groupCode)
@@ -90,16 +91,16 @@ export function GroupStageTemplateDocument({ teams, matches }: Props) {
 
         <View style={styles.metaRow}>
           <View style={styles.metaCell}>
-            <Text style={styles.metaLabel}>NOMBRE DEL COLABORADOR</Text>
-            <Text style={styles.metaValue}> </Text>
+            <Text style={styles.metaLabel}>COLABORADOR</Text>
+            <Text style={styles.metaValue}>{ticket?.ownerName ?? ' '}</Text>
           </View>
           <View style={styles.metaCell}>
-            <Text style={styles.metaLabel}>CÉDULA</Text>
-            <Text style={styles.metaValue}> </Text>
+            <Text style={styles.metaLabel}>TICKET</Text>
+            <Text style={styles.metaValue}>{ticket?.alias ?? ticket?.code ?? ' '}</Text>
           </View>
           <View style={{ ...styles.metaCell, marginRight: 0 }}>
-            <Text style={styles.metaLabel}>ÁREA</Text>
-            <Text style={styles.metaValue}> </Text>
+            <Text style={styles.metaLabel}>FECHA</Text>
+            <Text style={styles.metaValue}>{new Date().toLocaleDateString('es-EC')}</Text>
           </View>
         </View>
 

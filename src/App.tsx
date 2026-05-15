@@ -56,6 +56,13 @@ export default function App() {
       return <ProtectedRoute user={auth.user} onLogin={() => navigate('#/login')}><TicketPredictionPage ticketId={ticketId} /></ProtectedRoute>;
     }
 
+    // Admin edita la predicción de un ticket ajeno (TTHH transcribe del PDF llenado a mano).
+    const adminEditMatch = route.match(/^#\/admin\/tickets\/([^/]+)\/edit$/);
+    if (adminEditMatch) {
+      const ticketId = adminEditMatch[1];
+      return <AdminRoute user={auth.user}><TicketPredictionPage ticketId={ticketId} adminMode /></AdminRoute>;
+    }
+
     if (route === '#/admin') return <AdminRoute user={auth.user}><AdminHomePage onNavigate={navigate} /></AdminRoute>;
     if (route === '#/admin/sales') return <AdminRoute user={auth.user}><AdminSalesPage onNavigate={navigate} /></AdminRoute>;
     if (route === '#/admin/tickets') return <AdminRoute user={auth.user}><AdminTicketsPage onNavigate={navigate} /></AdminRoute>;

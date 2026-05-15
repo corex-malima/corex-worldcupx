@@ -1,5 +1,6 @@
 import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
-import type { Match } from '../../types/tournament';
+import type { Match, ScorePrediction, Team } from '../../types/tournament';
+import { calculateGroupStandings, getQualifiedTeams } from '../../lib/standings';
 
 const palette = {
   ink: '#0B0B0D',
@@ -21,6 +22,7 @@ const styles = StyleSheet.create({
   metaCell: { flex: 1, borderWidth: 1, borderColor: palette.line, borderRadius: 4, padding: 6, marginRight: 8 },
   metaLabel: { fontSize: 7, color: palette.mist, letterSpacing: 1 },
   metaValue: { fontSize: 10, marginTop: 12 },
+  ticketBadge: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: palette.ink, marginTop: 4 },
   roundTitle: { fontSize: 11, fontFamily: 'Helvetica-Bold', backgroundColor: palette.faint, paddingVertical: 4, paddingHorizontal: 6, marginTop: 10, marginBottom: 2 },
   matchesGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   matchCard: { width: '50%', paddingRight: 6, paddingBottom: 6 },
@@ -30,6 +32,7 @@ const styles = StyleSheet.create({
   matchVenue: { fontSize: 6, color: palette.mist },
   slotRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 2 },
   slotLabel: { fontSize: 8, flex: 1 },
+  slotHint: { fontSize: 6, color: palette.mist, marginLeft: 4 },
   scoreBox: { width: 18, height: 18, borderWidth: 1, borderColor: palette.ink, borderRadius: 3 },
   vsLine: { borderBottomWidth: 1, borderColor: palette.line, marginVertical: 2 },
   winnerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
@@ -45,6 +48,10 @@ const styles = StyleSheet.create({
 
 interface Props {
   matches: Match[];
+  teams?: Team[];
+  ticket?: { code: string | null; ownerName: string | null; alias?: string | null } | null;
+  /** Predicciones de fase de grupos del ticket. Si se pasan + teams, los slots R32 muestran los teams predichos. */
+  groupScores?: ScorePrediction[];
 }
 
 function formatVenue(venue?: string | null): string {
@@ -52,8 +59,39 @@ function formatVenue(venue?: string | null): string {
   return venue.replace(/^Estadio\s+/i, '');
 }
 
-export function KnockoutTemplateDocument({ matches }: Props) {
+/**
+ * Si tenemos teams + groupScores, computamos standings predichos y resolvemos los
+ * slots literales del fixture (1A, 2B, 3A/B/C/D/F) a equipos reales según las
+ * predicciones del ticket.
+ */
+function resolveSlotLabel(slot: string | null | undefined, teamsById: Map<string, Team>, standingsByGroupPosition: Map<string, string>, bestThirdGroups: string[]): string {
+  if (!slot) return '—';
+  const trimmed = slot.trim();
+  // Compacto: '1A', '2B', '3C'
+  const compact = trimmed.match(/^([123])([A-L])$/);
+  if (compact) {
+    const teamId = standingsByGroupPosition.get(`${compact[1]}-${compact[2]}`);
+    if (!teamId) return trimmed;
+    const team = teamsById.get(teamId);
+    return team ? `${team.name} (${compact[1]}.º ${compact[2]})` : trimmed;
+  }
+  // Tercero: '3A/B/C/D/F'
+  if (/^3[A-L/]+$/.test(trimmed)) {
+    const allowed = trimmed.slice(1).split('/');
+    // Tomamos el primer grupo permitido que esté entre los mejores 8 terceros.
+    const matchedGroup = allowed.find((g) => bestThirdGroups.includes(g));
+    if (!matchedGroup) return `${trimmed} (mejor tercero)`;
+    const teamId = standingsByGroupPosition.get(`3-${matchedGroup}`);
+    if (!teamId) return `${trimmed} (mejor tercero)`;
+    const team = teamsById.get(teamId);
+    return team ? `${team.name} (3.º ${matchedGroup})` : trimmed;
+  }
+  return trimmed;
+}
+
+export function KnockoutTemplateDocument({ matches, teams, ticket, groupScores }: Props) {
   const knockout = matches.filter((m) => m.stage !== 'GROUP').sort((a, b) => a.matchNo - b.matchNo);
+  const groupMatches = matches.filter((m) => m.stage === 'GROUP');
   const r32 = knockout.filter((m) => m.stage === 'R32');
   const r16 = knockout.filter((m) => m.stage === 'R16');
   const qf = knockout.filter((m) => m.stage === 'QF');
@@ -61,29 +99,58 @@ export function KnockoutTemplateDocument({ matches }: Props) {
   const third = knockout.find((m) => m.stage === 'THIRD_PLACE');
   const final = knockout.find((m) => m.stage === 'FINAL');
 
-  const renderMatchCard = (m: Match) => (
-    <View key={m.id} style={styles.matchCard}>
-      <View style={styles.matchInner}>
-        <View style={styles.matchHeader}>
-          <Text style={styles.matchNo}>Partido #{m.matchNo}</Text>
-          <Text style={styles.matchVenue}>{formatVenue(m.venue)}</Text>
-        </View>
-        <View style={styles.slotRow}>
-          <Text style={styles.slotLabel}>{m.homeSlot ?? '—'}</Text>
-          <View style={styles.scoreBox} />
-        </View>
-        <View style={styles.vsLine} />
-        <View style={styles.slotRow}>
-          <Text style={styles.slotLabel}>{m.awaySlot ?? '—'}</Text>
-          <View style={styles.scoreBox} />
-        </View>
-        <View style={styles.winnerRow}>
-          <Text style={styles.winnerLabel}>Ganador:</Text>
-          <View style={styles.winnerLine} />
+  const teamsById = new Map<string, Team>((teams ?? []).map((t) => [t.id, t]));
+
+  // Compute standings desde groupScores (si están disponibles).
+  let standingsByGroupPosition = new Map<string, string>();
+  let bestThirdGroups: string[] = [];
+  let isResolved = false;
+  if (teams && groupScores && groupScores.length > 0) {
+    try {
+      const standings = calculateGroupStandings(teams, groupMatches, groupScores);
+      const qualified = getQualifiedTeams(standings);
+      standings.forEach((row) => {
+        standingsByGroupPosition.set(`${row.position}-${row.groupCode}`, row.teamId);
+      });
+      bestThirdGroups = qualified.bestThirds.map((row) => row.groupCode);
+      isResolved = standings.length > 0;
+    } catch {
+      // si el calculo falla, caemos al fallback (slots literales)
+      isResolved = false;
+    }
+  }
+
+  const renderMatchCard = (m: Match) => {
+    const homeLabel = isResolved
+      ? resolveSlotLabel(m.homeSlot, teamsById, standingsByGroupPosition, bestThirdGroups)
+      : (m.homeSlot ?? '—');
+    const awayLabel = isResolved
+      ? resolveSlotLabel(m.awaySlot, teamsById, standingsByGroupPosition, bestThirdGroups)
+      : (m.awaySlot ?? '—');
+    return (
+      <View key={m.id} style={styles.matchCard}>
+        <View style={styles.matchInner}>
+          <View style={styles.matchHeader}>
+            <Text style={styles.matchNo}>Partido #{m.matchNo}</Text>
+            <Text style={styles.matchVenue}>{formatVenue(m.venue)}</Text>
+          </View>
+          <View style={styles.slotRow}>
+            <Text style={styles.slotLabel}>{homeLabel}</Text>
+            <View style={styles.scoreBox} />
+          </View>
+          <View style={styles.vsLine} />
+          <View style={styles.slotRow}>
+            <Text style={styles.slotLabel}>{awayLabel}</Text>
+            <View style={styles.scoreBox} />
+          </View>
+          <View style={styles.winnerRow}>
+            <Text style={styles.winnerLabel}>Ganador:</Text>
+            <View style={styles.winnerLine} />
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <Document>
@@ -100,16 +167,16 @@ export function KnockoutTemplateDocument({ matches }: Props) {
 
         <View style={styles.metaRow}>
           <View style={styles.metaCell}>
-            <Text style={styles.metaLabel}>NOMBRE DEL COLABORADOR</Text>
-            <Text style={styles.metaValue}> </Text>
+            <Text style={styles.metaLabel}>COLABORADOR</Text>
+            <Text style={styles.metaValue}>{ticket?.ownerName ?? ' '}</Text>
           </View>
           <View style={styles.metaCell}>
-            <Text style={styles.metaLabel}>CÉDULA</Text>
-            <Text style={styles.metaValue}> </Text>
+            <Text style={styles.metaLabel}>TICKET</Text>
+            <Text style={styles.metaValue}>{ticket?.alias ?? ticket?.code ?? ' '}</Text>
           </View>
           <View style={{ ...styles.metaCell, marginRight: 0 }}>
-            <Text style={styles.metaLabel}>ÁREA</Text>
-            <Text style={styles.metaValue}> </Text>
+            <Text style={styles.metaLabel}>FASE DE GRUPOS</Text>
+            <Text style={styles.ticketBadge}>{isResolved ? 'Resuelta · slots con equipos del ticket' : 'Sin datos · usa slots del fixture'}</Text>
           </View>
         </View>
 

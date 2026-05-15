@@ -143,6 +143,22 @@ export interface Database {
         Args: { p_ticket_id: string; p_payload: Json };
         Returns: Json;
       };
+      delete_prediction_match_score: {
+        Args: { p_ticket_id: string; p_match_id: string };
+        Returns: Json;
+      };
+      save_prediction_third_place_assignment: {
+        Args: { p_ticket_id: string; p_slot_match_id: string; p_team_id: string };
+        Returns: Json;
+      };
+      clear_prediction_third_place_assignment: {
+        Args: { p_ticket_id: string; p_slot_match_id: string };
+        Returns: Json;
+      };
+      can_edit_prediction: {
+        Args: { p_ticket_id: string };
+        Returns: boolean;
+      };
       save_actual_result: {
         Args: {
           p_match_id: string;
