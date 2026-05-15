@@ -5,26 +5,38 @@ interface Props {
   title?: string;
 }
 
+// PNG oficial provisto por el usuario, copiado a public/brand/worldcupx-icon.png.
+const ICON_URL = `${import.meta.env.BASE_URL}brand/worldcupx-icon.png`;
+
 export function WorldCupXMark({ size = 40, className, withBackground = true, title = 'WorldCupX' }: Props) {
+  const padding = withBackground ? Math.max(4, Math.round(size * 0.12)) : 0;
+  const innerSize = size - padding * 2;
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 64 64"
-      width={size}
-      height={size}
+    <span
       role="img"
       aria-label={title}
+      title={title}
       className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: size,
+        height: size,
+        borderRadius: Math.round(size * 0.22),
+        background: withBackground ? '#0B0B0D' : 'transparent',
+        padding,
+        flexShrink: 0
+      }}
     >
-      <title>{title}</title>
-      {withBackground && <rect width="64" height="64" rx="14" fill="#0B0B0D" />}
-      <path d="M52 32a20 20 0 1 1-9.6-17.1" fill="none" stroke="#F5F4F1" strokeWidth="3" strokeLinecap="round" />
-      <path d="M19 32a13 13 0 0 1 22.5-8.8" fill="none" stroke="#8A9099" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M45 32a13 13 0 0 1-22.5 8.8" fill="none" stroke="#8A9099" strokeWidth="2.4" strokeLinecap="round" />
-      <circle cx="32" cy="32" r="5.6" fill="#F5F4F1" />
-      <path d="M32 28.6l3.3 2.4-1.3 3.8h-4l-1.3-3.8z" fill="#0B0B0D" />
-      <circle cx="49.4" cy="20" r="2.2" fill="#5C6F89" />
-    </svg>
+      <img
+        src={ICON_URL}
+        alt=""
+        width={innerSize}
+        height={innerSize}
+        style={{ display: 'block', objectFit: 'contain', width: innerSize, height: innerSize }}
+      />
+    </span>
   );
 }
 
@@ -40,10 +52,16 @@ export function CoreXSymbol({ size = 24, className, title = 'CoreX' }: { size?: 
       className={className}
     >
       <title>{title}</title>
-      <path d="M52 32a20 20 0 1 1-9.6-17.1" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-      <path d="M19 32a13 13 0 0 1 22.5-8.8" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M45 32a13 13 0 0 1-22.5 8.8" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="2.4" strokeLinecap="round" />
-      <circle cx="32" cy="32" r="3.8" fill="currentColor" />
+      {/* Anillo exterior "C" — gap superior-derecho */}
+      <path d="M 47 16 A 20 20 0 1 0 47 48" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      {/* Anillo interior */}
+      <path d="M 42 22 A 12 12 0 1 0 42 42" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="2.4" strokeLinecap="round" />
+      {/* Núcleo */}
+      <circle cx="32" cy="32" r="3.4" fill="currentColor" />
+      {/* Satélite blanco superior */}
+      <circle cx="24" cy="24" r="2" fill="currentColor" />
+      {/* Satélite slate */}
+      <circle cx="48" cy="44" r="2.4" fill="currentColor" opacity="0.55" />
     </svg>
   );
 }

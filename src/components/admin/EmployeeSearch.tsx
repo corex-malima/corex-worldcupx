@@ -67,9 +67,11 @@ export function EmployeeSearch({ onSelect }: { onSelect: (employee: EmployeeSear
           label="Buscar por cedula, codigo o nombre"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Ej. 0107428849, 1000, David Rivera"
+          placeholder="Ej. 0107428849 · 1000 · erick david · rivera erick · andrade r"
           icon={<Search size={17} />}
-          helper={loading ? 'Cargando colaboradores desde Supabase...' : `${profiles.length.toLocaleString('es-EC')} colaboradores disponibles en memoria.`}
+          helper={loading
+            ? 'Cargando colaboradores desde Supabase...'
+            : `${profiles.length.toLocaleString('es-EC')} colaboradores en memoria. Puedes mezclar nombres y apellidos en cualquier orden.`}
         />
         <Button type="button" onClick={handleSearchClick} disabled={loading || results.length !== 1} icon={<UserCheck size={17} />}>
           Seleccionar
