@@ -6,14 +6,12 @@ interface Props {
 }
 
 /**
- * Mark CoreX/WorldCupX reconstruido fielmente del brand sheet:
- *   - Anillo C exterior (r=36, gap ~120° a las 3 en punto)
- *   - Anillo C interior más pequeño (r=20, mismo orientación)
- *   - Núcleo blanco central (r=7)
- *   - Satélite blanco arriba-izquierda (en ~130° desde el centro)
- *   - Satélite slate-blue abajo-derecha (en ~-30°, sobre el arco exterior)
- *
- * El rect dark de fondo se controla con withBackground.
+ * Mark CoreX/WorldCupX — geometría fiel al brand sheet:
+ *   - Anillo C exterior blanco (r=36, stroke=7) con gap tilted upper-right (de ~1 a ~4 en punto).
+ *   - Anillo C interior gris medio #5A5D62 (r=20, stroke=4.5) — "ghost arc" detrás del exterior.
+ *   - Núcleo blanco central (r=8).
+ *   - Satélite blanco arriba-izquierda en (35, 35).
+ *   - Satélite slate-blue al final del arco exterior en (78, 66).
  */
 export function WorldCupXMark({ size = 40, className, withBackground = true, title = 'WorldCupX' }: Props) {
   return (
@@ -29,16 +27,11 @@ export function WorldCupXMark({ size = 40, className, withBackground = true, tit
     >
       <title>{title}</title>
       {withBackground && <rect width="100" height="100" rx="22" fill="#0B0B0D" />}
-      {/* Anillo C exterior */}
-      <path d="M 68 19 A 36 36 0 1 0 68 81" fill="none" stroke="#F5F4F1" strokeWidth="8" strokeLinecap="round" />
-      {/* Anillo C interior */}
-      <path d="M 60 33 A 20 20 0 1 0 60 67" fill="none" stroke="#F5F4F1" strokeWidth="5" strokeLinecap="round" />
-      {/* Núcleo */}
-      <circle cx="50" cy="50" r="7" fill="#F5F4F1" />
-      {/* Satélite blanco superior-izquierda */}
-      <circle cx="38" cy="36" r="4.5" fill="#F5F4F1" />
-      {/* Satélite slate inferior-derecha */}
-      <circle cx="76" cy="66" r="4.5" fill="#5C6F89" />
+      <path d="M 59 15 A 36 36 0 1 0 82 67" fill="none" stroke="#F5F4F1" strokeWidth="7" strokeLinecap="round" />
+      <path d="M 55 32 A 20 20 0 1 0 67 60" fill="none" stroke="#5A5D62" strokeWidth="4.5" strokeLinecap="round" />
+      <circle cx="50" cy="50" r="8" fill="#F5F4F1" />
+      <circle cx="35" cy="35" r="4" fill="#F5F4F1" />
+      <circle cx="78" cy="66" r="4.2" fill="#5C6F89" />
     </svg>
   );
 }
@@ -55,11 +48,11 @@ export function CoreXSymbol({ size = 24, className, title = 'CoreX' }: { size?: 
       className={className}
     >
       <title>{title}</title>
-      <path d="M 68 19 A 36 36 0 1 0 68 81" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
-      <path d="M 60 33 A 20 20 0 1 0 60 67" fill="none" stroke="currentColor" strokeOpacity="0.55" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="50" cy="50" r="7" fill="currentColor" />
-      <circle cx="38" cy="36" r="4.5" fill="currentColor" />
-      <circle cx="76" cy="66" r="4.5" fill="currentColor" opacity="0.55" />
+      <path d="M 59 15 A 36 36 0 1 0 82 67" fill="none" stroke="currentColor" strokeWidth="7" strokeLinecap="round" />
+      <path d="M 55 32 A 20 20 0 1 0 67 60" fill="none" stroke="currentColor" strokeOpacity="0.45" strokeWidth="4.5" strokeLinecap="round" />
+      <circle cx="50" cy="50" r="8" fill="currentColor" />
+      <circle cx="35" cy="35" r="4" fill="currentColor" />
+      <circle cx="78" cy="66" r="4.2" fill="currentColor" opacity="0.6" />
     </svg>
   );
 }
