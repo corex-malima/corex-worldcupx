@@ -26,6 +26,32 @@ Ejecutar en Supabase SQL Editor, en este orden:
 
 Cada archivo es idempotente: se puede ejecutar dos veces seguidas sin errores (usa `if not exists` / `on conflict` / `create or replace`). Para reset completo: ejecutar `99_reset_dev.sql` y volver a correr `00 → 14`.
 
+### Si tu BD ya corrió 00→14 ANTES de v0.1.1
+
+Ejecuta una sola vez `sql/15_resync_v0_1_1.sql`. Es un catch-up idempotente que pone al día:
+
+- Tabla `prediction_third_place_assignments` + columna `prediction_headers.third_place_team_id`.
+- RLS para la nueva tabla + reemplazo de políticas admin con `is_admin()`.
+- `resolve_auth_email_by_cedula` robusto (lee email real de `auth.users`).
+- `submit_complete_prediction(uuid, jsonb)` (RPC de submit atómico).
+- `save_prediction_match_score` con args `p_home_team_id`/`p_away_team_id`.
+- `resolve_actual_knockout_teams`, `resolve_slot_to_team`, `build_actual_bracket`.
+- Scoring completo: `score_bracket_crosses`, `score_advancement`, `score_champion_bonus`, `score_third_place_bonus`, `recalculate_ticket_score`.
+- Limpia `claim_ticket(2 args)` que rompía el contrato.
+- Views nuevas: alias amigable `Ticket N` por colaborador (`v_ranking_public.alias`, `v_my_tickets.codeMasked`) y `v_employee_ticket_stats` (vendidos/reclamados/pendientes por employee, usado por `SellTicketPanel`).
+
+Validación post-ejecución:
+
+```sql
+select pg_get_function_identity_arguments(p.oid)
+from pg_proc p
+where p.proname = 'submit_complete_prediction' and p.pronamespace = 'public'::regnamespace;
+-- debe retornar: p_ticket_id uuid, p_payload jsonb
+
+select * from public.v_employee_ticket_stats limit 1;
+-- la view debe existir y devolver datos si hay tickets vendidos
+```
+
 ## Datos clave que cargan los seeds
 
 - `13_seed_demo_worldcup.sql` crea **48 selecciones**, **12 grupos (A–L)** y los **104 partidos** del Mundial 2026 (72 de grupos + 16 R32 + 8 R16 + 4 QF + 2 SF + 1 3.º puesto + 1 Final). También crea la tabla `r32_third_place_rules` con la matriz oficial de mejores terceros para los 8 cruces R32 que la usan (partidos 74, 77, 79, 80, 81, 82, 85, 87).

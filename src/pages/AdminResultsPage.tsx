@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { mockRanking } from '../data/mock/ranking';
 import { AdminGroupResultsPanel } from '../components/admin/AdminGroupResultsPanel';
 import { AdminGroupStandingsPanel } from '../components/admin/AdminGroupStandingsPanel';
@@ -17,8 +17,9 @@ import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
 import { useTournamentFixture } from '../hooks/useTournamentFixture';
 import { USE_MOCKS } from '../lib/constants';
 import { supabase } from '../lib/supabase';
+const AdminPdfPanel = lazy(() => import('../components/admin/AdminPdfPanel').then((m) => ({ default: m.AdminPdfPanel })));
 
-type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking';
+type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking' | 'pdf';
 
 export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => void }) {
   const { fixture, reload: reloadFixture } = useTournamentFixture();
@@ -128,7 +129,8 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
             ['standings', 'Tablas'],
             ['thirds', 'Terceros'],
             ['knockout', 'Eliminatorias'],
-            ['ranking', 'Ranking']
+            ['ranking', 'Ranking'],
+            ['pdf', 'Plantillas PDF']
           ].map(([key, label]) => <Button key={key} variant={tab === key ? 'primary' : 'secondary'} onClick={() => setTab(key as Tab)}>{label}</Button>)}
         </div>
 
@@ -147,6 +149,11 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         )}
         {tab === 'knockout' && <AdminKnockoutResultsPanel matches={bracket} teams={allTeams} onChange={setKnockoutResult} />}
         {tab === 'ranking' && <AdminRecalculateScoresPanel status={rankingStatus} processed={mockRanking.length} updatedAt={rankingUpdatedAt} onRecalculate={recalculate} />}
+        {tab === 'pdf' && (
+          <Suspense fallback={<Card><p className="text-white/55">Cargando módulo de PDFs…</p></Card>}>
+            <AdminPdfPanel teams={allTeams} matches={allMatches} />
+          </Suspense>
+        )}
       </div>
     </div>
   );

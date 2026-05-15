@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { TicketReceipt } from '../tickets/TicketReceipt';
 import { sellTicketForCollaborator } from '../../services/ticketSalesService';
+import { useEmployeeTicketStats } from '../../hooks/useEmployeeTicketStats';
 
 function employeeToProfile(employee: EmployeeSearchResult): PersonProfile {
   return employee.sourceProfile ?? {
@@ -28,6 +29,10 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { stats, loading: statsLoading } = useEmployeeTicketStats({
+    cedula: employee?.cedula ?? null,
+    personId: employee?.personId ?? null
+  });
 
   async function sellTicket() {
     if (!employee) return;
@@ -61,9 +66,9 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
             <p className="sm:col-span-2"><span className="text-white/40">Cargo:</span> {employee.jobTitle}</p>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
-            <div className="rounded-2xl bg-pitch-800 p-3"><b>{employee.ticketsSold}</b><br /><span className="text-white/45">Vendidos</span></div>
-            <div className="rounded-2xl bg-pitch-800 p-3"><b>{employee.ticketsClaimed}</b><br /><span className="text-white/45">Reclamados</span></div>
-            <div className="rounded-2xl bg-pitch-800 p-3"><b>{employee.ticketsPending}</b><br /><span className="text-white/45">Pendientes</span></div>
+            <div className="rounded-2xl bg-pitch-800 p-3"><b>{statsLoading ? '…' : stats.ticketsSold}</b><br /><span className="text-white/45">Vendidos</span></div>
+            <div className="rounded-2xl bg-pitch-800 p-3"><b>{statsLoading ? '…' : stats.ticketsClaimed}</b><br /><span className="text-white/45">Reclamados</span></div>
+            <div className="rounded-2xl bg-pitch-800 p-3"><b>{statsLoading ? '…' : stats.ticketsPending}</b><br /><span className="text-white/45">Pendientes</span></div>
           </div>
           <Button className="mt-5 w-full" disabled={loading} onClick={() => void sellTicket()} icon={<TicketPlus size={17} />}>
             {loading ? 'Generando codigo' : 'Agregar compra y generar codigo'}
