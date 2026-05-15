@@ -3,16 +3,34 @@ import type { FinalPredictionSummary, PredictedBracketMatch, RoundCode, ThirdPla
 
 const ROUND_ORDER = ['R32', 'R16', 'QF', 'SF', 'THIRD_PLACE', 'FINAL'] as const;
 
+/**
+ * Acepta dos formatos de slot:
+ *   - Compacto Supabase: "1A", "2B", "3C"
+ *   - Verbose mock:       "1º Grupo A", "2º Grupo B"
+ */
 function parseRankSlot(slot: string): { position: number; groupCode: string } | null {
-  const match = slot.match(/^([123]).*Grupo\s+([A-L])$/);
-  if (!match) return null;
-  return { position: Number(match[1]), groupCode: match[2] };
+  const compact = slot.match(/^([123])([A-L])$/);
+  if (compact) return { position: Number(compact[1]), groupCode: compact[2] };
+  const verbose = slot.match(/^([123]).*Grupo\s+([A-L])$/);
+  if (verbose) return { position: Number(verbose[1]), groupCode: verbose[2] };
+  return null;
 }
 
+/**
+ * Acepta dos formatos de slot de mejores terceros:
+ *   - Compacto: "3A/B/C/D/F"
+ *   - Verbose:  "3º Grupo A/B/C/D/F"
+ */
 function parseThirdGroups(label: string): string[] {
-  const match = label.match(/Grupo\s+(.+)$/);
-  if (!match) return [];
-  return match[1].split('/').map((group) => group.trim()).filter((group) => /^[A-L]$/.test(group));
+  const verbose = label.match(/Grupo\s+(.+)$/);
+  if (verbose) {
+    return verbose[1].split('/').map((group) => group.trim()).filter((group) => /^[A-L]$/.test(group));
+  }
+  const compact = label.match(/^3([A-L/]+)$/);
+  if (compact) {
+    return compact[1].split('/').map((group) => group.trim()).filter((group) => /^[A-L]$/.test(group));
+  }
+  return [];
 }
 
 function rankSlotTeamId(slot: string | null | undefined, standings: StandingRow[], thirdSlots: ThirdPlaceSlot[]): string | null {
@@ -21,7 +39,8 @@ function rankSlotTeamId(slot: string | null | undefined, standings: StandingRow[
   if (rankingMatch) {
     return standings.find((row) => row.groupCode === rankingMatch.groupCode && row.position === rankingMatch.position)?.teamId ?? null;
   }
-  if (slot.startsWith('3') && slot.includes('Grupo')) {
+  // Slot de tercero (cualquiera de los dos formatos)
+  if (slot.startsWith('3') && parseThirdGroups(slot).length > 0) {
     const assigned = thirdSlots.find((thirdSlot) => thirdSlot.label === slot);
     return assigned?.assignedTeamId ?? null;
   }
@@ -65,13 +84,15 @@ export function createThirdPlaceSlots(knockoutMatches: Match[]): ThirdPlaceSlot[
       const entries: ThirdPlaceSlot[] = [];
       (['home', 'away'] as const).forEach((side) => {
         const label = side === 'home' ? match.homeSlot : match.awaySlot;
-        if (!label?.startsWith('3') || !label.includes('Grupo')) return;
+        if (!label?.startsWith('3')) return;
+        const groups = parseThirdGroups(label);
+        if (groups.length === 0) return;
         entries.push({
           slotId: `${match.id}-${side}`,
           matchNo: match.matchNo,
           side,
           label,
-          allowedGroupCodes: parseThirdGroups(label),
+          allowedGroupCodes: groups,
           assignedTeamId: null,
           order: order++
         });

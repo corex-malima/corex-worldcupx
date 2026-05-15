@@ -1,13 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="WorldCupX">
-  <rect width="100" height="100" rx="22" fill="#0B0B0D"/>
-  <!-- Anillo C exterior (white): gap tilted upper-right (~1 a ~4 en punto) -->
-  <path d="M 59 15 A 36 36 0 1 0 82 67" fill="none" stroke="#F5F4F1" stroke-width="7" stroke-linecap="round"/>
-  <!-- Anillo C interior (medium gray): mismo eje, más chico -->
-  <path d="M 55 32 A 20 20 0 1 0 67 60" fill="none" stroke="#5A5D62" stroke-width="4.5" stroke-linecap="round"/>
-  <!-- Núcleo blanco -->
-  <circle cx="50" cy="50" r="8" fill="#F5F4F1"/>
-  <!-- Satélite blanco arriba-izquierda -->
-  <circle cx="35" cy="35" r="4" fill="#F5F4F1"/>
-  <!-- Satélite slate al final del arco exterior (esquina inferior-derecha) -->
-  <circle cx="78" cy="66" r="4.2" fill="#5C6F89"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-label="WorldCupX">
+  <defs>
+    <linearGradient id="outerFill" x1="250" y1="180" x2="820" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.55" stop-color="#FAFBFC"/>
+      <stop offset="1" stop-color="#EFF2F4"/>
+    </linearGradient>
+    <linearGradient id="innerFill" x1="385" y1="285" x2="750" y2="705" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#BAC3CB"/>
+      <stop offset="0.52" stop-color="#A3ADB6"/>
+      <stop offset="1" stop-color="#8E98A2"/>
+    </linearGradient>
+    <radialGradient id="nodeBlue" cx="42%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#A7B6C4"/>
+      <stop offset="1" stop-color="#738596"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="1000" rx="220" fill="#0B0B0D"/>
+  <g>
+    <path d="M 804.6 348.3 A 302.5 302.5 0 1 0 717.8 739.7" fill="none" stroke="url(#outerFill)" stroke-width="45.0" stroke-linecap="butt"/>
+    <path d="M 675.8 384.6 A 187.5 187.5 0 1 0 648.5 643.6" fill="none" stroke="url(#innerFill)" stroke-width="35" stroke-linecap="butt"/>
+    <path d="M 687.0 400.6 A 187.5 187.5 0 0 1 695.1 585.1" fill="none" stroke="url(#innerFill)" stroke-width="35" stroke-linecap="butt"/>
+    <polygon points="620 405 640 425 729 337 709 317" fill="url(#innerFill)"/>
+    <polygon points="616.5 585.6 635.7 566.9 708.5 641.2 689.3 659.9" fill="url(#innerFill)"/>
+    <circle cx="528.7" cy="498.1" r="90.3" fill="#FFFFFF"/>
+    <circle cx="355.5" cy="402.4" r="38.4" fill="#FFFFFF"/>
+    <circle cx="758.4" cy="682.8" r="50.4" fill="url(#nodeBlue)"/>
+  </g>
 </svg>

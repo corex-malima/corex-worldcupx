@@ -19,6 +19,13 @@ export function validateThirdPlaceAssignments(slots: ThirdPlaceSlot[], bestThird
   const validTeamIds = new Set(bestThirdByTeam.keys());
   const assigned = slots.map((slot) => slot.assignedTeamId).filter(Boolean) as string[];
 
+  // Safety net: cuando hay mejores terceros clasificados (>=8) pero el fixture no
+  // produjo slots, es un problema de datos. Bloqueamos para no dejar pasar al usuario.
+  if (bestThirds.length >= 8 && slots.length === 0) {
+    errors.push('No se pudieron generar los cruces de mejores terceros desde el fixture. Contacta a TTHH.');
+    return errors;
+  }
+
   if (bestThirds.length < slots.length) {
     errors.push('Calcula los mejores terceros antes de asignar cruces.');
   } else {
@@ -27,7 +34,9 @@ export function validateThirdPlaceAssignments(slots: ThirdPlaceSlot[], bestThird
       errors.push(`Esta asignacion deja cruces sin terceros validos${solvability.blockedSlotLabels.length ? `: ${solvability.blockedSlotLabels.join(', ')}` : ''}. Usa asignacion automatica o ajusta los grupos.`);
     }
   }
-  if (slots.some((slot) => !slot.assignedTeamId)) errors.push('Asigna un tercero clasificado a cada slot disponible.');
+  if (slots.length === 0 || slots.some((slot) => !slot.assignedTeamId)) {
+    errors.push('Asigna un tercero clasificado a cada slot disponible (o usa "Asignar automaticamente").');
+  }
   if (new Set(assigned).size !== assigned.length) errors.push('No puedes repetir el mismo tercero en dos slots.');
   if (assigned.some((teamId) => !validTeamIds.has(teamId))) errors.push('Solo puedes usar equipos que esten entre los mejores terceros.');
   if (slots.some((slot) => {
