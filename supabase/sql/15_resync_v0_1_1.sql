@@ -641,40 +641,14 @@ begin
 end;
 $$;
 
+-- DEPRECATED: cruce exacto NO es una categoría separada (ver doc puntaje-worldcupx.html).
+-- Es el prerequisito del marcador en eliminatorias, aplicado inline en recalculate_ticket_score.
 create or replace function public.score_bracket_crosses(p_ticket_id uuid)
 returns int
-language plpgsql
-security definer
-set search_path = public
+language sql
+immutable
 as $$
-declare
-    v_points int := 0;
-    v_prediction_id uuid;
-begin
-    select id into v_prediction_id from public.prediction_headers where ticket_id = p_ticket_id;
-    if v_prediction_id is null then return 0; end if;
-
-    insert into public.score_details (ticket_id, category, item_ref, points, detail)
-    select p_ticket_id, 'cross', m.stage || ':' || m.match_no::text, 1,
-           jsonb_build_object(
-             'match_no', m.match_no,
-             'stage', m.stage,
-             'actual', jsonb_build_array(m.home_team_id, m.away_team_id),
-             'prediction', jsonb_build_array(s.home_team_id, s.away_team_id)
-           )
-    from public.matches m
-    join public.prediction_match_scores s on s.match_id = m.id and s.prediction_id = v_prediction_id
-    where m.stage in ('R32', 'R16', 'QF', 'SF', 'FINAL', 'THIRD_PLACE')
-      and m.home_team_id is not null and m.away_team_id is not null
-      and s.home_team_id is not null and s.away_team_id is not null
-      and (
-          (m.home_team_id = s.home_team_id and m.away_team_id = s.away_team_id) or
-          (m.home_team_id = s.away_team_id and m.away_team_id = s.home_team_id)
-      );
-
-    get diagnostics v_points = row_count;
-    return coalesce(v_points, 0);
-end;
+    select 0;
 $$;
 
 create or replace function public.score_advancement(p_ticket_id uuid)
@@ -806,7 +780,6 @@ declare
     v_group_match_points int := 0;
     v_group_position_points int := 0;
     v_knockout_match_points int := 0;
-    v_cross_points int := 0;
     v_advancement_points int := 0;
     v_champion_bonus int := 0;
     v_third_place_bonus int := 0;
@@ -843,44 +816,66 @@ begin
 
     select coalesce(sum(points), 0) into v_group_match_points from public.score_details where ticket_id = p_ticket_id and category = 'group_match';
 
+    -- Eliminatorias: marcador SÓLO si cruce es exacto (doc puntaje-worldcupx.html)
     insert into public.score_details (ticket_id, category, item_ref, points, detail)
     select p_ticket_id, 'knockout_match', m.stage || ':' || m.match_no::text,
            public.score_match(m.home_score, m.away_score, s.home_score, s.away_score),
-           jsonb_build_object('match_no', m.match_no, 'stage', m.stage, 'actual', jsonb_build_object('home', m.home_score, 'away', m.away_score), 'prediction', jsonb_build_object('home', s.home_score, 'away', s.away_score))
+           jsonb_build_object('match_no', m.match_no, 'stage', m.stage, 'cruce_exacto', true,
+             'actual', jsonb_build_object('home', m.home_score, 'away', m.away_score),
+             'prediction', jsonb_build_object('home', s.home_score, 'away', s.away_score))
     from public.prediction_match_scores s
     join public.matches m on m.id = s.match_id
-    where s.prediction_id = v_prediction_id and m.stage in ('R32', 'R16', 'QF', 'SF', 'THIRD_PLACE', 'FINAL') and m.status = 'official';
+    where s.prediction_id = v_prediction_id and m.stage in ('R32', 'R16', 'QF', 'SF', 'THIRD_PLACE', 'FINAL') and m.status = 'official'
+      and m.home_team_id is not null and m.away_team_id is not null
+      and s.home_team_id is not null and s.away_team_id is not null
+      and (
+          (m.home_team_id = s.home_team_id and m.away_team_id = s.away_team_id) or
+          (m.home_team_id = s.away_team_id and m.away_team_id = s.home_team_id)
+      );
 
     select coalesce(sum(points), 0) into v_knockout_match_points from public.score_details where ticket_id = p_ticket_id and category = 'knockout_match';
 
-    select count(*) into v_exact_count
-    from public.prediction_match_scores s join public.matches m on m.id = s.match_id
-    where s.prediction_id = v_prediction_id and m.status = 'official' and m.home_score = s.home_score and m.away_score = s.away_score;
-
-    select count(*) into v_result_count
-    from public.prediction_match_scores s join public.matches m on m.id = s.match_id
-    where s.prediction_id = v_prediction_id and m.status = 'official' and public.score_match(m.home_score, m.away_score, s.home_score, s.away_score) > 0;
+    with valid_pairs as (
+        select s.home_score, s.away_score, m.home_score as actual_home, m.away_score as actual_away
+        from public.prediction_match_scores s join public.matches m on m.id = s.match_id
+        where s.prediction_id = v_prediction_id and m.status = 'official'
+          and (
+            m.stage = 'GROUP'
+            or (
+              m.home_team_id is not null and m.away_team_id is not null
+              and s.home_team_id is not null and s.away_team_id is not null
+              and (
+                (m.home_team_id = s.home_team_id and m.away_team_id = s.away_team_id) or
+                (m.home_team_id = s.away_team_id and m.away_team_id = s.home_team_id)
+              )
+            )
+          )
+    )
+    select
+        count(*) filter (where actual_home = home_score and actual_away = away_score),
+        count(*) filter (where public.score_match(actual_home, actual_away, home_score, away_score) > 0)
+    into v_exact_count, v_result_count
+    from valid_pairs;
 
     v_group_position_points := public.score_group_positions(p_ticket_id);
-    v_cross_points          := public.score_bracket_crosses(p_ticket_id);
     v_advancement_points    := public.score_advancement(p_ticket_id);
     v_champion_bonus        := public.score_champion_bonus(p_ticket_id);
     v_third_place_bonus     := public.score_third_place_bonus(p_ticket_id);
 
-    v_total := v_group_match_points + v_knockout_match_points + v_group_position_points + v_cross_points + v_advancement_points + v_champion_bonus + v_third_place_bonus;
+    v_total := v_group_match_points + v_knockout_match_points + v_group_position_points + v_advancement_points + v_champion_bonus + v_third_place_bonus;
 
     insert into public.ticket_scores (
         ticket_id, total_points, group_match_points, group_position_points, knockout_points,
         cross_points, advancement_points, champion_bonus, runner_up_bonus, exact_count, result_count, calculated_at
     ) values (
         p_ticket_id, v_total, v_group_match_points, v_group_position_points, v_knockout_match_points,
-        v_cross_points, v_advancement_points, v_champion_bonus, v_third_place_bonus, v_exact_count, v_result_count, now()
+        0, v_advancement_points, v_champion_bonus, v_third_place_bonus, v_exact_count, v_result_count, now()
     ) on conflict (ticket_id) do update set
         total_points = excluded.total_points,
         group_match_points = excluded.group_match_points,
         group_position_points = excluded.group_position_points,
         knockout_points = excluded.knockout_points,
-        cross_points = excluded.cross_points,
+        cross_points = 0,
         advancement_points = excluded.advancement_points,
         champion_bonus = excluded.champion_bonus,
         runner_up_bonus = excluded.runner_up_bonus,

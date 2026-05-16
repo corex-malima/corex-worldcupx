@@ -148,7 +148,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
 
       <Card>
         <h2 className="text-lg font-black text-white">Desglose de puntos</h2>
-        <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 xl:grid-cols-4">
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Grupo · marcador</p>
             <p className="mt-1 text-2xl font-black text-white">{total?.group_match_points ?? 0}</p>
@@ -162,12 +162,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Eliminatoria · marcador</p>
             <p className="mt-1 text-2xl font-black text-white">{total?.knockout_points ?? 0}</p>
-            <p className="text-xs text-white/45">+3 exacto · +1 resultado</p>
-          </div>
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-white/45">Cruces correctos</p>
-            <p className="mt-1 text-2xl font-black text-white">{total?.cross_points ?? 0}</p>
-            <p className="text-xs text-white/45">+1 por par predicho que se enfrentó</p>
+            <p className="text-xs text-white/45">+3 exacto / +1 resultado (sólo si el cruce es exacto)</p>
           </div>
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Avance por ronda</p>
