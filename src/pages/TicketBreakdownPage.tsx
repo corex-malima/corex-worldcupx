@@ -231,7 +231,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
             <ArrowLeft size={13} /> Volver al ranking
           </button>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Detalle</p>
-          <h1 className="text-3xl font-black text-white">{bundle.alias}</h1>
+          <h1 className="text-3xl font-semibold text-white">{bundle.alias}</h1>
           <p className="mt-1 text-sm text-white/65">{bundle.ownerName ?? '—'} · {bundle.areaName ?? 'SIN ÁREA'}</p>
         </div>
         <Card className="!p-4 text-right">

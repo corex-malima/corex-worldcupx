@@ -191,7 +191,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Resultados reales</p>
-            <h1 className="text-3xl font-black text-white">Carga de resultados oficiales</h1>
+            <h1 className="text-3xl font-semibold text-white">Carga de resultados oficiales</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" onClick={() => void reloadFixture()} icon={<RefreshCw size={15} />}>Refrescar</Button>

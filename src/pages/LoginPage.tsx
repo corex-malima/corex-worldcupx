@@ -35,7 +35,7 @@ export function LoginPage({ onLogin, onNavigate, loading, error }: { onLogin: (c
         <div className="mb-6 text-center">
           <WorldCupXMark size={72} className="mx-auto mb-4 rounded-2xl border border-white/10" />
           <p className="text-[11px] font-black uppercase tracking-[0.32em] text-white/45">{APP_NAME}</p>
-          <h1 className="mt-1 text-3xl font-black text-white">Ingresa a {APP_NAME}</h1>
+          <h1 className="mt-1 text-3xl font-semibold text-white">Ingresa a {APP_NAME}</h1>
           <p className="mt-2 text-sm text-white/60">{APP_DESCRIPTOR} interna · usa tu cédula y contraseña, no verás el email técnico de Supabase.</p>
         </div>
         <form onSubmit={submit} className="space-y-4">

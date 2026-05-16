@@ -28,7 +28,7 @@ export function AdminTicketsPage({ onNavigate }: { onNavigate: (to: string) => v
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Control</p>
-            <h1 className="text-3xl font-black text-white">Tickets vendidos y reclamados</h1>
+            <h1 className="text-3xl font-semibold text-white">Tickets vendidos y reclamados</h1>
           </div>
           <ExportCsvButton filename="tickets.csv" rows={csvRows} />
         </div>

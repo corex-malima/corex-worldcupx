@@ -84,26 +84,25 @@ function decideAdvancingTeam(match: PredictedBracketMatch): string | null {
 
 export function createThirdPlaceSlots(knockoutMatches: Match[]): ThirdPlaceSlot[] {
   let order = 0;
-  return knockoutMatches
-    .filter((match) => match.stage === 'R32')
-    .flatMap((match) => {
-      const entries: ThirdPlaceSlot[] = [];
-      (['home', 'away'] as const).forEach((side) => {
-        const label = side === 'home' ? match.homeSlot : match.awaySlot;
-        if (!label?.startsWith('3')) return;
-        const groups = parseThirdGroups(label);
-        if (groups.length === 0) return;
-        entries.push({
-          slotId: `${match.id}-${side}`,
-          matchNo: match.matchNo,
-          side,
-          label,
-          allowedGroupCodes: groups,
-          assignedTeamId: null,
-          order: order++
-        });
+  return knockoutMatches.flatMap((match) => {
+    if (match.stage !== 'R32') return [];
+    const entries: ThirdPlaceSlot[] = [];
+    for (const side of ['home', 'away'] as const) {
+      const label = side === 'home' ? match.homeSlot : match.awaySlot;
+      if (!label?.startsWith('3')) continue;
+      const groups = parseThirdGroups(label);
+      if (groups.length === 0) continue;
+      entries.push({
+        slotId: `${match.id}-${side}`,
+        matchNo: match.matchNo,
+        side,
+        label,
+        allowedGroupCodes: groups,
+        assignedTeamId: null,
+        order: order++
       });
-      return entries;
+    }
+    return entries;
     });
 }
 

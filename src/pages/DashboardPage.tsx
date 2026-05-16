@@ -18,7 +18,7 @@ export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate:
       <section className="grid gap-4 lg:grid-cols-[1.4fr_.6fr]">
         <Card className="overflow-hidden">
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Hola, {user.name}</p>
-          <h1 className="mt-2 text-3xl font-black text-white md:text-5xl">Tus tickets para competir por el ranking</h1>
+          <h1 className="mt-2 text-3xl font-semibold text-white md:text-5xl">Tus tickets para competir por el ranking</h1>
           <p className="mt-3 max-w-2xl text-white/65">Cada ticket es una jugada independiente. Activa el código que te entregó TTHH y completa marcadores, clasificados, cruces y campeón antes del deadline.</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Button onClick={() => onNavigate('#/ranking')} icon={<Medal size={18} />}>Ver ranking</Button>

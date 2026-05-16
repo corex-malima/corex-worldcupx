@@ -11,7 +11,7 @@ export function RankingPage({ onNavigate }: { onNavigate: (to: string) => void }
     <div className="space-y-5">
       <div>
         <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Ranking en vivo</p>
-        <h1 className="text-3xl font-black text-white">Tabla general por ticket</h1>
+        <h1 className="text-3xl font-semibold text-white">Tabla general por ticket</h1>
         <p className="mt-2 text-white/60">Click en "Ver" para analizar predicho vs real y el desglose de puntos de un ticket.</p>
       </div>
       <RankingPodium rows={ranking.rows} />

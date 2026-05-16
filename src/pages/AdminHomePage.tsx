@@ -19,7 +19,7 @@ export function AdminHomePage({ onNavigate }: { onNavigate: (to: string) => void
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Panel TTHH</p>
-            <h1 className="text-3xl font-black text-white">Panel de control TTHH</h1>
+            <h1 className="text-3xl font-semibold text-white">Panel de control TTHH</h1>
           </div>
           <Button variant="secondary" onClick={() => void reload()} disabled={loading}>{loading ? 'Cargando…' : 'Actualizar'}</Button>
         </div>

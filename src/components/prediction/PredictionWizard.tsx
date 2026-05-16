@@ -58,7 +58,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? 'Modo TTHH · editando ticket' : `Ticket ${ticketId.slice(0, 8)}`}</p>
-          <h1 className="text-3xl font-black text-white">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
+          <h1 className="text-3xl font-semibold text-white">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
         </div>
         <div className="flex items-center gap-3">
           <SaveStatusBadge hydrating={prediction.hydrating} status={prediction.autoSaveStatus} error={prediction.autoSaveError} />

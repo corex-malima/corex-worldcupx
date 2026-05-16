@@ -58,7 +58,7 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
         <div className="mb-6 text-center">
           <WorldCupXMark size={72} className="mx-auto mb-4 rounded-2xl border border-white/10" />
           <p className="text-[11px] font-black uppercase tracking-[0.32em] text-white/45">{APP_NAME} · {APP_DESCRIPTOR}</p>
-          <h1 className="mt-1 text-3xl font-black text-white">Crear cuenta</h1>
+          <h1 className="mt-1 text-3xl font-semibold text-white">Crear cuenta</h1>
           <p className="mt-2 text-sm text-white/60">Primero compra tu ticket con TTHH. Luego registra tu cuenta con tu cédula y el código recibido.</p>
         </div>
 
