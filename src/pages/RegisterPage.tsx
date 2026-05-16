@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle2, TicketCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -8,22 +8,24 @@ import { normalizeCedula } from '../lib/format';
 import { validateCedulaBasic, validateRegistrationTicket, validateTicketCodeBasic, type RegistrationTicketValidation } from '../lib/auth';
 import { APP_DESCRIPTOR, APP_NAME, BRAND, COMPANY, SIGNATURE } from '../lib/constants';
 
+// Anclamos la validación al par cédula+ticket que se usó al pedirla. Si el usuario
+// cambia cualquier input, la validación deja de aplicar automáticamente (derivado),
+// sin necesidad de un useEffect que resetee state.
+type ValidationCache = { key: string; result: RegistrationTicketValidation };
+
 export function RegisterPage({ onRegister, onNavigate, loading, error }: { onRegister: (cedula: string, ticketCode: string, password: string) => Promise<void>; onNavigate: (to: string) => void; loading?: boolean; error?: string | null }) {
   const [cedula, setCedula] = useState('');
   const [ticketCode, setTicketCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [validation, setValidation] = useState<RegistrationTicketValidation | null>(null);
+  const [validationCache, setValidationCache] = useState<ValidationCache | null>(null);
   const [validating, setValidating] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const cleanCedula = normalizeCedula(cedula);
   const cleanTicketCode = ticketCode.trim().toUpperCase();
-
-  useEffect(() => {
-    setValidation(null);
-    setLocalError(null);
-  }, [cleanCedula, cleanTicketCode]);
+  const currentKey = `${cleanCedula}|${cleanTicketCode}`;
+  const validation = validationCache?.key === currentKey ? validationCache.result : null;
 
   async function validateTicket() {
     if (!validateCedulaBasic(cleanCedula)) return setLocalError('La cédula debe tener entre 10 y 13 dígitos.');
@@ -32,7 +34,7 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
     setLocalError(null);
     try {
       const result = await validateRegistrationTicket(cleanCedula, cleanTicketCode);
-      setValidation(result);
+      setValidationCache({ key: currentKey, result });
       if (!result.ok) setLocalError(result.message);
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : 'No se pudo validar el ticket.');
@@ -66,8 +68,8 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
 
         <form onSubmit={submit} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-[1fr_180px] sm:items-end">
-            <Input label="Cédula" value={cedula} onChange={(event) => setCedula(event.target.value)} placeholder="0102030405" />
-            <Input label="Codigo de ticket" value={ticketCode} onChange={(event) => setTicketCode(event.target.value.toUpperCase())} maxLength={12} placeholder="WCX-ABC12345" />
+            <Input label="Cédula" value={cedula} onChange={(event) => { setCedula(event.target.value); setLocalError(null); }} placeholder="0102030405" />
+            <Input label="Codigo de ticket" value={ticketCode} onChange={(event) => { setTicketCode(event.target.value.toUpperCase()); setLocalError(null); }} maxLength={12} placeholder="WCX-ABC12345" />
           </div>
 
           <Button type="button" variant={validation?.ok ? 'secondary' : 'primary'} className="w-full" disabled={validating || loading} onClick={() => void validateTicket()} icon={validation?.ok ? <CheckCircle2 size={17} /> : <TicketCheck size={17} />}>

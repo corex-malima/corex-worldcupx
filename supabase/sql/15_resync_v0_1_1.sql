@@ -450,6 +450,50 @@ end;
 $$;
 grant execute on function public.resolve_slot_to_team(int, text, text) to authenticated;
 
+-- recalculate_actual_group_standings con `where true` para no chocar con la
+-- protección de Supabase que bloquea DELETE sin WHERE.
+create or replace function public.recalculate_actual_group_standings()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if not public.is_admin() then raise exception 'Solo admin puede recalcular tablas oficiales.'; end if;
+    delete from public.actual_group_standings where true;
+    with team_base as (
+        select id as team_id, group_code, seed_order from public.teams where group_code is not null
+    ), played as (
+        select m.group_code, m.home_team_id as team_id, 1 as played,
+               case when m.home_score > m.away_score then 3 when m.home_score = m.away_score then 1 else 0 end as points,
+               m.home_score as goals_for, m.away_score as goals_against
+        from public.matches m where m.stage = 'GROUP' and m.status = 'official'
+        union all
+        select m.group_code, m.away_team_id as team_id, 1,
+               case when m.away_score > m.home_score then 3 when m.home_score = m.away_score then 1 else 0 end,
+               m.away_score, m.home_score
+        from public.matches m where m.stage = 'GROUP' and m.status = 'official'
+    ), agg as (
+        select tb.group_code, tb.team_id,
+               coalesce(sum(p.played), 0)::int as played,
+               coalesce(sum(p.points), 0)::int as points,
+               coalesce(sum(p.goals_for), 0)::int as goals_for,
+               coalesce(sum(p.goals_against), 0)::int as goals_against,
+               tb.seed_order
+        from team_base tb left join played p on p.team_id = tb.team_id
+        group by tb.group_code, tb.team_id, tb.seed_order
+    ), ranked as (
+        select *, (goals_for - goals_against) as goal_difference,
+               row_number() over (partition by group_code order by points desc, (goals_for - goals_against) desc, goals_for desc, seed_order asc) as position
+        from agg
+    )
+    insert into public.actual_group_standings (group_code, team_id, played, points, goals_for, goals_against, goal_difference, position)
+    select group_code, team_id, played, points, goals_for, goals_against, goal_difference, position from ranked;
+    return jsonb_build_object('ok', true);
+end;
+$$;
+grant execute on function public.recalculate_actual_group_standings() to authenticated;
+
 create or replace function public.resolve_actual_knockout_teams()
 returns jsonb
 language plpgsql

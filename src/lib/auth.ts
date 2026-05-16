@@ -35,7 +35,7 @@ function lastNameFromPersonName(personName: string): string {
   return emailPart(parts[parts.length - 1] ?? 'colaborador');
 }
 
-export function cedulaToAuthEmail(cedula: string, personName = 'colaborador'): string {
+function cedulaToAuthEmail(cedula: string, personName = 'colaborador'): string {
   return `${cleanCedula(cedula)}.${lastNameFromPersonName(personName)}@mundial.malima`;
 }
 

@@ -52,7 +52,7 @@ export function ManualTieBreakerPanel({ groupCodes, standings, teams, manualTieB
                 {ordered.map((teamId, index) => {
                   const team = teams.find((item) => item.id === teamId);
                   return (
-                    <label key={`${groupCode}-${index}`} className="space-y-2 rounded-xl bg-pitch-950/40 p-3">
+                    <label key={`${groupCode}-${teamId}`} className="space-y-2 rounded-xl bg-pitch-950/40 p-3">
                       <span className="text-xs font-black uppercase tracking-widest text-white/45">Posicion {tiedRows[0]?.position + index}</span>
                       <select
                         disabled={disabled}

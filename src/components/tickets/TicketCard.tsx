@@ -12,7 +12,7 @@ export function TicketCard({ ticket, onOpen }: { ticket: Ticket; onOpen: (ticket
       <div className="relative flex items-start justify-between gap-4">
         <div>
           <div className="mb-3 flex items-center gap-2">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-pitch-800"><TicketIcon size={19} /></span>
+            <span className="grid size-10 place-items-center rounded-2xl bg-pitch-800"><TicketIcon size={19} /></span>
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-white/45">Código</p>
               <p className="text-2xl font-black tracking-widest text-white">{ticket.codeMasked}</p>

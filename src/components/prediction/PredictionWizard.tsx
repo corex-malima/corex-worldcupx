@@ -20,6 +20,16 @@ const tabs = [
 
 type Tab = typeof tabs[number]['key'];
 
+type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+function SaveStatusBadge({ hydrating, status, error }: { hydrating: boolean; status: AutoSaveStatus; error: string | null }) {
+  if (hydrating) return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/55"><Loader2 size={13} className="animate-spin" /> Cargando…</span>;
+  if (status === 'saving') return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/65"><Loader2 size={13} className="animate-spin" /> Guardando</span>;
+  if (status === 'saved') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-green"><CheckCircle2 size={13} /> Guardado</span>;
+  if (status === 'error') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-red" title={error ?? undefined}><CloudOff size={13} /> Error al guardar</span>;
+  return null;
+}
+
 export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: string; adminMode?: boolean }) {
   const [tab, setTab] = useState<Tab>('groups');
   const [errors, setErrors] = useState<string[]>([]);
@@ -43,14 +53,6 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
     setErrors(nextErrors);
   }
 
-  function SaveStatusBadge() {
-    if (prediction.hydrating) return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/55"><Loader2 size={13} className="animate-spin" /> Cargando…</span>;
-    if (prediction.autoSaveStatus === 'saving') return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/65"><Loader2 size={13} className="animate-spin" /> Guardando</span>;
-    if (prediction.autoSaveStatus === 'saved') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-green"><CheckCircle2 size={13} /> Guardado</span>;
-    if (prediction.autoSaveStatus === 'error') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-red" title={prediction.autoSaveError ?? undefined}><CloudOff size={13} /> Error al guardar</span>;
-    return null;
-  }
-
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -59,7 +61,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
           <h1 className="text-3xl font-black text-white">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <SaveStatusBadge />
+          <SaveStatusBadge hydrating={prediction.hydrating} status={prediction.autoSaveStatus} error={prediction.autoSaveError} />
           <Badge tone={locked ? 'red' : prediction.draft.status === 'submitted' ? 'green' : 'gold'}>{locked ? 'Solo lectura' : prediction.draft.status === 'submitted' ? 'Enviado' : 'Editable'}</Badge>
         </div>
       </div>

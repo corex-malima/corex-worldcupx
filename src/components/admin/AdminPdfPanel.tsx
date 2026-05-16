@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Download, FileText } from 'lucide-react';
-import { pdf } from '@react-pdf/renderer';
 import type { Match, Team } from '../../types/tournament';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
-import { GroupStageTemplateDocument } from '../../lib/pdf/groupStageTemplate';
-import { KnockoutTemplateDocument } from '../../lib/pdf/knockoutTemplate';
-import { loadFlagPngMap } from '../../lib/pdf/flagLoader';
 
 interface Props {
   teams: Team[];
@@ -32,6 +28,13 @@ export function AdminPdfPanel({ teams, matches }: Props) {
     setBusy('groups');
     setError(null);
     try {
+      // Lazy-load: @react-pdf/renderer pesa ~1.4MB. Solo lo cargamos cuando el admin
+      // realmente pide un PDF, no en el bundle inicial de la app.
+      const [{ pdf }, { GroupStageTemplateDocument }, { loadFlagPngMap }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('../../lib/pdf/groupStageTemplate'),
+        import('../../lib/pdf/flagLoader')
+      ]);
       const flagPngs = await loadFlagPngMap(teams);
       const blob = await pdf(<GroupStageTemplateDocument teams={teams} matches={matches} flagPngs={flagPngs} />).toBlob();
       triggerDownload(blob, `worldcupx-fase-grupos.pdf`);
@@ -46,6 +49,11 @@ export function AdminPdfPanel({ teams, matches }: Props) {
     setBusy('knockout');
     setError(null);
     try {
+      const [{ pdf }, { KnockoutTemplateDocument }, { loadFlagPngMap }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('../../lib/pdf/knockoutTemplate'),
+        import('../../lib/pdf/flagLoader')
+      ]);
       const flagPngs = await loadFlagPngMap(teams);
       const blob = await pdf(<KnockoutTemplateDocument matches={matches} teams={teams} flagPngs={flagPngs} />).toBlob();
       triggerDownload(blob, `worldcupx-eliminatorias.pdf`);
@@ -59,7 +67,7 @@ export function AdminPdfPanel({ teams, matches }: Props) {
   return (
     <Card>
       <div className="flex items-center gap-3">
-        <span className="grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-pitch-800 text-cup-blue">
+        <span className="grid size-12 place-items-center rounded-2xl border border-white/10 bg-pitch-800 text-cup-blue">
           <FileText size={22} />
         </span>
         <div>

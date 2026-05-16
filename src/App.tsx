@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { AppShell } from './components/layout/AppShell';
 import { useAuth } from './hooks/useAuth';
 import { LoginPage } from './pages/LoginPage';
@@ -15,24 +15,24 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import { AdminRoute } from './routes/AdminRoute';
 
-function currentRoute() {
+// Suscripción al hashchange como external store. Evita tearing en renders concurrentes
+// y elimina el patrón frágil useState(currentRoute()) + useEffect(subscribe).
+function getRoute() {
   return window.location.hash || '#/dashboard';
+}
+function subscribeRoute(callback: () => void) {
+  window.addEventListener('hashchange', callback);
+  return () => window.removeEventListener('hashchange', callback);
 }
 
 export default function App() {
-  const [route, setRoute] = useState(currentRoute());
+  const route = useSyncExternalStore(subscribeRoute, getRoute);
   const auth = useAuth();
 
   function navigate(to: string) {
     window.location.hash = to.replace(/^#?/, '#');
-    setRoute(currentRoute());
+    // El listener de hashchange dispara la actualización; no necesitamos setState manual.
   }
-
-  useEffect(() => {
-    const handler = () => setRoute(currentRoute());
-    window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
-  }, []);
 
   // Si ya hay sesión y estamos en login/register, mandamos al dashboard.
   useEffect(() => {
