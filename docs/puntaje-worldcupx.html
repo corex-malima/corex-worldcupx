@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reglamento oficial de puntuación · WorldCupX</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+
+      :root {
+        --ink: #0B0B0D;
+        --muted: #5d687a;
+        --paper: #f5f7fb;
+        --card: #ffffff;
+        --brand: #0B0B0D;
+        --accent: #5C6F89;
+        --accent-soft: #e6ebf1;
+        --green: #15803d;
+        --green-soft: #dcfce7;
+        --red: #b91c1c;
+        --red-soft: #fee2e2;
+        --gold: #b45309;
+        --gold-soft: #fef3c7;
+        --line: #e2e8f0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+        line-height: 1.45;
+        font-size: 13px;
+      }
+
+      .page {
+        min-height: 277mm;
+        padding: 16px;
+        page-break-after: always;
+      }
+
+      .page:last-child {
+        page-break-after: auto;
+      }
+
+      .cover {
+        display: grid;
+        min-height: 265mm;
+        align-content: space-between;
+        gap: 20px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background:
+          radial-gradient(circle at 88% 14%, rgba(92, 111, 137, 0.20), transparent 36%),
+          radial-gradient(circle at 12% 84%, rgba(92, 111, 137, 0.16), transparent 32%),
+          linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+        padding: 44px;
+      }
+
+      .brand-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: var(--brand);
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .brand-mark::before,
+      .brand-mark::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        border: 2px solid #F5F4F1;
+      }
+
+      .brand-mark::before {
+        inset: 8px;
+        clip-path: polygon(0 0, 70% 0, 60% 50%, 100% 60%, 100% 100%, 0 100%);
+      }
+
+      .brand-mark::after {
+        inset: 18px;
+        clip-path: polygon(0 0, 60% 0, 80% 40%, 100% 100%, 0 100%);
+        border-color: rgba(255, 255, 255, 0.55);
+      }
+
+      .brand-dot-blue {
+        position: absolute;
+        right: 6px;
+        bottom: 6px;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .brand-text .name {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.4px;
+      }
+
+      .brand-text .sub {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+      }
+
+      .cover h1 {
+        margin: 0;
+        max-width: 720px;
+        font-size: 56px;
+        letter-spacing: -1.6px;
+        line-height: 1;
+        color: var(--brand);
+      }
+
+      .cover .lead {
+        max-width: 600px;
+        color: var(--muted);
+        font-size: 17px;
+      }
+
+      .cover-hero {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      .mini-card {
+        border-radius: 14px;
+        background: #ffffff;
+        border: 1px solid var(--line);
+        padding: 14px;
+        box-shadow: 0 8px 18px rgba(11, 11, 13, 0.04);
+      }
+
+      .mini-card .label {
+        font-size: 9px;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .mini-card .val {
+        margin-top: 4px;
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--brand);
+      }
+
+      .cover-flags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .flag {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        background-color: #e2e8f0;
+        border: 1px solid rgba(11, 11, 13, 0.06);
+        flex-shrink: 0;
+      }
+
+      .flag.lg {
+        width: 36px;
+        height: 36px;
+      }
+
+      .flag.sm {
+        width: 22px;
+        height: 22px;
+      }
+
+      .cover-footer {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      h1, h2, h3, p {
+        margin: 0;
+      }
+
+      h2 {
+        font-size: 26px;
+        letter-spacing: -0.6px;
+        margin-bottom: 12px;
+      }
+
+      h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .section {
+        display: grid;
+        gap: 12px;
+      }
+
+      .section + .section {
+        margin-top: 18px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 6px 16px rgba(11, 11, 13, 0.04);
+      }
+
+      .rule-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .rule {
+        padding: 14px;
+        border-radius: 14px;
+        background: #ffffff;
+        border: 1px solid var(--line);
+      }
+
+      .points {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 48px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--brand);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 13px;
+      }
+
+      .points.accent {
+        background: var(--accent);
+      }
+
+      .points.green {
+        background: var(--green);
+      }
+
+      .points.gold {
+        background: var(--gold);
+      }
+
+      .points.red {
+        background: var(--red);
+      }
+
+      .example {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 10px;
+        align-items: center;
+        background: #f8fafc;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+      }
+
+      .example-team {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+      }
+
+      .score-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 30px;
+        min-width: 56px;
+        background: var(--brand);
+        color: #ffffff;
+        padding: 3px 10px;
+        border-radius: 8px;
+        font-weight: 800;
+      }
+
+      .ok {
+        color: var(--green);
+        font-weight: 800;
+      }
+
+      .bad {
+        color: var(--red);
+        font-weight: 800;
+      }
+
+      .note {
+        border-left: 4px solid var(--accent);
+        background: var(--accent-soft);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 12px;
+        color: #1f2937;
+      }
+
+      .note b {
+        color: var(--brand);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #ffffff;
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        background: #f1f5f9;
+        color: var(--brand);
+        font-size: 10px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .right {
+        text-align: right;
+        font-weight: 800;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #3730a3;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+      }
+
+      .pill.green {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+
+      .pill.gold {
+        background: var(--gold-soft);
+        color: var(--gold);
+      }
+
+      .pill.red {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+
+      .step + .step {
+        margin-top: 10px;
+      }
+
+      .step-num {
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: var(--brand);
+        color: #ffffff;
+        font-weight: 800;
+      }
+
+      .footer {
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 10px;
+        text-align: center;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+      }
+
+      ul.clean {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      ul.clean li {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        background: #ffffff;
+        border-radius: 10px;
+        font-size: 12px;
+      }
+
+      .header-strip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .header-strip .marker {
+        width: 38px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--brand);
+      }
+
+      .header-strip span {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <!-- COVER -->
+      <section class="page">
+        <div class="cover">
+          <div>
+            <div class="brand-row">
+              <div class="brand-mark"><span class="brand-dot-blue"></span></div>
+              <div class="brand-text">
+                <div class="name">WorldCupX</div>
+                <div class="sub">CoreX · by P&P · Malima</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h1>Reglamento oficial de puntuación</h1>
+            <p class="lead" style="margin-top:18px;">Mundial 2026. Cada ticket es una jugada. Se ganan puntos por adivinar marcadores, resultados, clasificados, posiciones, cruces y desenlaces.</p>
+          </div>
+
+          <div class="cover-hero">
+            <div class="mini-card"><div class="label">Marcador exacto</div><div class="val">3 pts</div></div>
+            <div class="mini-card"><div class="label">Resultado</div><div class="val">1 pt</div></div>
+            <div class="mini-card"><div class="label">Campeón</div><div class="val">10 pts</div></div>
+            <div class="mini-card"><div class="label">Tercer puesto</div><div class="val">5 pts</div></div>
+          </div>
+
+          <div class="cover-flags">
+            <div class="flag lg" style="background-color:#ce1126;"></div>
+            <div class="flag lg" style="background-color:#002868;"></div>
+            <div class="flag lg" style="background-color:#fde047;"></div>
+            <div class="flag lg" style="background-color:#15803d;"></div>
+            <div class="flag lg" style="background-color:#0ea5e9;"></div>
+            <div class="flag lg" style="background-color:#dc2626;"></div>
+            <div class="flag lg" style="background-color:#1f2937;"></div>
+            <div class="flag lg" style="background-color:#fbbf24;"></div>
+            <div class="flag lg" style="background-color:#7c3aed;"></div>
+            <div class="flag lg" style="background-color:#0891b2;"></div>
+          </div>
+
+          <div class="cover-footer">
+            <span>v0.1.4 · Junio 2026</span>
+            <span>WorldCupX · documento interno</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- FASE GRUPOS: MARCADOR -->
+      <section class="page">
+        <div class="header-strip"><div class="marker"></div><span>1. Fase de grupos · marcador</span></div>
+        <div class="section">
+          <h2>Adivinar el marcador de cada partido</h2>
+          <div class="rule-grid">
+            <div class="rule">
+              <span class="points">3 pts</span>
+              <h3 style="margin-top:10px;">Marcador exacto</h3>
+              <p>Adivinaste los goles de los dos equipos tal cual.</p>
+            </div>
+            <div class="rule">
+              <span class="points accent">1 pt</span>
+              <h3 style="margin-top:10px;">Resultado general</h3>
+              <p>Acertaste el ganador (o empate), aunque el marcador no sea exacto.</p>
+            </div>
+            <div class="rule">
+              <span class="points red">0 pts</span>
+              <h3 style="margin-top:10px;">No coincide</h3>
+              <p>Tu predicción fue distinta al resultado real.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Ejemplos · México vs Sudáfrica</h3>
+            <div class="section" style="margin-top:10px;">
+              <div class="example">
+                <div>Tu predicción <span class="score-pill">2 - 1</span></div>
+                <div>Real <span class="score-pill">2 - 1</span></div>
+                <div class="ok">+3</div>
+              </div>
+              <div class="example">
+                <div>Tu predicción <span class="score-pill">2 - 1</span></div>
+                <div>Real <span class="score-pill">1 - 0</span></div>
+                <div class="ok">+1</div>
+              </div>
+              <div class="example">
+                <div>Tu predicción <span class="score-pill">1 - 1</span></div>
+                <div>Real <span class="score-pill">0 - 0</span></div>
+                <div class="ok">+1</div>
+              </div>
+              <div class="example">
+                <div>Tu predicción <span class="score-pill">2 - 1</span></div>
+                <div>Real <span class="score-pill">1 - 2</span></div>
+                <div class="bad">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="note"><b>Importante:</b> los 3 puntos por marcador exacto ya incluyen el acierto de resultado general. No se suman.</div>
+        </div>
+        <div class="footer">WorldCupX · Reglamento de puntuación</div>
+      </section>
+
+      <!-- FASE GRUPOS: POSICIONES -->
+      <section class="page">
+        <div class="header-strip"><div class="marker"></div><span>2. Fase de grupos · posiciones finales</span></div>
+        <div class="section">
+          <h2>Acertar el orden final del grupo</h2>
+          <div class="card">
+            <p>Cuando el grupo está <b>100% jugado</b> (los 6 partidos oficiales), se compara tu tabla predicha contra la tabla real y se premia cada posición exacta.</p>
+            <div class="rule-grid" style="margin-top: 12px;">
+              <div class="rule"><span class="points accent">+1</span><h3 style="margin-top:8px;">1er lugar exacto</h3><p>El equipo quedó primero como dijiste.</p></div>
+              <div class="rule"><span class="points accent">+1</span><h3 style="margin-top:8px;">2do lugar exacto</h3><p>El equipo quedó segundo como dijiste.</p></div>
+              <div class="rule"><span class="points accent">+1</span><h3 style="margin-top:8px;">3er lugar exacto</h3><p>El equipo quedó tercero como dijiste.</p></div>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <h3>Tabla real del Grupo A</h3>
+              <table>
+                <tr><th>Pos</th><th>Equipo</th></tr>
+                <tr><td>1</td><td><div class="example-team"><div class="flag sm" style="background-color:#fde047;"></div> Ecuador</div></td></tr>
+                <tr><td>2</td><td><div class="example-team"><div class="flag sm" style="background-color:#15803d;"></div> Brasil</div></td></tr>
+                <tr><td>3</td><td><div class="example-team"><div class="flag sm" style="background-color:#dc2626;"></div> Japón</div></td></tr>
+              </table>
+            </div>
+            <div class="card">
+              <h3>Tu predicción</h3>
+              <table>
+                <tr><th>Pos</th><th>Equipo</th><th class="right">Pts</th></tr>
+                <tr><td>1</td><td><div class="example-team"><div class="flag sm" style="background-color:#fde047;"></div> Ecuador</div></td><td class="right ok">+1</td></tr>
+                <tr><td>2</td><td><div class="example-team"><div class="flag sm" style="background-color:#dc2626;"></div> Japón</div></td><td class="right bad">0</td></tr>
+                <tr><td>3</td><td><div class="example-team"><div class="flag sm" style="background-color:#15803d;"></div> Brasil</div></td><td class="right bad">0</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Desempates oficiales del grupo</h3>
+            <ul class="clean">
+              <li><b>1.</b> Mayor cantidad de puntos.</li>
+              <li><b>2.</b> Mejor diferencia de gol.</li>
+              <li><b>3.</b> Más goles a favor.</li>
+              <li><b>4.</b> Resultado del enfrentamiento directo entre empatados.</li>
+              <li><b>5.</b> Puntos de fair play (menor cantidad gana).</li>
+              <li><b>6.</b> Sorteo o decisión manual del comité.</li>
+            </ul>
+          </div>
+
+          <div class="note"><b>Importante:</b> mientras el grupo no esté completo, no se calculan estos puntos. La predicción no cuenta como "ganada" hasta que jueguen las 6 fechas.</div>
+        </div>
+        <div class="footer">WorldCupX · Reglamento de puntuación</div>
+      </section>
+
+      <!-- ELIMINATORIAS: AVANCE -->
+      <section class="page">
+        <div class="header-strip"><div class="marker"></div><span>3. Eliminatorias · país que avanza</span></div>
+        <div class="section">
+          <h2>Acertar qué país sigue jugando</h2>
+          <p style="color:var(--muted); max-width:640px;">En eliminatorias importa quién avanza a la siguiente ronda, además del marcador.</p>
+
+          <table>
+            <tr><th>Ronda</th><th>Si acertaste el país que avanza</th><th class="right">Puntos</th></tr>
+            <tr><td>Dieciseisavos (R32)</td><td>El país que predijiste pasó a octavos</td><td class="right"><span class="points accent">+1</span></td></tr>
+            <tr><td>Octavos (R16)</td><td>El país que predijiste pasó a cuartos</td><td class="right"><span class="points accent">+2</span></td></tr>
+            <tr><td>Cuartos (QF)</td><td>El país que predijiste pasó a semifinales</td><td class="right"><span class="points accent">+3</span></td></tr>
+            <tr><td>Semifinales (SF)</td><td>El país que predijiste pasó a la final</td><td class="right"><span class="points accent">+4</span></td></tr>
+          </table>
+
+          <div class="card">
+            <h3>Ejemplo</h3>
+            <div class="step">
+              <div class="step-num">1</div>
+              <div><b>Predicción:</b> Brasil gana sus dieciseisavos y pasa a octavos.</div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div><b>Realidad:</b> Brasil efectivamente pasa a octavos.</div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div><b>Resultado:</b> <span class="points accent">+1</span> de avance correcto.</div>
+            </div>
+          </div>
+
+          <div class="note"><b>Importante:</b> los puntos de avance suben de ronda en ronda. Acertar al campeón implica varios aciertos de avance en cadena.</div>
+        </div>
+        <div class="footer">WorldCupX · Reglamento de puntuación</div>
+      </section>
+
+      <!-- ELIMINATORIAS: CRUCE FLEXIBLE + MARCADOR -->
+      <section class="page">
+        <div class="header-strip"><div class="marker"></div><span>4. Eliminatorias · cruce + marcador</span></div>
+        <div class="section">
+          <h2>Acertar cruces (flexible) y marcadores</h2>
+
+          <div class="card">
+            <h3>Regla del cruce</h3>
+            <p>Tu cruce cuenta si los <b>dos equipos coinciden con un partido real de la misma ronda</b>, sin importar:</p>
+            <ul class="clean" style="margin-top:8px;">
+              <li><b>El orden local/visitante.</b> Tu Brasil vs Argentina vale para un partido real Argentina vs Brasil.</li>
+              <li><b>El número de partido.</b> Si predijiste el cruce en P90 pero la vida real lo puso en P91, también cuenta.</li>
+            </ul>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <span class="pill green">Cruce exacto</span>
+              <h3 style="margin-top:8px;">Tu predicción · P89</h3>
+              <p><div class="example-team"><div class="flag sm" style="background-color:#0ea5e9;"></div> Argentina vs <div class="flag sm" style="background-color:#dc2626;"></div> Francia</div></p>
+              <h3 style="margin-top:10px;">Real · P89</h3>
+              <p><div class="example-team"><div class="flag sm" style="background-color:#dc2626;"></div> Francia vs <div class="flag sm" style="background-color:#0ea5e9;"></div> Argentina</div></p>
+              <p class="ok" style="margin-top:12px;">Cuenta · mismo cruce.</p>
+            </div>
+            <div class="card">
+              <span class="pill gold">Cruce flexible</span>
+              <h3 style="margin-top:8px;">Tu predicción · P89</h3>
+              <p><div class="example-team"><div class="flag sm" style="background-color:#fde047;"></div> Ecuador vs <div class="flag sm" style="background-color:#1d4ed8;"></div> Colombia</div></p>
+              <h3 style="margin-top:10px;">Real · P91</h3>
+              <p><div class="example-team"><div class="flag sm" style="background-color:#fde047;"></div> Ecuador vs <div class="flag sm" style="background-color:#1d4ed8;"></div> Colombia</div></p>
+              <p class="ok" style="margin-top:12px;">Cuenta · misma ronda, mismos equipos.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <span class="pill red">Cruce distinto</span>
+            <h3 style="margin-top:8px;">Tu predicción</h3>
+            <p>Argentina vs Francia</p>
+            <h3 style="margin-top:10px;">Real</h3>
+            <p>Argentina vs Alemania</p>
+            <p class="bad" style="margin-top:10px;">No cuenta · falta Francia. No se evalúa el marcador.</p>
+          </div>
+
+          <div class="card">
+            <h3>Si el cruce calza, aplica lo siguiente</h3>
+            <table>
+              <tr><th>Acierto</th><th>Ejemplo</th><th class="right">Puntos</th></tr>
+              <tr><td>Marcador exacto en 90 min</td><td>Predices 2-1 y real es 2-1</td><td class="right"><span class="points">+3</span></td></tr>
+              <tr><td>Resultado general en 90 min</td><td>Predices 2-1 y real es 1-0</td><td class="right"><span class="points accent">+1</span></td></tr>
+              <tr><td>No coincide</td><td>Predices gana local y real gana visitante</td><td class="right"><span class="points red">0</span></td></tr>
+            </table>
+          </div>
+
+          <div class="note"><b>Importante:</b> el marcador en eliminatorias se evalúa en 90 minutos. El tiempo extra y los penales se usan solo para definir quién avanza.</div>
+        </div>
+        <div class="footer">WorldCupX · Reglamento de puntuación</div>
+      </section>
+
+      <!-- EMPATES EN ELIMINATORIAS -->
+      <section class="page">
+        <div class="header-strip"><div class="marker"></div><span>5. Eliminatorias · empates y clasificado</span></div>
+        <div class="section">
+          <h2>Marcador vs clasificado</h2>
+          <div class="card">
+            <h3>Son dos cosas distintas</h3>
+            <p>El marcador responde "¿cómo terminaron los 90 minutos?". El clasificado responde "¿quién siguió en el torneo?". Pueden separarse.</p>
+          </div>
+
+          <div class="two-col">
+            <div class="card">
+              <span class="pill">Marcador 90 min</span>
+              <h3 style="margin-top:8px;">Tu predicción</h3>
+              <p><span class="score-pill">1 - 1</span></p>
+              <h3 style="margin-top:10px;">Real</h3>
+              <p><span class="score-pill">1 - 1</span></p>
+              <p class="ok" style="margin-top:10px;">+3 marcador exacto.</p>
+            </div>
+            <div class="card">
+              <span class="pill accent">Clasificado</span>
+              <h3 style="margin-top:8px;">Tu clasificado</h3>
+              <p><div class="example-team"><div class="flag sm" style="background-color:#7c3aed;"></div> Portugal</div></p>
+              <h3 style="margin-top:10px;">Real clasificado</h3>
+              <p><div class="example-team"><div class="flag sm" style="background-color:#7c3aed;"></div> Portugal</div></p>
+              <p class="ok" style="margin-top:10px;">Acierto de avance (según la ronda).</p>
+            </div>
+          </div>
+
+          <div class="note"><b>Importante:</b> si predices empate en eliminatorias, debes elegir el clasificado por penales o tiempo extra. Si no lo eliges, la predicción queda inválida.</div>
+        </div>
+        <div class="footer">WorldCupX · Reglamento de puntuación</div>
+      </section>
+
+      <!-- FINAL Y TERCER PUESTO -->
+      <section class="page">
+        <div class="header-strip"><div class="marker"></div><span>6. Final y tercer puesto</span></div>
+        <div class="section">
+          <h2>Los bonos más grandes del torneo</h2>
+          <div class="rule-grid">
+            <div class="rule">
+              <span class="points gold">+10</span>
+              <h3 style="margin-top:10px;">Campeón correcto</h3>
+              <p>Si tu campeón es el campeón real del torneo.</p>
+            </div>
+            <div class="rule">
+              <span class="points accent">+5</span>
+              <h3 style="margin-top:10px;">Tercer puesto correcto</h3>
+              <p>Si acertaste quién terminó tercero.</p>
+            </div>
+            <div class="rule">
+              <span class="points green">+3 / +1</span>
+              <h3 style="margin-top:10px;">Marcador final</h3>
+              <p>Si el cruce de la final calza, se puntúa como cualquier otro: exacto 3 o resultado 1.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Ejemplo de cierre del torneo</h3>
+            <table>
+              <tr><th>Tu predicción</th><th>Real</th><th class="right">Puntos</th></tr>
+              <tr><td><div class="example-team"><div class="flag sm" style="background-color:#0ea5e9;"></div> Campeón: Argentina</div></td><td><div class="example-team"><div class="flag sm" style="background-color:#0ea5e9;"></div> Campeón: Argentina</div></td><td class="right ok">+10</td></tr>
+              <tr><td><div class="example-team"><div class="flag sm" style="background-color:#15803d;"></div> Tercer puesto: Brasil</div></td><td><div class="example-team"><div class="flag sm" style="background-color:#15803d;"></div> Tercer puesto: Brasil</div></td><td class="right ok">+5</td></tr>
+              <tr><td>Final 2 - 1</td><td>Final 2 - 1</td><td class="right ok">+3</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="footer">WorldCupX · Reglamento de puntuación</div>
+      </section>
+
+      <!-- TABLA RAPIDA -->
+      <section class="page">
+        <div class="header-strip"><div class="marker"></div><span>7. Tabla resumen</span></div>
+        <div class="section">
+          <h2>Todos los puntos en una página</h2>
+          <table>
+            <tr><th>Etapa</th><th>Evento</th><th class="right">Puntos</th></tr>
+            <tr><td>Grupos</td><td>Marcador exacto</td><td class="right"><span class="points">3</span></td></tr>
+            <tr><td>Grupos</td><td>Resultado general</td><td class="right"><span class="points accent">1</span></td></tr>
+            <tr><td>Grupos (al cierre)</td><td>Posición exacta 1.º lugar</td><td class="right"><span class="points accent">1</span></td></tr>
+            <tr><td>Grupos (al cierre)</td><td>Posición exacta 2.º lugar</td><td class="right"><span class="points accent">1</span></td></tr>
+            <tr><td>Grupos (al cierre)</td><td>Posición exacta 3.º lugar</td><td class="right"><span class="points accent">1</span></td></tr>
+            <tr><td>Dieciseisavos (R32)</td><td>País avanza a octavos</td><td class="right"><span class="points accent">1</span></td></tr>
+            <tr><td>Octavos (R16)</td><td>País avanza a cuartos</td><td class="right"><span class="points accent">2</span></td></tr>
+            <tr><td>Cuartos (QF)</td><td>País avanza a semifinales</td><td class="right"><span class="points accent">3</span></td></tr>
+            <tr><td>Semifinales (SF)</td><td>País avanza a final</td><td class="right"><span class="points accent">4</span></td></tr>
+            <tr><td>Eliminatorias (cruce flexible)</td><td>Marcador exacto en 90 min</td><td class="right"><span class="points">3</span></td></tr>
+            <tr><td>Eliminatorias (cruce flexible)</td><td>Resultado general en 90 min</td><td class="right"><span class="points accent">1</span></td></tr>
+            <tr><td>Final</td><td>Campeón correcto</td><td class="right"><span class="points gold">10</span></td></tr>
+            <tr><td>Tercer puesto</td><td>Tercer lugar correcto</td><td class="right"><span class="points accent">5</span></td></tr>
+          </table>
+
+          <div class="card">
+            <h3>Resumen para recordar</h3>
+            <ul class="clean">
+              <li><b>Exacto vale 3.</b> Ya incluye el acierto de resultado general.</li>
+              <li><b>Resultado general vale 1.</b> Sirve cuando no se acierta el marcador.</li>
+              <li><b>Avance sube cada ronda.</b> R32 +1, R16 +2, QF +3, SF +4.</li>
+              <li><b>Cruce flexible:</b> mismos 2 equipos, sin importar orden ni número de partido dentro de la misma ronda.</li>
+              <li><b>Campeón:</b> +10.</li>
+              <li><b>Tercer puesto:</b> +5.</li>
+            </ul>
+          </div>
+
+          <div class="footer">WorldCupX · Reglamento oficial · v0.1.4</div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
