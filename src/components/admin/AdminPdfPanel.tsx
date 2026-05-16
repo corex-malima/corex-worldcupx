@@ -72,7 +72,7 @@ export function AdminPdfPanel({ teams, matches }: Props) {
         </span>
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Plantillas imprimibles</p>
-          <h2 className="text-xl font-black text-white">PDF para colaboradores sin internet</h2>
+          <h2 className="text-xl font-semibold text-white">PDF para colaboradores sin internet</h2>
         </div>
       </div>
       <p className="mt-3 max-w-3xl text-sm text-white/65">

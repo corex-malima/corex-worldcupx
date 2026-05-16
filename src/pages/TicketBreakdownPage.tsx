@@ -242,7 +242,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
       </div>
 
       <Card>
-        <h2 className="text-lg font-black text-white">Desglose de puntos</h2>
+        <h2 className="text-lg font-semibold text-white">Desglose de puntos</h2>
         <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 xl:grid-cols-4">
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Grupo · marcador</p>

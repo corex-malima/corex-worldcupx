@@ -33,7 +33,7 @@ export function AdminHomePage({ onNavigate }: { onNavigate: (to: string) => void
           <AdminMetricCard label="Recaudado opcional" value={formatCurrency(kpis.revenue)} icon={<DollarSign />} />
         </div>
         <Card>
-          <h2 className="text-xl font-black text-white">Accesos rápidos</h2>
+          <h2 className="text-xl font-semibold text-white">Accesos rápidos</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             <Button onClick={() => onNavigate('#/admin/sales')}>Agregar compra</Button>
             <Button variant="secondary" onClick={() => onNavigate('#/admin/results')}>Cargar resultados</Button>

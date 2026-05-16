@@ -24,11 +24,17 @@ function parseRankSlot(slot: string): { position: number; groupCode: string } | 
 function parseThirdGroups(label: string): string[] {
   const verbose = label.match(/Grupo\s+(.+)$/);
   if (verbose) {
-    return verbose[1].split('/').map((group) => group.trim()).filter((group) => /^[A-L]$/.test(group));
+    return verbose[1].split('/').flatMap((group) => {
+      const trimmed = group.trim();
+      return /^[A-L]$/.test(trimmed) ? [trimmed] : [];
+    });
   }
   const compact = label.match(/^3([A-L/]+)$/);
   if (compact) {
-    return compact[1].split('/').map((group) => group.trim()).filter((group) => /^[A-L]$/.test(group));
+    return compact[1].split('/').flatMap((group) => {
+      const trimmed = group.trim();
+      return /^[A-L]$/.test(trimmed) ? [trimmed] : [];
+    });
   }
   return [];
 }

@@ -33,10 +33,10 @@ export function GroupStageStep({ teams, matches, predictions, standings, bestThi
       <div className="space-y-4">
         {groupCodes.map((groupCode) => (
           <section key={groupCode} className="space-y-3">
-            <h2 className="text-xl font-black text-white">Grupo {groupCode}</h2>
-            {matches.filter((match) => match.groupCode === groupCode).map((match) => (
+            <h2 className="text-xl font-semibold text-white">Grupo {groupCode}</h2>
+            {matches.flatMap((match) => match.groupCode !== groupCode ? [] : [
               <GroupMatchCard key={match.id} match={match} teams={teams} prediction={predictions.find((prediction) => prediction.matchId === match.id)} disabled={disabled} onChange={(home, away) => onChange(match.id, home, away)} />
-            ))}
+            ])}
           </section>
         ))}
       </div>

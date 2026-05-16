@@ -113,17 +113,16 @@ export function searchCollaborators(
   if (!isNumericQuery && normalizedQuery.replace(/\s+/g, '').length < 2) return [];
 
   return collaborators
-    .map((profile) => {
+    .flatMap<CollaboratorSearchResult>((profile) => {
       const matchRank = rankProfile(profile, normalizedQuery, digitsQuery, queryTokens);
-      if (matchRank === null) return null;
-      return {
+      if (matchRank === null) return [];
+      return [{
         ...profile,
         search_label: buildSearchLabel(profile),
         masked_national_id: profile.national_id ? maskCedula(onlyDigits(profile.national_id)) : null,
         match_rank: matchRank
-      };
+      }];
     })
-    .filter((profile): profile is CollaboratorSearchResult => Boolean(profile))
     .sort((a, b) => a.match_rank - b.match_rank || (a.person_name ?? '').localeCompare(b.person_name ?? '', 'es'))
     .slice(0, options.limit ?? DEFAULT_LIMIT);
 }

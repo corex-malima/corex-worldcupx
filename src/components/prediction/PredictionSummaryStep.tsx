@@ -114,12 +114,12 @@ export function PredictionSummaryStep({ ticketId, ticketAlias, ownerName, draft,
       <Card>
         <h3 className="text-xl font-semibold text-white">Predicción completa</h3>
         <div className="mt-4 grid gap-2 md:grid-cols-2">
-          {draft.bracketMatches.filter((match) => match.advancingTeamId).map((match) => (
+          {draft.bracketMatches.flatMap((match) => !match.advancingTeamId ? [] : [
             <div key={match.id} className="min-w-0 rounded-2xl bg-pitch-800 p-3 text-sm text-white/75">
               <b>Partido {match.matchNo}</b>
               <TeamIdentity team={findTeam(teams, match.advancingTeamId)} label="Pendiente" size="sm" className="mt-2" />
             </div>
-          ))}
+          ])}
         </div>
       </Card>
     </div>

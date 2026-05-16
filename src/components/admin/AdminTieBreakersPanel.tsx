@@ -30,9 +30,10 @@ export function AdminTieBreakersPanel({ standings, teams, fairPlayPoints, manual
         <h3 className="font-semibold text-white">Fair play real</h3>
         <p className="mt-1 text-sm text-white/65">Ingresa puntos de indisciplina solo para equipos empatados. Menor puntaje gana el desempate.</p>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
-          {standings.filter((row) => pendingGroups.includes(row.groupCode)).map((row) => {
+          {standings.flatMap((row) => {
+            if (!pendingGroups.includes(row.groupCode)) return [];
             const team = teams.find((item) => item.id === row.teamId);
-            return (
+            return [(
               <label key={row.teamId} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-pitch-900 p-3">
                 <TeamIdentity team={team} size="sm" />
                 <input
@@ -44,7 +45,7 @@ export function AdminTieBreakersPanel({ standings, teams, fairPlayPoints, manual
                   placeholder="FP"
                 />
               </label>
-            );
+            )];
           })}
         </div>
       </div>

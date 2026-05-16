@@ -268,30 +268,27 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
     try {
       if (!USE_MOCKS && supabase) {
         const payload = {
-          group_scores: groupMatches
-            .map((match) => {
-              const score = draft.groupScores[match.id];
-              if (!score || score.homeScore === null || score.awayScore === null) return null;
-              return { match_id: match.id, home_score: score.homeScore, away_score: score.awayScore };
-            })
-            .filter((row): row is { match_id: string; home_score: number; away_score: number } => row !== null),
-          third_place_assignments: thirdPlaceSlots
-            .filter((slot) => slot.assignedTeamId)
-            .map((slot) => {
-              const r32 = knockoutMatches.find((match) => match.matchNo === slot.matchNo);
-              return r32 ? { slot_match_id: r32.id, team_id: slot.assignedTeamId as string } : null;
-            })
-            .filter((row): row is { slot_match_id: string; team_id: string } => row !== null),
-          knockout_matches: draft.bracketMatches
-            .filter((match) => match.homeTeamId && match.awayTeamId && match.homeScore !== null && match.awayScore !== null)
-            .map((match) => ({
+          group_scores: groupMatches.flatMap((match) => {
+            const score = draft.groupScores[match.id];
+            if (!score || score.homeScore === null || score.awayScore === null) return [];
+            return [{ match_id: match.id, home_score: score.homeScore, away_score: score.awayScore }];
+          }),
+          third_place_assignments: thirdPlaceSlots.flatMap((slot) => {
+            if (!slot.assignedTeamId) return [];
+            const r32 = knockoutMatches.find((match) => match.matchNo === slot.matchNo);
+            return r32 ? [{ slot_match_id: r32.id, team_id: slot.assignedTeamId }] : [];
+          }),
+          knockout_matches: draft.bracketMatches.flatMap((match) => {
+            if (!match.homeTeamId || !match.awayTeamId || match.homeScore === null || match.awayScore === null) return [];
+            return [{
               match_id: match.id,
               home_team_id: match.homeTeamId,
               away_team_id: match.awayTeamId,
               home_score: match.homeScore,
               away_score: match.awayScore,
               penalty_winner_team_id: match.homeScore === match.awayScore ? match.advancingTeamId : null
-            })),
+            }];
+          }),
           champion_team_id: finalSummary.championTeamId,
           third_place_team_id: finalSummary.thirdPlaceTeamId
         };

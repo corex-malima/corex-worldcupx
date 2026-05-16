@@ -30,7 +30,7 @@ export function KnockoutBracket({ matches, teams, disabled, onChange, onSave, sa
         {rounds.map(([roundCode, title]) => (
           <section key={roundCode} className="min-w-0 space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-widest text-white/50">{title}</h3>
-            {matches.filter((match) => match.roundCode === roundCode).map((match) => (
+            {matches.flatMap((match) => match.roundCode !== roundCode ? [] : [
               <KnockoutMatchCard
                 key={match.id}
                 match={match}
@@ -42,7 +42,7 @@ export function KnockoutBracket({ matches, teams, disabled, onChange, onSave, sa
                 saveError={saveErrorByMatch?.[match.id]}
                 isOfficial={officialMatchIds?.has(match.id)}
               />
-            ))}
+            ])}
           </section>
         ))}
       </div>

@@ -69,7 +69,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
   const standings = useMemo(() => calculateGroupStandings(allTeams, groupMatches, resultRows, { fairPlayPoints, manualTieBreakers }), [allTeams, fairPlayPoints, groupMatches, manualTieBreakers, resultRows]);
   const qualified = useMemo(() => getQualifiedTeams(standings), [standings]);
   const canBuildBracket = validateGroupStep(groupMatches, resultRows, standings).length === 0 && validateThirdPlaceAssignments(thirdSlots, qualified.bestThirds).length === 0;
-  const officialMatchIds = useMemo(() => new Set(allMatches.filter((m) => m.status === 'official').map((m) => m.id)), [allMatches]);
+  const officialMatchIds = useMemo(() => new Set(allMatches.flatMap((m) => m.status === 'official' ? [m.id] : [])), [allMatches]);
 
   function setGroupResult(matchId: string, homeScore: number | null, awayScore: number | null) {
     setResults((current) => ({ ...current, [matchId]: { matchId, homeScore, awayScore } }));

@@ -57,7 +57,7 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
       <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-white/45">Colaborador seleccionado</p>
-          <h2 className="mt-1 text-2xl font-black text-white">{employee.personName}</h2>
+          <h2 className="mt-1 text-2xl font-semibold text-white">{employee.personName}</h2>
           <div className="mt-3 grid gap-3 text-sm text-white/65 sm:grid-cols-2">
             <p><span className="text-white/40">Cedula:</span> {employee.cedulaMasked}</p>
             <p><span className="text-white/40">Codigo personal:</span> {employee.personId}</p>

@@ -206,15 +206,16 @@ export function PredictionReceiptDocument({
 
         <Text style={styles.sectionTitle} break>Mejores terceros asignados</Text>
         <View style={styles.thirdsList}>
-          {thirdPlaceSlots.filter((s) => s.assignedTeamId).map((s) => {
-            const team = s.assignedTeamId ? teamById.get(s.assignedTeamId) ?? null : null;
+          {thirdPlaceSlots.flatMap((s) => {
+            if (!s.assignedTeamId) return [];
+            const team = teamById.get(s.assignedTeamId) ?? null;
             const flagSrc = team ? flagPngs?.get(team.fifaCode.toLowerCase()) : undefined;
-            return (
+            return [(
               <View key={s.slotId} style={styles.thirdItem}>
                 {flagSrc && <Image src={flagSrc} style={styles.flag} />}
-                <Text style={styles.teamCode}>{team?.name ?? '—'} → P{s.matchNo}</Text>
+                <Text style={styles.teamCode}>{team?.name ?? '(sin asignar)'} → P{s.matchNo}</Text>
               </View>
-            );
+            )];
           })}
         </View>
 

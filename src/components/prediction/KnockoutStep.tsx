@@ -18,7 +18,7 @@ export function KnockoutStep({ matches, teams, disabled, onBackToGroups, onChang
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Eliminatorias</p>
-            <h2 className="text-2xl font-black text-white">Primero construye los dieciseisavos</h2>
+            <h2 className="text-2xl font-semibold text-white">Primero construye los dieciseisavos</h2>
             <p className="mt-2 text-sm text-white/60">Completa grupos y asigna los mejores terceros para habilitar el bracket.</p>
           </div>
           <Button variant="secondary" onClick={onBackToGroups} icon={<ArrowLeft size={17} />}>Volver a grupos</Button>
@@ -30,7 +30,7 @@ export function KnockoutStep({ matches, teams, disabled, onBackToGroups, onChang
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><p className="text-xs font-black uppercase tracking-widest text-cup-blue">Eliminatorias</p><h2 className="text-2xl font-black text-white">Define quién avanza ronda por ronda</h2></div>
+        <div><p className="text-xs font-black uppercase tracking-widest text-cup-blue">Eliminatorias</p><h2 className="text-2xl font-semibold text-white">Define quién avanza ronda por ronda</h2></div>
         <Button variant="secondary" onClick={onBackToGroups} icon={<ListChecks size={17} />}>Ajustar grupos</Button>
       </div>
       <KnockoutBracket matches={matches} teams={teams} disabled={disabled} onChange={onChange} />

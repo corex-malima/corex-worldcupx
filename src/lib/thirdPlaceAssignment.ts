@@ -56,10 +56,11 @@ export function validateThirdPlaceAssignmentSolvability(slots: ThirdPlaceSlot[],
   const result = search(slots, bestThirds, fixed);
   if (result) return { ok: true, blockedSlotLabels: [] };
 
-  const blockedSlotLabels = slots
-    .filter((slot) => !slot.assignedTeamId)
-    .filter((slot) => !bestThirds.some((row) => isAllowed(slot, row) && !slots.some((item) => item.assignedTeamId === row.teamId)))
-    .map((slot) => `Partido ${slot.matchNo}`);
+  const blockedSlotLabels = slots.flatMap((slot) => {
+    if (slot.assignedTeamId) return [];
+    const hasOption = bestThirds.some((row) => isAllowed(slot, row) && !slots.some((item) => item.assignedTeamId === row.teamId));
+    return hasOption ? [] : [`Partido ${slot.matchNo}`];
+  });
   return { ok: false, blockedSlotLabels };
 }
 

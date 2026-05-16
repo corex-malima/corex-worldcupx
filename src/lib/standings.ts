@@ -151,7 +151,8 @@ export function calculateGroupStandings(teams: Team[], matches: Match[], predict
 
   teams.forEach((team) => rows.set(team.id, emptyRow(team, options)));
 
-  matches.filter((match) => match.stage === 'GROUP').forEach((match) => {
+  matches.forEach((match) => {
+    if (match.stage !== 'GROUP') return;
     if (!match.homeTeamId || !match.awayTeamId) return;
     const score = matchScore(predictionMap.get(match.id), match);
     if (!score) return;
@@ -212,5 +213,5 @@ export function isGroupStageComplete(matches: Match[], predictions: ScorePredict
 }
 
 export function getGroupsNeedingManualTieBreaker(standings: StandingRow[]): string[] {
-  return Array.from(new Set(standings.filter((row) => row.tieStatus === 'needs_manual').map((row) => row.groupCode))).sort();
+  return Array.from(new Set(standings.flatMap((row) => row.tieStatus === 'needs_manual' ? [row.groupCode] : []))).sort();
 }
