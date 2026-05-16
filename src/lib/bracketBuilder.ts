@@ -156,7 +156,7 @@ export function updateBracketScore(matches: PredictedBracketMatch[], matchId: st
   return propagateBracket(updated);
 }
 
-export function propagateBracket(matches: PredictedBracketMatch[]): PredictedBracketMatch[] {
+function propagateBracket(matches: PredictedBracketMatch[]): PredictedBracketMatch[] {
   let next = matches.map((match) => ({ ...match }));
   ROUND_ORDER.forEach((round) => {
     next = next.map((match) => {

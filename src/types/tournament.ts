@@ -1,5 +1,5 @@
 export type Stage = 'GROUP' | 'R32' | 'R16' | 'QF' | 'SF' | 'THIRD_PLACE' | 'FINAL';
-export type MatchStatus = 'scheduled' | 'live' | 'official';
+type MatchStatus = 'scheduled' | 'live' | 'official';
 
 export interface Team {
   id: string;
@@ -38,7 +38,7 @@ export interface ScorePrediction {
   penaltyWinnerTeamId?: string | null;
 }
 
-export type TieBreakerStatus = 'clear' | 'head_to_head' | 'fair_play' | 'manual' | 'needs_manual';
+type TieBreakerStatus = 'clear' | 'head_to_head' | 'fair_play' | 'manual' | 'needs_manual';
 
 export interface StandingRow {
   teamId: string;
@@ -55,18 +55,3 @@ export interface StandingRow {
   manualRank?: number;
 }
 
-export interface BracketMatch {
-  id: string;
-  matchNo?: number;
-  stage: Stage;
-  homeTeamId?: string | null;
-  awayTeamId?: string | null;
-  homeSlot?: string | null;
-  awaySlot?: string | null;
-  matchDatetime?: string | null;
-  venue?: string | null;
-  homeScore?: number | null;
-  awayScore?: number | null;
-  penaltyWinnerTeamId?: string | null;
-  winnerTeamId?: string | null;
-}

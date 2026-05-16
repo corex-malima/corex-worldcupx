@@ -66,7 +66,7 @@ async function invokeWithRetries(params: { limit: number; offset: number }): Pro
   throw lastError ?? new Error('No se pudo consultar la base de colaboradores.');
 }
 
-export async function fetchPersonProfilesPage(params: { limit?: number; offset?: number } = {}): Promise<PersonProfileApiResponse> {
+async function fetchPersonProfilesPage(params: { limit?: number; offset?: number } = {}): Promise<PersonProfileApiResponse> {
   const limit = params.limit ?? DEFAULT_LIMIT;
   const offset = params.offset ?? 0;
 

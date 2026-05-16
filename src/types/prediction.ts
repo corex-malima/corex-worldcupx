@@ -1,9 +1,9 @@
 import type { Stage } from './tournament';
 
-export type PredictionDraftStatus = 'draft' | 'ready_for_knockout' | 'submitted' | 'locked';
+type PredictionDraftStatus = 'draft' | 'ready_for_knockout' | 'submitted' | 'locked';
 export type RoundCode = Exclude<Stage, 'GROUP'>;
 
-export interface MatchScoreDraft {
+interface MatchScoreDraft {
   matchId: string;
   homeScore: number | null;
   awayScore: number | null;

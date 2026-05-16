@@ -66,7 +66,7 @@ interface Props {
 }
 
 function TeamCell({ team, flagSrc, align = 'left' }: { team: Team | null | undefined; flagSrc: string | undefined; align?: 'left' | 'right' }) {
-  if (!team) return <Text style={styles.teamCode}>—</Text>;
+  if (!team) return <Text style={styles.teamCode}>(sin asignar)</Text>;
   const flag = flagSrc ? (
     <Image src={flagSrc} style={align === 'right' ? styles.flagRight : styles.flag} />
   ) : (

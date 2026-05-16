@@ -3,7 +3,7 @@ import type { CollaboratorSearchResult, PersonProfile } from '../types/personPro
 
 const DEFAULT_LIMIT = 20;
 
-export function normalizeSearchText(value: string): string {
+function normalizeSearchText(value: string): string {
   return value
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')

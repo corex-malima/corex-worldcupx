@@ -9,7 +9,7 @@ export interface ScoreDetailRow {
   detail: Record<string, unknown>;
 }
 
-export interface TicketScoreRow {
+interface TicketScoreRow {
   total_points: number;
   group_match_points: number;
   group_position_points: number;

@@ -1,6 +1,6 @@
 import type { PersonProfile } from './personProfile';
 
-export type UserRole = 'collaborator' | 'admin_tthh' | 'super_admin';
+type UserRole = 'collaborator' | 'admin_tthh' | 'super_admin';
 export type TicketStatus = 'sold' | 'claimed' | 'cancelled';
 export type PredictionStatus = 'pending' | 'in_progress' | 'submitted' | 'locked';
 
