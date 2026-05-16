@@ -42,9 +42,14 @@ left join group_counts gc on gc.prediction_id = ph.id
 left join public.ticket_scores ts on ts.ticket_id = t.id;
 
 -- =============================================================================
--- v_ranking_public: añade job_classification_code
+-- v_ranking_public: añade columnas area_name y job_classification_code
+-- NOTA: PostgreSQL no permite cambiar el orden/cantidad de columnas con
+-- "create or replace view". Usamos drop+create con cascade porque
+-- v_ranking_by_area depende de esta view.
 -- =============================================================================
-create or replace view public.v_ranking_public as
+drop view if exists public.v_ranking_by_area cascade;
+drop view if exists public.v_ranking_public cascade;
+create view public.v_ranking_public as
 with numbered as (
     select t.*, row_number() over (partition by t.employee_id order by t.created_at)::int as ticket_seq
     from public.tickets t
@@ -68,6 +73,16 @@ join public.employees e on e.id = t.employee_id
 left join public.ticket_scores ts on ts.ticket_id = t.id
 left join public.prediction_headers ph on ph.ticket_id = t.id;
 
+-- Recreamos v_ranking_by_area que fue dropeado por cascade.
+create view public.v_ranking_by_area as
+select
+    area_id,
+    count(*)::int as tickets,
+    round(avg(points)::numeric, 2) as avg_points,
+    max(points)::int as max_points
+from public.v_ranking_public
+group by area_id;
+
 -- =============================================================================
 -- Helper para debug: estado del sistema en una sola query
 -- =============================================================================
@@ -84,4 +99,5 @@ select
 
 grant select on public.v_admin_tickets to authenticated;
 grant select on public.v_ranking_public to anon, authenticated;
+grant select on public.v_ranking_by_area to authenticated;
 grant select on public.v_admin_system_status to authenticated;
