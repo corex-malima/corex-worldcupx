@@ -27,7 +27,7 @@ export function AdminTieBreakersPanel({ standings, teams, fairPlayPoints, manual
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
-        <h3 className="font-black text-white">Fair play real</h3>
+        <h3 className="font-semibold text-white">Fair play real</h3>
         <p className="mt-1 text-sm text-white/65">Ingresa puntos de indisciplina solo para equipos empatados. Menor puntaje gana el desempate.</p>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {standings.filter((row) => pendingGroups.includes(row.groupCode)).map((row) => {

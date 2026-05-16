@@ -112,7 +112,7 @@ export function PredictionSummaryStep({ ticketId, ticketAlias, ownerName, draft,
         </Button>
       </Card>
       <Card>
-        <h3 className="text-xl font-black text-white">Predicción completa</h3>
+        <h3 className="text-xl font-semibold text-white">Predicción completa</h3>
         <div className="mt-4 grid gap-2 md:grid-cols-2">
           {draft.bracketMatches.filter((match) => match.advancingTeamId).map((match) => (
             <div key={match.id} className="min-w-0 rounded-2xl bg-pitch-800 p-3 text-sm text-white/75">

@@ -21,7 +21,7 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
     <div className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-black text-white">Asignacion manual de terceros</h3>
+          <h3 className="font-semibold text-white">Asignacion manual de terceros</h3>
           <p className="text-sm text-white/60">Cada cruce respeta los grupos permitidos. Puedes autocompletar una combinacion valida.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -45,7 +45,7 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
       )}
       <div className="grid gap-3 sm:grid-cols-2">
         {slots.map((slot) => {
-          const selectedIds = new Set(slots.filter((item) => item.slotId !== slot.slotId).map((item) => item.assignedTeamId).filter(Boolean));
+          const selectedIds = new Set(slots.flatMap((item) => (item.slotId !== slot.slotId && item.assignedTeamId) ? [item.assignedTeamId] : []));
           const assignedTeam = teams.find((team) => team.id === slot.assignedTeamId);
           return (
             <label key={slot.slotId} className="block min-w-0 rounded-2xl border border-white/10 bg-pitch-900 p-3">

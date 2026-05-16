@@ -288,7 +288,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
         return (
           <Card key={stage}>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-lg font-black text-white">{stageLabel[stage]}</h3>
+              <h3 className="text-lg font-semibold text-white">{stageLabel[stage]}</h3>
               <Badge tone="slate">{rows.filter((r) => r.actualIsOfficial).length}/{rows.length} oficiales</Badge>
             </div>
             <div className="space-y-2">

@@ -17,7 +17,7 @@ export function validateThirdPlaceAssignments(slots: ThirdPlaceSlot[], bestThird
   const errors: string[] = [];
   const bestThirdByTeam = new Map(bestThirds.map((row) => [row.teamId, row]));
   const validTeamIds = new Set(bestThirdByTeam.keys());
-  const assigned = slots.map((slot) => slot.assignedTeamId).filter(Boolean) as string[];
+  const assigned = slots.flatMap((slot) => slot.assignedTeamId ? [slot.assignedTeamId] : []);
 
   // Safety net: cuando hay mejores terceros clasificados (>=8) pero el fixture no
   // produjo slots, es un problema de datos. Bloqueamos para no dejar pasar al usuario.

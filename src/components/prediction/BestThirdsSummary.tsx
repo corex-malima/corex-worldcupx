@@ -6,7 +6,7 @@ export function BestThirdsSummary({ rows, teams }: { rows: StandingRow[]; teams:
   return (
     <div className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="font-black text-white">Mejores terceros</h3>
+        <h3 className="font-semibold text-white">Mejores terceros</h3>
         <Badge tone="blue">{rows.length}/8</Badge>
       </div>
       <div className="flex flex-wrap gap-2">

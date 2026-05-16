@@ -87,7 +87,7 @@ function compareSeedAndName(teamMap: Map<string, Team>, a: StandingRow, b: Stand
 function resolveTiedBlock(block: StandingRow[], groupMatches: Match[], predictionMap: Map<string, ScorePrediction>, teamMap: Map<string, Team>, options: StandingsOptions): StandingRow[] {
   if (block.length <= 1) return block;
   const h2h = headToHeadRows(block, groupMatches, predictionMap);
-  const sortedByH2h = [...block].sort((a, b) => {
+  const sortedByH2h = block.toSorted((a, b) => {
     const hA = h2h.get(a.teamId);
     const hB = h2h.get(b.teamId);
     return (hB?.points ?? 0) - (hA?.points ?? 0) ||
@@ -116,7 +116,7 @@ function resolveFinalTie(block: StandingRow[], teamMap: Map<string, Team>, optio
 
   const allFairPlay = block.every((row) => options.fairPlayPoints?.[row.teamId] !== undefined);
   if (allFairPlay) {
-    const byFairPlay = [...block].sort((a, b) => (options.fairPlayPoints?.[a.teamId] ?? 9999) - (options.fairPlayPoints?.[b.teamId] ?? 9999));
+    const byFairPlay = block.toSorted((a, b) => (options.fairPlayPoints?.[a.teamId] ?? 9999) - (options.fairPlayPoints?.[b.teamId] ?? 9999));
     const fairPlayGroups = splitEqualBy(byFairPlay, (row) => String(options.fairPlayPoints?.[row.teamId]));
     if (fairPlayGroups.length > 1) {
       return fairPlayGroups.flatMap((group) => resolveFinalTie(group, teamMap, options, 'fair_play'));
@@ -126,8 +126,8 @@ function resolveFinalTie(block: StandingRow[], teamMap: Map<string, Team>, optio
   const manual = options.manualTieBreakers?.[block[0].groupCode] ?? [];
   const manualCoversBlock = block.every((row) => manual.includes(row.teamId));
   if (manualCoversBlock) {
-    return [...block]
-      .sort((a, b) => manual.indexOf(a.teamId) - manual.indexOf(b.teamId))
+    return block
+      .toSorted((a, b) => manual.indexOf(a.teamId) - manual.indexOf(b.teamId))
       .map((row, index) => ({
         ...row,
         manualRank: index + 1,
@@ -136,8 +136,8 @@ function resolveFinalTie(block: StandingRow[], teamMap: Map<string, Team>, optio
       }));
   }
 
-  return [...block]
-    .sort((a, b) => compareSeedAndName(teamMap, a, b))
+  return block
+    .toSorted((a, b) => compareSeedAndName(teamMap, a, b))
     .map((row) => ({
       ...row,
       tieStatus: 'needs_manual',
@@ -173,7 +173,7 @@ export function calculateGroupStandings(teams: Team[], matches: Match[], predict
   const ranked: StandingRow[] = [];
   byGroup.forEach((groupRows, groupCode) => {
     const groupMatches = matches.filter((match) => match.groupCode === groupCode);
-    const sortedByGeneral = [...groupRows].sort((a, b) =>
+    const sortedByGeneral = groupRows.toSorted((a, b) =>
       b.points - a.points ||
       b.goalDifference - a.goalDifference ||
       b.goalsFor - a.goalsFor

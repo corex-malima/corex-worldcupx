@@ -16,7 +16,7 @@ export function AdminKnockoutResultsPanel({ matches, teams, onChange, onSave, sa
   if (!matches.length) {
     return (
       <Card>
-        <h3 className="text-xl font-black text-white">Cruces reales pendientes</h3>
+        <h3 className="text-xl font-semibold text-white">Cruces reales pendientes</h3>
         <p className="mt-2 text-sm text-white/60">Completa resultados de grupos y asigna terceros reales para construir dieciseisavos.</p>
       </Card>
     );

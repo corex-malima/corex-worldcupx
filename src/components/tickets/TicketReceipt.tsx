@@ -11,7 +11,7 @@ export function TicketReceipt({ code, employeeName }: { code: string; employeeNa
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-white/55">Comprobante de ticket</p>
-          <h3 className="mt-1 text-xl font-black">{employeeName}</h3>
+          <h3 className="mt-1 text-xl font-semibold">{employeeName}</h3>
         </div>
         <Ticket className="text-cup-blue" />
       </div>

@@ -9,3 +9,8 @@ dist/
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+
+# Claude Code y sus worktrees viven dentro del repo principal pero NO
+# son codigo fuente; ignorarlos evita que linters y auditores los
+# escaneen como duplicados de src/.
+.claude/

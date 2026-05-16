@@ -9,7 +9,7 @@ function search(slots: ThirdPlaceSlot[], candidates: StandingRow[], fixed = new 
   const fixedValues = Array.from(fixed.values()).filter(Boolean) as string[];
   if (new Set(fixedValues).size !== fixedValues.length) return null;
   const used = new Set(fixedValues);
-  const orderedSlots = [...slots].sort((a, b) => {
+  const orderedSlots = slots.toSorted((a, b) => {
     const aFixed = fixed.has(a.slotId);
     const bFixed = fixed.has(b.slotId);
     if (aFixed !== bFixed) return aFixed ? -1 : 1;

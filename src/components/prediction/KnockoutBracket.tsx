@@ -29,7 +29,7 @@ export function KnockoutBracket({ matches, teams, disabled, onChange, onSave, sa
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {rounds.map(([roundCode, title]) => (
           <section key={roundCode} className="min-w-0 space-y-3">
-            <h3 className="text-sm font-black uppercase tracking-widest text-white/50">{title}</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-widest text-white/50">{title}</h3>
             {matches.filter((match) => match.roundCode === roundCode).map((match) => (
               <KnockoutMatchCard
                 key={match.id}

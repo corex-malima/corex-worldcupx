@@ -6,7 +6,7 @@ export function GroupStandingsPreview({ groupCode, rows, teams }: { groupCode: s
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-pitch-950/40">
       <div className="flex items-center justify-between bg-pitch-800 px-4 py-3">
-        <h3 className="font-black text-white">Grupo {groupCode}</h3>
+        <h3 className="font-semibold text-white">Grupo {groupCode}</h3>
         <Badge tone="blue">Top 3 visible</Badge>
       </div>
       <table className="w-full text-sm">

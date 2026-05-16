@@ -17,7 +17,7 @@ export function ManualTieBreakerPanel({ groupCodes, standings, teams, manualTieB
       <div className="mb-3 flex items-start gap-3">
         <div className="rounded-xl border border-cup-blue/25 bg-pitch-800 p-2 text-cup-blue"><Shuffle size={18} /></div>
         <div>
-          <h3 className="font-black text-white">Resolver desempates</h3>
+          <h3 className="font-semibold text-white">Resolver desempates</h3>
           <p className="text-sm text-white/65">El empate llega a fair play o sorteo. Elige el orden final para poder construir eliminatorias.</p>
         </div>
       </div>
