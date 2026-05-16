@@ -100,17 +100,16 @@ export function PredictionSummaryStep({ ticketId, ticketAlias, ownerName, draft,
         <Button className="mt-5 w-full" disabled={disabled || !summary.championTeamId} onClick={onSubmit} icon={<CheckCircle2 size={17} />}>
           {submitted ? 'Reenviar predicción' : 'Enviar predicción'}
         </Button>
-        {submitted && (
-          <Button
-            variant="secondary"
-            className="mt-2 w-full"
-            disabled={pdfBusy}
-            onClick={() => void downloadReceipt()}
-            icon={pdfBusy ? <Loader2 size={17} className="animate-spin" /> : <Download size={17} />}
-          >
-            {pdfBusy ? 'Generando…' : 'Descargar mi comprobante (PDF)'}
-          </Button>
-        )}
+        <Button
+          variant="secondary"
+          className="mt-2 w-full"
+          disabled={pdfBusy || !summary.championTeamId}
+          onClick={() => void downloadReceipt()}
+          icon={pdfBusy ? <Loader2 size={17} className="animate-spin" /> : <Download size={17} />}
+          title={summary.championTeamId ? undefined : 'Completa tu predicción primero para descargar el comprobante'}
+        >
+          {pdfBusy ? 'Generando…' : submitted ? 'Descargar mi comprobante (PDF)' : 'Descargar borrador (PDF)'}
+        </Button>
       </Card>
       <Card>
         <h3 className="text-xl font-black text-white">Predicción completa</h3>

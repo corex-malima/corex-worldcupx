@@ -40,12 +40,20 @@ begin
     select id into v_prediction_id from public.prediction_headers where ticket_id = p_ticket_id;
     if v_prediction_id is null then return 0; end if;
 
+    -- Solo cuenta posiciones de grupos COMPLETOS (6 partidos oficiales). Sin este
+    -- gate, los grupos sin partidos jugados quedan ordenados por seed_order y casi
+    -- siempre coinciden con la predicción "favoritos primeros", regalando puntos.
     insert into public.score_details (ticket_id, category, item_ref, points, detail)
     select p_ticket_id, 'group_position', p.group_code || ':' || t.fifa_code, 1,
            jsonb_build_object('group_code', p.group_code, 'team', t.name, 'position', p.position)
     from public.predicted_group_standings p
     join public.actual_group_standings a on a.group_code = p.group_code and a.team_id = p.team_id and a.position = p.position
     join public.teams t on t.id = p.team_id
+    join (
+        select group_code, count(*) filter (where status = 'official') as official_count
+        from public.matches where stage = 'GROUP'
+        group by group_code
+    ) gc on gc.group_code = p.group_code and gc.official_count >= 6
     where p.prediction_id = v_prediction_id and p.position in (1, 2, 3);
 
     get diagnostics v_points = row_count;

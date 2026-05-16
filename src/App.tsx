@@ -6,6 +6,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { TicketPredictionPage } from './pages/TicketPredictionPage';
 import { RankingPage } from './pages/RankingPage';
+import { TicketBreakdownPage } from './pages/TicketBreakdownPage';
 import { AdminHomePage } from './pages/AdminHomePage';
 import { AdminSalesPage } from './pages/AdminSalesPage';
 import { AdminTicketsPage } from './pages/AdminTicketsPage';
@@ -49,7 +50,14 @@ export default function App() {
   const content = useMemo(() => {
     if (route === '#/login') return <LoginPage onLogin={auth.signIn} onNavigate={navigate} loading={auth.loading} error={auth.error} />;
     if (route === '#/register') return <RegisterPage onRegister={auth.register} onNavigate={navigate} loading={auth.loading} error={auth.error} />;
-    if (route === '#/ranking') return <RankingPage />;
+    if (route === '#/ranking') return <RankingPage onNavigate={navigate} />;
+
+    // Detalle de un ticket (predicho vs real + desglose de puntos). Público para que
+    // cualquiera con el link pueda ver pero los datos sensibles están enmascarados.
+    const breakdownMatch = route.match(/^#\/tickets\/([^/]+)\/breakdown$/);
+    if (breakdownMatch) {
+      return <TicketBreakdownPage ticketId={breakdownMatch[1]} onNavigate={navigate} />;
+    }
 
     if (route.startsWith('#/prediction/')) {
       const ticketId = route.split('/').pop() ?? '';
