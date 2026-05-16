@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { GroupStageTemplateDocument } from '../../lib/pdf/groupStageTemplate';
 import { KnockoutTemplateDocument } from '../../lib/pdf/knockoutTemplate';
+import { loadFlagPngMap } from '../../lib/pdf/flagLoader';
 
 interface Props {
   teams: Team[];
@@ -31,7 +32,8 @@ export function AdminPdfPanel({ teams, matches }: Props) {
     setBusy('groups');
     setError(null);
     try {
-      const blob = await pdf(<GroupStageTemplateDocument teams={teams} matches={matches} />).toBlob();
+      const flagPngs = await loadFlagPngMap(teams);
+      const blob = await pdf(<GroupStageTemplateDocument teams={teams} matches={matches} flagPngs={flagPngs} />).toBlob();
       triggerDownload(blob, `worldcupx-fase-grupos.pdf`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo generar el PDF.');
@@ -44,7 +46,8 @@ export function AdminPdfPanel({ teams, matches }: Props) {
     setBusy('knockout');
     setError(null);
     try {
-      const blob = await pdf(<KnockoutTemplateDocument matches={matches} />).toBlob();
+      const flagPngs = await loadFlagPngMap(teams);
+      const blob = await pdf(<KnockoutTemplateDocument matches={matches} teams={teams} flagPngs={flagPngs} />).toBlob();
       triggerDownload(blob, `worldcupx-eliminatorias.pdf`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo generar el PDF.');

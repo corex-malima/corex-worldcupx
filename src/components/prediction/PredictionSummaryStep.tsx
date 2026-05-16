@@ -1,6 +1,7 @@
-import { CheckCircle2, Trophy } from 'lucide-react';
-import type { FinalPredictionSummary, PredictionDraft } from '../../types/prediction';
-import type { Team } from '../../types/tournament';
+import { useState } from 'react';
+import { CheckCircle2, Download, Loader2, Trophy } from 'lucide-react';
+import type { FinalPredictionSummary, PredictionDraft, ThirdPlaceSlot } from '../../types/prediction';
+import type { Match, Team } from '../../types/tournament';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { TeamIdentity } from '../ui/TeamIdentity';
@@ -18,14 +19,74 @@ function TeamLine({ label, team }: { label: string; team?: Team }) {
   );
 }
 
-export function PredictionSummaryStep({ ticketId, draft, teams, summary, disabled, onSubmit }: { ticketId: string; draft: PredictionDraft; teams: Team[]; summary: FinalPredictionSummary; disabled?: boolean; onSubmit: () => void }) {
+function triggerDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+interface Props {
+  ticketId: string;
+  ticketAlias?: string | null;
+  ownerName?: string | null;
+  draft: PredictionDraft;
+  teams: Team[];
+  matches: Match[];
+  thirdPlaceSlots: ThirdPlaceSlot[];
+  summary: FinalPredictionSummary;
+  disabled?: boolean;
+  onSubmit: () => void;
+}
+
+export function PredictionSummaryStep({ ticketId, ticketAlias, ownerName, draft, teams, matches, thirdPlaceSlots, summary, disabled, onSubmit }: Props) {
   const champion = findTeam(teams, summary.championTeamId);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const submitted = draft.status === 'submitted';
+
+  async function downloadReceipt() {
+    setPdfBusy(true);
+    try {
+      const [{ pdf }, { PredictionReceiptDocument }, { loadFlagPngMap }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('../../lib/pdf/predictionReceiptTemplate'),
+        import('../../lib/pdf/flagLoader')
+      ]);
+      const flagPngs = await loadFlagPngMap(teams);
+      const groupScoresByMatch = Object.fromEntries(
+        Object.entries(draft.groupScores).map(([id, s]) => [id, { homeScore: s.homeScore, awayScore: s.awayScore }])
+      );
+      const blob = await pdf(
+        <PredictionReceiptDocument
+          teams={teams}
+          matches={matches}
+          groupScoresByMatch={groupScoresByMatch}
+          thirdPlaceSlots={thirdPlaceSlots}
+          bracketMatches={draft.bracketMatches}
+          championTeamId={summary.championTeamId}
+          thirdPlaceTeamId={summary.thirdPlaceTeamId}
+          ticket={{ code: ticketId, ownerName: ownerName ?? null, alias: ticketAlias ?? null, submittedAt: draft.submittedAt ?? null }}
+          flagPngs={flagPngs}
+        />
+      ).toBlob();
+      const safeName = (ticketAlias ?? ticketId).replace(/\s/g, '_');
+      triggerDownload(blob, `worldcupx-comprobante-${safeName}.pdf`);
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'No se pudo generar el comprobante.');
+    } finally {
+      setPdfBusy(false);
+    }
+  }
 
   return (
     <div className="grid gap-4 lg:grid-cols-[.8fr_1.2fr]">
       <Card>
         <Trophy className="mb-4 text-cup-blue" size={42} />
-        <p className="text-xs font-black uppercase tracking-widest text-white/45">Ticket {ticketId}</p>
+        <p className="text-xs font-black uppercase tracking-widest text-white/45">{ticketAlias ?? `Ticket ${ticketId.slice(0, 8)}`}</p>
         <div className="mt-2">
           <p className="text-sm font-black uppercase tracking-widest text-cup-blue">Campeón</p>
           <TeamIdentity team={champion} label="Pendiente" size="lg" className="mt-2 text-2xl" />
@@ -36,7 +97,20 @@ export function PredictionSummaryStep({ ticketId, draft, teams, summary, disable
           <TeamLine label="Cuarto lugar" team={findTeam(teams, summary.fourthPlaceTeamId)} />
           <p className="px-1 text-sm text-white/65"><b>Estado:</b> {draft.status}</p>
         </div>
-        <Button className="mt-5 w-full" disabled={disabled || !summary.championTeamId} onClick={onSubmit} icon={<CheckCircle2 size={17} />}>{draft.status === 'submitted' ? 'Reenviar predicción' : 'Enviar predicción'}</Button>
+        <Button className="mt-5 w-full" disabled={disabled || !summary.championTeamId} onClick={onSubmit} icon={<CheckCircle2 size={17} />}>
+          {submitted ? 'Reenviar predicción' : 'Enviar predicción'}
+        </Button>
+        {submitted && (
+          <Button
+            variant="secondary"
+            className="mt-2 w-full"
+            disabled={pdfBusy}
+            onClick={() => void downloadReceipt()}
+            icon={pdfBusy ? <Loader2 size={17} className="animate-spin" /> : <Download size={17} />}
+          >
+            {pdfBusy ? 'Generando…' : 'Descargar mi comprobante (PDF)'}
+          </Button>
+        )}
       </Card>
       <Card>
         <h3 className="text-xl font-black text-white">Predicción completa</h3>

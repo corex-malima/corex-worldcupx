@@ -30,6 +30,8 @@ export interface RankingRow {
   alias: string;
   employeeName: string;
   areaId: string;
+  areaName?: string | null;
+  jobClassificationCode?: string | null;
   points: number;
   exactCount: number;
   resultCount: number;

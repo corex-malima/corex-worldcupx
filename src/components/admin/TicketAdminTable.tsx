@@ -10,15 +10,17 @@ import type { ScorePrediction } from '../../types/tournament';
 // Lazy import del módulo PDF (≈500KB gzipped). Solo se carga cuando el admin
 // pide descargar un PDF, no en el initial bundle.
 async function loadPdfModule() {
-  const [renderer, group, knockout] = await Promise.all([
+  const [renderer, group, knockout, flags] = await Promise.all([
     import('@react-pdf/renderer'),
     import('../../lib/pdf/groupStageTemplate'),
-    import('../../lib/pdf/knockoutTemplate')
+    import('../../lib/pdf/knockoutTemplate'),
+    import('../../lib/pdf/flagLoader')
   ]);
   return {
     pdf: renderer.pdf,
     GroupStageTemplateDocument: group.GroupStageTemplateDocument,
-    KnockoutTemplateDocument: knockout.KnockoutTemplateDocument
+    KnockoutTemplateDocument: knockout.KnockoutTemplateDocument,
+    loadFlagPngMap: flags.loadFlagPngMap
   };
 }
 
@@ -51,9 +53,10 @@ function triggerDownload(blob: Blob, filename: string) {
 
 function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsProps) {
   const { fixture } = useTournamentFixture();
-  // Solo carga la predicción cuando el ticket está reclamado (el PDF de eliminatorias
-  // puede usar la fase de grupos del ticket si existe).
-  const { data: prediction } = useTicketPrediction(row.status === 'claimed' ? row.id : null);
+  const groupsComplete = row.groupsFilled >= 72;
+  // Solo carga la predicción cuando el ticket está reclamado Y grupos completos
+  // (porque el PDF de eliminatorias requiere las predicciones de grupo).
+  const { data: prediction } = useTicketPrediction(row.status === 'claimed' && groupsComplete ? row.id : null);
   const [pdfBusy, setPdfBusy] = useState<'groups' | 'knockout' | null>(null);
 
   async function handleCancel() {
@@ -88,11 +91,12 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
   async function downloadGroups() {
     setPdfBusy('groups');
     try {
-      const { pdf, GroupStageTemplateDocument } = await loadPdfModule();
+      const { pdf, GroupStageTemplateDocument, loadFlagPngMap } = await loadPdfModule();
+      const flagPngs = await loadFlagPngMap(fixture.teams);
       const blob = await pdf(
-        <GroupStageTemplateDocument teams={fixture.teams} matches={fixture.matches} ticket={ticketContext()} />
+        <GroupStageTemplateDocument teams={fixture.teams} matches={fixture.matches} ticket={ticketContext()} flagPngs={flagPngs} />
       ).toBlob();
-      triggerDownload(blob, `worldcupx-grupos-${row.codeMasked.replace(/[^A-Za-z0-9]/g, '')}.pdf`);
+      triggerDownload(blob, `worldcupx-grupos-${row.alias.replace(/\s/g, '_')}.pdf`);
     } catch (err) {
       window.alert(err instanceof Error ? err.message : 'No se pudo generar el PDF.');
     } finally {
@@ -103,16 +107,18 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
   async function downloadKnockout() {
     setPdfBusy('knockout');
     try {
-      const { pdf, KnockoutTemplateDocument } = await loadPdfModule();
+      const { pdf, KnockoutTemplateDocument, loadFlagPngMap } = await loadPdfModule();
+      const flagPngs = await loadFlagPngMap(fixture.teams);
       const blob = await pdf(
         <KnockoutTemplateDocument
           matches={fixture.matches}
           teams={fixture.teams}
           ticket={ticketContext()}
           groupScores={groupScoresFromPrediction()}
+          flagPngs={flagPngs}
         />
       ).toBlob();
-      triggerDownload(blob, `worldcupx-eliminatorias-${row.codeMasked.replace(/[^A-Za-z0-9]/g, '')}.pdf`);
+      triggerDownload(blob, `worldcupx-eliminatorias-${row.alias.replace(/\s/g, '_')}.pdf`);
     } catch (err) {
       window.alert(err instanceof Error ? err.message : 'No se pudo generar el PDF.');
     } finally {
@@ -138,18 +144,22 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
             icon={<FileText size={14} />}
             disabled={pdfBusy !== null}
             onClick={() => void downloadGroups()}
-            title="PDF de fase de grupos (en blanco)"
+            title="PDF de fase de grupos (con datos del ticket en el header)"
           >
             {pdfBusy === 'groups' ? 'PDF…' : 'PDF Grupos'}
           </Button>
           <Button
             variant="secondary"
             icon={<FileText size={14} />}
-            disabled={pdfBusy !== null}
+            disabled={pdfBusy !== null || !groupsComplete}
             onClick={() => void downloadKnockout()}
-            title="PDF de eliminatorias (R32 resueltos con la predicción del ticket si existe)"
+            title={
+              groupsComplete
+                ? 'PDF de eliminatorias con los R32 resueltos según las predicciones de grupos del ticket'
+                : `Para generar el PDF KO el ticket debe tener los 72 partidos de grupos predichos. Lleva ${row.groupsFilled}/72.`
+            }
           >
-            {pdfBusy === 'knockout' ? 'PDF…' : 'PDF KO'}
+            {pdfBusy === 'knockout' ? 'PDF…' : groupsComplete ? 'PDF KO' : `PDF KO · ${row.groupsFilled}/72`}
           </Button>
           <Button
             variant="danger"
@@ -173,13 +183,14 @@ export function TicketAdminTable({ rows, loading, error, onCancel, onEdit }: Pro
       {error && (
         <p className="border-b border-white/10 bg-cup-red/15 p-3 text-sm font-bold text-red-100">{error}</p>
       )}
-      <table className="w-full min-w-[860px] text-sm">
+      <table className="w-full min-w-[960px] text-sm">
         <thead className="bg-pitch-800 text-left text-white/50">
           <tr>
-            <th className="p-4">Código</th>
+            <th className="p-4">Alias</th>
             <th>Colaborador</th>
             <th>Área</th>
             <th>Estado</th>
+            <th>Predicción</th>
             <th>Puntos</th>
             <th className="text-right pr-4">Acciones</th>
           </tr>
@@ -187,25 +198,35 @@ export function TicketAdminTable({ rows, loading, error, onCancel, onEdit }: Pro
         <tbody>
           {loading && (
             <tr>
-              <td colSpan={6} className="p-6 text-center text-white/55">Cargando tickets…</td>
+              <td colSpan={7} className="p-6 text-center text-white/55">Cargando tickets…</td>
             </tr>
           )}
           {!loading && rows.length === 0 && !error && (
             <tr>
-              <td colSpan={6} className="p-6 text-center text-white/55">Aún no hay tickets vendidos.</td>
+              <td colSpan={7} className="p-6 text-center text-white/55">No se encontraron tickets con esos filtros.</td>
             </tr>
           )}
           {!loading && rows.map((row) => (
             <tr key={row.id} className="border-t border-white/10 text-white/80">
-              <td className="p-4 font-black tracking-widest">{row.codeMasked}</td>
-              <td>{row.personName}</td>
-              <td>{row.areaName ?? row.areaId ?? '—'}</td>
+              <td className="p-4 font-black text-white" title={row.codeMasked}>{row.alias}</td>
+              <td>
+                <div className="leading-tight">{row.personName}</div>
+                <div className="mt-1 text-xs text-white/45">{row.codeMasked}</div>
+              </td>
+              <td>
+                <div className="leading-tight">{row.areaName ?? row.areaId ?? '—'}</div>
+                {row.jobClassificationCode && <div className="mt-1 text-xs text-white/45">{row.jobClassificationCode}</div>}
+              </td>
               <td>
                 <Badge tone={row.status === 'claimed' ? 'green' : row.status === 'cancelled' ? 'red' : 'gold'}>
                   {row.status}
                 </Badge>
               </td>
-              <td>{row.points}</td>
+              <td>
+                <span className="text-xs font-bold text-white/65">{row.groupsFilled}/72 grupos</span>
+                {row.predictionStatus === 'submitted' && <Badge tone="green" className="ml-2">Enviada</Badge>}
+              </td>
+              <td className="font-black">{row.points}</td>
               <td className="pr-4">
                 <TicketActions
                   row={row}

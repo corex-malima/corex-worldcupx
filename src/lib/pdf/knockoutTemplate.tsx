@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import type { Match, ScorePrediction, Team } from '../../types/tournament';
 import { calculateGroupStandings, getQualifiedTeams } from '../../lib/standings';
 
@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
   matchVenue: { fontSize: 6, color: palette.mist },
   slotRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 2 },
   slotLabel: { fontSize: 8, flex: 1 },
+  slotFlag: { width: 12, height: 12, borderRadius: 6, marginRight: 4 },
   slotHint: { fontSize: 6, color: palette.mist, marginLeft: 4 },
   scoreBox: { width: 18, height: 18, borderWidth: 1, borderColor: palette.ink, borderRadius: 3 },
   vsLine: { borderBottomWidth: 1, borderColor: palette.line, marginVertical: 2 },
@@ -52,6 +53,8 @@ interface Props {
   ticket?: { code: string | null; ownerName: string | null; alias?: string | null } | null;
   /** Predicciones de fase de grupos del ticket. Si se pasan + teams, los slots R32 muestran los teams predichos. */
   groupScores?: ScorePrediction[];
+  /** PNGs de banderas pre-cargados via loadFlagPngMap */
+  flagPngs?: Map<string, string>;
 }
 
 function formatVenue(venue?: string | null): string {
@@ -59,37 +62,35 @@ function formatVenue(venue?: string | null): string {
   return venue.replace(/^Estadio\s+/i, '');
 }
 
-/**
- * Si tenemos teams + groupScores, computamos standings predichos y resolvemos los
- * slots literales del fixture (1A, 2B, 3A/B/C/D/F) a equipos reales según las
- * predicciones del ticket.
- */
-function resolveSlotLabel(slot: string | null | undefined, teamsById: Map<string, Team>, standingsByGroupPosition: Map<string, string>, bestThirdGroups: string[]): string {
-  if (!slot) return '—';
+interface ResolvedSlot {
+  label: string;
+  team: Team | null;
+}
+
+/** Resuelve un slot textual a su team predicho (si hay datos) o devuelve el label crudo. */
+function resolveSlot(slot: string | null | undefined, teamsById: Map<string, Team>, standingsByGroupPosition: Map<string, string>, bestThirdGroups: string[]): ResolvedSlot {
+  if (!slot) return { label: '—', team: null };
   const trimmed = slot.trim();
-  // Compacto: '1A', '2B', '3C'
   const compact = trimmed.match(/^([123])([A-L])$/);
   if (compact) {
     const teamId = standingsByGroupPosition.get(`${compact[1]}-${compact[2]}`);
-    if (!teamId) return trimmed;
-    const team = teamsById.get(teamId);
-    return team ? `${team.name} (${compact[1]}.º ${compact[2]})` : trimmed;
+    if (!teamId) return { label: trimmed, team: null };
+    const team = teamsById.get(teamId) ?? null;
+    return { label: team ? `${team.name} (${compact[1]}.º ${compact[2]})` : trimmed, team };
   }
-  // Tercero: '3A/B/C/D/F'
   if (/^3[A-L/]+$/.test(trimmed)) {
     const allowed = trimmed.slice(1).split('/');
-    // Tomamos el primer grupo permitido que esté entre los mejores 8 terceros.
     const matchedGroup = allowed.find((g) => bestThirdGroups.includes(g));
-    if (!matchedGroup) return `${trimmed} (mejor tercero)`;
+    if (!matchedGroup) return { label: `${trimmed} (mejor tercero)`, team: null };
     const teamId = standingsByGroupPosition.get(`3-${matchedGroup}`);
-    if (!teamId) return `${trimmed} (mejor tercero)`;
-    const team = teamsById.get(teamId);
-    return team ? `${team.name} (3.º ${matchedGroup})` : trimmed;
+    if (!teamId) return { label: `${trimmed} (mejor tercero)`, team: null };
+    const team = teamsById.get(teamId) ?? null;
+    return { label: team ? `${team.name} (3.º ${matchedGroup})` : trimmed, team };
   }
-  return trimmed;
+  return { label: trimmed, team: null };
 }
 
-export function KnockoutTemplateDocument({ matches, teams, ticket, groupScores }: Props) {
+export function KnockoutTemplateDocument({ matches, teams, ticket, groupScores, flagPngs }: Props) {
   const knockout = matches.filter((m) => m.stage !== 'GROUP').sort((a, b) => a.matchNo - b.matchNo);
   const groupMatches = matches.filter((m) => m.stage === 'GROUP');
   const r32 = knockout.filter((m) => m.stage === 'R32');
@@ -121,12 +122,14 @@ export function KnockoutTemplateDocument({ matches, teams, ticket, groupScores }
   }
 
   const renderMatchCard = (m: Match) => {
-    const homeLabel = isResolved
-      ? resolveSlotLabel(m.homeSlot, teamsById, standingsByGroupPosition, bestThirdGroups)
-      : (m.homeSlot ?? '—');
-    const awayLabel = isResolved
-      ? resolveSlotLabel(m.awaySlot, teamsById, standingsByGroupPosition, bestThirdGroups)
-      : (m.awaySlot ?? '—');
+    const homeSlot: ResolvedSlot = isResolved
+      ? resolveSlot(m.homeSlot, teamsById, standingsByGroupPosition, bestThirdGroups)
+      : { label: m.homeSlot ?? '—', team: null };
+    const awaySlot: ResolvedSlot = isResolved
+      ? resolveSlot(m.awaySlot, teamsById, standingsByGroupPosition, bestThirdGroups)
+      : { label: m.awaySlot ?? '—', team: null };
+    const homeFlag = homeSlot.team ? flagPngs?.get(homeSlot.team.fifaCode.toLowerCase()) : undefined;
+    const awayFlag = awaySlot.team ? flagPngs?.get(awaySlot.team.fifaCode.toLowerCase()) : undefined;
     return (
       <View key={m.id} style={styles.matchCard}>
         <View style={styles.matchInner}>
@@ -135,12 +138,14 @@ export function KnockoutTemplateDocument({ matches, teams, ticket, groupScores }
             <Text style={styles.matchVenue}>{formatVenue(m.venue)}</Text>
           </View>
           <View style={styles.slotRow}>
-            <Text style={styles.slotLabel}>{homeLabel}</Text>
+            {homeFlag && <Image src={homeFlag} style={styles.slotFlag} />}
+            <Text style={styles.slotLabel}>{homeSlot.label}</Text>
             <View style={styles.scoreBox} />
           </View>
           <View style={styles.vsLine} />
           <View style={styles.slotRow}>
-            <Text style={styles.slotLabel}>{awayLabel}</Text>
+            {awayFlag && <Image src={awayFlag} style={styles.slotFlag} />}
+            <Text style={styles.slotLabel}>{awaySlot.label}</Text>
             <View style={styles.scoreBox} />
           </View>
           <View style={styles.winnerRow}>

@@ -1,12 +1,17 @@
 import type { PredictedBracketMatch } from '../../types/prediction';
 import type { Team } from '../../types/tournament';
+import type { KnockoutSaveStatus } from '../prediction/KnockoutMatchCard';
 import { KnockoutBracket } from '../prediction/KnockoutBracket';
 import { Card } from '../ui/Card';
 
-export function AdminKnockoutResultsPanel({ matches, teams, onChange }: {
+export function AdminKnockoutResultsPanel({ matches, teams, onChange, onSave, saveStatusByMatch, saveErrorByMatch, officialMatchIds }: {
   matches: PredictedBracketMatch[];
   teams: Team[];
   onChange: (matchId: string, homeScore: number | null, awayScore: number | null, advancingTeamId?: string | null) => void;
+  onSave?: (matchId: string) => void | Promise<void>;
+  saveStatusByMatch?: Record<string, KnockoutSaveStatus>;
+  saveErrorByMatch?: Record<string, string>;
+  officialMatchIds?: Set<string>;
 }) {
   if (!matches.length) {
     return (
@@ -16,5 +21,15 @@ export function AdminKnockoutResultsPanel({ matches, teams, onChange }: {
       </Card>
     );
   }
-  return <KnockoutBracket matches={matches} teams={teams} onChange={onChange} />;
+  return (
+    <KnockoutBracket
+      matches={matches}
+      teams={teams}
+      onChange={onChange}
+      onSave={onSave}
+      saveStatusByMatch={saveStatusByMatch}
+      saveErrorByMatch={saveErrorByMatch}
+      officialMatchIds={officialMatchIds}
+    />
+  );
 }

@@ -7,6 +7,7 @@ import { mockRanking } from '../data/mock/ranking';
 export function useRanking() {
   const [rows, setRows] = useState<RankingRow[]>([]);
   const [areaFilter, setAreaFilter] = useState('ALL');
+  const [classificationFilter, setClassificationFilter] = useState('ALL');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +16,7 @@ export function useRanking() {
       if (USE_MOCKS || !supabase) {
         setRows(mockRanking);
       } else {
-        const { data, error } = await supabase.from('v_ranking_public').select('*');
+        const { data, error } = await supabase.from('v_ranking_public').select('*').order('rank');
         if (error) throw new Error(error.message);
         const mapped = ((data ?? []) as unknown as Array<Record<string, unknown>>).map((row) => ({
           rank: Number(row.rank ?? 0),
@@ -23,6 +24,8 @@ export function useRanking() {
           alias: String(row.alias ?? ''),
           employeeName: String(row.employee_name ?? ''),
           areaId: String(row.area_id ?? ''),
+          areaName: row.area_name ? String(row.area_name) : null,
+          jobClassificationCode: row.job_classification_code ? String(row.job_classification_code) : null,
           points: Number(row.points ?? 0),
           exactCount: Number(row.exact_count ?? 0),
           resultCount: Number(row.result_count ?? 0),
@@ -37,11 +40,25 @@ export function useRanking() {
   }, []);
 
   const filteredRows = useMemo(() => {
-    if (areaFilter === 'ALL') return rows;
-    return rows.filter((row) => row.areaId === areaFilter);
-  }, [rows, areaFilter]);
+    return rows.filter((row) => {
+      if (areaFilter !== 'ALL' && row.areaId !== areaFilter) return false;
+      if (classificationFilter !== 'ALL' && row.jobClassificationCode !== classificationFilter) return false;
+      return true;
+    });
+  }, [rows, areaFilter, classificationFilter]);
 
-  const areas = useMemo(() => Array.from(new Set(rows.map((row) => row.areaId))).filter(Boolean), [rows]);
+  const areas = useMemo(() => Array.from(new Set(rows.map((row) => row.areaId))).filter(Boolean).sort(), [rows]);
+  const classifications = useMemo(() => Array.from(new Set(rows.map((row) => row.jobClassificationCode))).filter((v): v is string => Boolean(v)).sort(), [rows]);
 
-  return { rows: filteredRows, allRows: rows, areas, areaFilter, setAreaFilter, loading };
+  return {
+    rows: filteredRows,
+    allRows: rows,
+    areas,
+    classifications,
+    areaFilter,
+    setAreaFilter,
+    classificationFilter,
+    setClassificationFilter,
+    loading
+  };
 }

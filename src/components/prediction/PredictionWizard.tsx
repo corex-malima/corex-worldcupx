@@ -95,7 +95,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
         />
       )}
       {tab === 'bracket' && <KnockoutStep matches={prediction.draft.bracketMatches} teams={prediction.teams} disabled={locked} onBackToGroups={() => setTab('groups')} onChange={prediction.setKnockoutScore} />}
-      {tab === 'summary' && <PredictionSummaryStep ticketId={ticketId} draft={prediction.draft} teams={prediction.teams} summary={prediction.finalSummary} disabled={locked || prediction.saving} onSubmit={() => void submit()} />}
+      {tab === 'summary' && <PredictionSummaryStep ticketId={ticketId} ticketAlias={null} ownerName={null} draft={prediction.draft} teams={prediction.teams} matches={prediction.matches} thirdPlaceSlots={prediction.thirdPlaceSlots} summary={prediction.finalSummary} disabled={locked || prediction.saving} onSubmit={() => void submit()} />}
     </div>
   );
 }
