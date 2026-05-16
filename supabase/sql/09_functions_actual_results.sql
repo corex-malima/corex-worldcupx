@@ -68,7 +68,8 @@ as $$
 begin
     if not public.is_admin() then raise exception 'Solo admin puede recalcular tablas oficiales.'; end if;
 
-    delete from public.actual_group_standings;
+    -- 'where true' es necesario porque Supabase bloquea DELETE sin WHERE clause.
+    delete from public.actual_group_standings where true;
 
     with team_base as (
         select id as team_id, group_code, seed_order from public.teams where group_code is not null
@@ -247,7 +248,7 @@ as $$
 begin
     if not public.is_admin() then raise exception 'Solo admin puede construir bracket oficial.'; end if;
 
-    delete from public.actual_bracket_slots;
+    delete from public.actual_bracket_slots where true;
 
     -- 1.º y 2.º por grupo.
     insert into public.actual_bracket_slots (stage, slot_code, team_id, source)

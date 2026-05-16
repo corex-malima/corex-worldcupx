@@ -500,7 +500,7 @@ as $$
 begin
     if not public.is_admin() then raise exception 'Solo admin puede construir bracket oficial.'; end if;
 
-    delete from public.actual_bracket_slots;
+    delete from public.actual_bracket_slots where true;
 
     insert into public.actual_bracket_slots (stage, slot_code, team_id, source)
     select 'R32', position::text || group_code, team_id, 'actual_group_standings'
