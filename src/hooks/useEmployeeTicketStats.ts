@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { USE_MOCKS } from '../lib/constants';
 import { supabase } from '../lib/supabase';
 
-export interface EmployeeTicketStats {
+interface EmployeeTicketStats {
   ticketsSold: number;
   ticketsClaimed: number;
   ticketsPending: number;

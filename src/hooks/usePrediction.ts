@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { USE_MOCKS } from '../lib/constants';
 import { supabase } from '../lib/supabase';
 import type { PredictionDraft, ThirdPlaceSlot } from '../types/prediction';
@@ -57,8 +57,20 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
   const teams = options.teams ?? mockTeams;
   const matches = options.matches ?? mockMatches;
   const adminMode = options.adminMode === true;
-  const [draft, setDraft] = useState<PredictionDraft>(() => loadDraft(ticketId));
-  const [hydrated, setHydrated] = useState<boolean>(USE_MOCKS); // mock no necesita hidratación
+  // Consolidamos draft + hydrated en un solo state object. setDraft sigue
+  // siendo callable como antes (10 callsites); el effect de hidratación hace
+  // UN solo setBundle por rama en vez de encadenar setDraft + setHydrated.
+  const [bundle, setBundle] = useState<{ draft: PredictionDraft; hydrated: boolean }>(() => ({
+    draft: loadDraft(ticketId),
+    hydrated: USE_MOCKS
+  }));
+  const { draft, hydrated } = bundle;
+  const setDraft: Dispatch<SetStateAction<PredictionDraft>> = (updater) => {
+    setBundle((c) => ({
+      ...c,
+      draft: typeof updater === 'function' ? (updater as (prev: PredictionDraft) => PredictionDraft)(c.draft) : updater
+    }));
+  };
   const [saving, setSaving] = useState(false);
   const groupMatches = useMemo(() => matches.filter((match) => match.stage === 'GROUP'), [matches]);
   const knockoutMatches = useMemo(() => matches.filter((match) => match.stage !== 'GROUP'), [matches]);
@@ -85,12 +97,12 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
       r.knockoutScores.length > 0 ||
       r.thirdPlaceAssignments.length > 0;
     if (!hasRemoteData) {
-      // Sin datos remotos: en modo admin partimos vacío; en modo user mantenemos el draft
-      // local (que pudo venir de localStorage).
-      if (adminMode) {
-        setDraft(createInitialDraft(ticketId));
-      }
-      setHydrated(true);
+      // Sin datos remotos: en modo admin partimos vacío; en modo user mantenemos el
+      // draft local (que pudo venir de localStorage). Un solo setBundle por rama.
+      setBundle((current) => ({
+        draft: adminMode ? createInitialDraft(ticketId) : current.draft,
+        hydrated: true
+      }));
       return;
     }
 
@@ -133,17 +145,19 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
       };
     });
 
-    setDraft({
-      ticketId,
-      groupScores: groupScoresMap,
-      manualTieBreakers: {},
-      thirdPlaceAssignments: hydratedSlots,
-      bracketMatches: bracketWithScores,
-      status: r.status === 'submitted' ? 'submitted' : r.status === 'locked' ? 'locked' : 'ready_for_knockout',
-      updatedAt: new Date().toISOString(),
-      submittedAt: r.status === 'submitted' ? new Date().toISOString() : null
+    setBundle({
+      draft: {
+        ticketId,
+        groupScores: groupScoresMap,
+        manualTieBreakers: {},
+        thirdPlaceAssignments: hydratedSlots,
+        bracketMatches: bracketWithScores,
+        status: r.status === 'submitted' ? 'submitted' : r.status === 'locked' ? 'locked' : 'ready_for_knockout',
+        updatedAt: new Date().toISOString(),
+        submittedAt: r.status === 'submitted' ? new Date().toISOString() : null
+      },
+      hydrated: true
     });
-    setHydrated(true);
   }, [adminMode, hydrated, knockoutMatches, remote.data, remote.loading, ticketId]);
 
   function touch(next: PredictionDraft): PredictionDraft {
