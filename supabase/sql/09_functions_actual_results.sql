@@ -104,9 +104,12 @@ begin
 end;
 $$;
 
--- resolve_actual_knockout_teams: una vez la fase de grupos está completa (y reglas opcionales
--- para mejores terceros vía r32_third_place_rules), llena home_team_id/away_team_id
--- en cada match R32..FINAL leyendo home_slot/away_slot.
+-- resolve_actual_knockout_teams: re-resuelve home_team_id/away_team_id en TODO partido
+-- de eliminatorias que NO esté ya official, sobrescribiendo el valor previo si cambió.
+-- Esto permite que cuando se corrige el ganador de un partido upstream (p. ej. corriges
+-- el resultado de P73 y el ganador cambia de Ecuador a Colombia), todos los partidos
+-- downstream que dependían de "Ganador Partido 73" se actualicen automáticamente.
+-- Si un partido downstream ya está official, NO se toca (eso lo debe re-guardar el admin).
 create or replace function public.resolve_actual_knockout_teams()
 returns jsonb
 language plpgsql
@@ -128,17 +131,17 @@ begin
             where stage = v_round
             order by match_no
         loop
-            -- Home
-            if v_match.home_team_id is null and v_match.home_slot is not null and v_match.status <> 'official' then
+            -- Home: re-resolver siempre que no esté oficial. Sobrescribe si cambió.
+            if v_match.status <> 'official' and v_match.home_slot is not null then
                 v_team_id := public.resolve_slot_to_team(v_match.match_no, 'home', v_match.home_slot);
-                if v_team_id is not null then
+                if v_team_id is distinct from v_match.home_team_id then
                     update public.matches set home_team_id = v_team_id, updated_at = now() where id = v_match.id;
                 end if;
             end if;
-            -- Away
-            if v_match.away_team_id is null and v_match.away_slot is not null and v_match.status <> 'official' then
+            -- Away: igual.
+            if v_match.status <> 'official' and v_match.away_slot is not null then
                 v_team_id := public.resolve_slot_to_team(v_match.match_no, 'away', v_match.away_slot);
-                if v_team_id is not null then
+                if v_team_id is distinct from v_match.away_team_id then
                     update public.matches set away_team_id = v_team_id, updated_at = now() where id = v_match.id;
                 end if;
             end if;

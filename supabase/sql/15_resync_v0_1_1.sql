@@ -471,15 +471,17 @@ begin
             where stage = v_round
             order by match_no
         loop
-            if v_match.home_team_id is null and v_match.home_slot is not null and v_match.status <> 'official' then
+            -- Home: re-resolver siempre si no es oficial. Sobrescribe si cambió.
+            -- Esto permite que cambiar el ganador upstream propague abajo.
+            if v_match.status <> 'official' and v_match.home_slot is not null then
                 v_team_id := public.resolve_slot_to_team(v_match.match_no, 'home', v_match.home_slot);
-                if v_team_id is not null then
+                if v_team_id is distinct from v_match.home_team_id then
                     update public.matches set home_team_id = v_team_id, updated_at = now() where id = v_match.id;
                 end if;
             end if;
-            if v_match.away_team_id is null and v_match.away_slot is not null and v_match.status <> 'official' then
+            if v_match.status <> 'official' and v_match.away_slot is not null then
                 v_team_id := public.resolve_slot_to_team(v_match.match_no, 'away', v_match.away_slot);
-                if v_team_id is not null then
+                if v_team_id is distinct from v_match.away_team_id then
                     update public.matches set away_team_id = v_team_id, updated_at = now() where id = v_match.id;
                 end if;
             end if;

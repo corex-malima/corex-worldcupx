@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { LoadingState } from '../components/ui/LoadingState';
 import { TeamIdentity } from '../components/ui/TeamIdentity';
-import { useTicketBreakdown } from '../hooks/useTicketBreakdown';
+import { useTicketBreakdown, type ScoreDetailRow } from '../hooks/useTicketBreakdown';
 import { useTicketPrediction } from '../hooks/useTicketPrediction';
 import { useTournamentFixture } from '../hooks/useTournamentFixture';
 import type { Match, Stage, Team } from '../types/tournament';
@@ -14,6 +14,7 @@ interface MatchRowView {
   match: Match;
   homeTeam: Team | null;
   awayTeam: Team | null;
+  // What the user actually predicted (oriented to match home/away)
   predictedHomeScore: number | null;
   predictedAwayScore: number | null;
   predictedHomeTeam: Team | null;
@@ -23,7 +24,10 @@ interface MatchRowView {
   actualIsOfficial: boolean;
   pointsEarned: number;
   pointsExact: boolean;
-  pointsResult: boolean;
+  // Knockouts: did the predicted pair match this actual cruce (flexible)?
+  cruceStatus: 'matched' | 'missed' | 'pending' | 'na';
+  // Knockouts: if matched, what predicted match_no the user originally wrote (flexible)
+  predictedFromMatchNo: number | null;
 }
 
 function findTeam(teams: Team[], id: string | null | undefined): Team | null {
@@ -38,11 +42,37 @@ function scoreCellClass(actual: number | null, predicted: number | null, officia
   return 'text-white/85';
 }
 
-function ResultBadge({ official, points, exact }: { official: boolean; points: number; exact: boolean }) {
+function ResultBadge({ official, points, exact, stage, cruceStatus }: { official: boolean; points: number; exact: boolean; stage: Stage; cruceStatus: MatchRowView['cruceStatus'] }) {
   if (!official) return <Badge tone="slate">Sin resultado</Badge>;
+  // Eliminatorias con cruce fallido: el doc oficial dice que el marcador solo se premia si el cruce acierta.
+  if (stage !== 'GROUP' && cruceStatus === 'missed') {
+    return <Badge tone="red"><X size={11} className="inline" /> Cruce fallido · 0 pts</Badge>;
+  }
   if (exact) return <Badge tone="green"><Check size={11} className="inline" /> Exacto +{points}</Badge>;
   if (points > 0) return <Badge tone="gold">+{points} pts</Badge>;
   return <Badge tone="red"><X size={11} className="inline" /> 0 pts</Badge>;
+}
+
+// helpers para leer score_details
+function readNum(obj: Record<string, unknown> | undefined | null, path: string[]): number | null {
+  let cur: unknown = obj;
+  for (const p of path) {
+    if (cur && typeof cur === 'object' && p in (cur as Record<string, unknown>)) {
+      cur = (cur as Record<string, unknown>)[p];
+    } else {
+      return null;
+    }
+  }
+  return typeof cur === 'number' ? cur : null;
+}
+function readBool(obj: Record<string, unknown> | undefined | null, key: string): boolean {
+  if (!obj || typeof obj !== 'object') return false;
+  return obj[key] === true;
+}
+function readStr(obj: Record<string, unknown> | undefined | null, key: string): string | null {
+  if (!obj || typeof obj !== 'object') return null;
+  const v = obj[key];
+  return typeof v === 'string' ? v : null;
 }
 
 export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string; onNavigate: (to: string) => void }) {
@@ -54,35 +84,99 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
 
   const matchesView = useMemo<MatchRowView[]>(() => {
     if (!fixture.matches.length) return [];
-    const predictionByMatch = new Map(prediction.groupScores.concat(prediction.knockoutScores).map((s) => [s.match_id, s]));
+    const predictionByMatchId = new Map(prediction.groupScores.concat(prediction.knockoutScores).map((s) => [s.match_id, s]));
+    const matchById = new Map(fixture.matches.map((m) => [m.id, m]));
+
+    // Bucketize score_details:
+    //  - group_match: item_ref = match_no (string). detail has actual/prediction scores.
+    //  - knockout_match: detail.actual_match_no es la clave (cruce flexible).
+    //    detail también trae pred_match_id y prediction_oriented (ya volteada al lado del actual).
+    const groupDetails = new Map<number, ScoreDetailRow>();
+    const knockoutDetails = new Map<number, ScoreDetailRow>();
+    for (const d of bundle.details) {
+      if (d.category === 'group_match') {
+        const matchNo = readNum(d.detail, ['match_no']);
+        if (matchNo !== null) groupDetails.set(matchNo, d);
+      } else if (d.category === 'knockout_match') {
+        const actualMatchNo = readNum(d.detail, ['actual_match_no']);
+        if (actualMatchNo !== null) knockoutDetails.set(actualMatchNo, d);
+      }
+    }
 
     return fixture.matches.map((match) => {
-      const pred = predictionByMatch.get(match.id);
       const home = findTeam(fixture.teams, match.homeTeamId);
       const away = findTeam(fixture.teams, match.awayTeamId);
-      const predictedHome = pred ? findTeam(fixture.teams, pred.home_team_id) ?? home : null;
-      const predictedAway = pred ? findTeam(fixture.teams, pred.away_team_id) ?? away : null;
       const isOfficial = match.status === 'official';
       const actualHomeScore = match.homeScore ?? null;
       const actualAwayScore = match.awayScore ?? null;
-      const predictedHomeScore = pred?.home_score ?? null;
-      const predictedAwayScore = pred?.away_score ?? null;
+      const isGroup = match.stage === 'GROUP';
 
       let pointsEarned = 0;
       let pointsExact = false;
-      let pointsResult = false;
-      if (isOfficial && actualHomeScore !== null && actualAwayScore !== null && predictedHomeScore !== null && predictedAwayScore !== null) {
-        if (actualHomeScore === predictedHomeScore && actualAwayScore === predictedAwayScore) {
-          pointsEarned = 3;
-          pointsExact = true;
-          pointsResult = true;
-        } else {
-          const actualDir = Math.sign(actualHomeScore - actualAwayScore);
-          const predDir = Math.sign(predictedHomeScore - predictedAwayScore);
-          if (actualDir === predDir) {
-            pointsEarned = 1;
-            pointsResult = true;
+      let predictedHomeScore: number | null = null;
+      let predictedAwayScore: number | null = null;
+      let predictedHomeTeam: Team | null = null;
+      let predictedAwayTeam: Team | null = null;
+      let cruceStatus: MatchRowView['cruceStatus'] = isGroup ? 'na' : 'pending';
+      let predictedFromMatchNo: number | null = null;
+
+      if (isGroup) {
+        // Fase de grupos: 1 predicción por partido (no hay flexibilidad).
+        const pred = predictionByMatchId.get(match.id);
+        predictedHomeScore = pred?.home_score ?? null;
+        predictedAwayScore = pred?.away_score ?? null;
+        predictedHomeTeam = pred ? findTeam(fixture.teams, pred.home_team_id) ?? home : null;
+        predictedAwayTeam = pred ? findTeam(fixture.teams, pred.away_team_id) ?? away : null;
+        const detail = groupDetails.get(match.matchNo);
+        if (detail) {
+          pointsEarned = detail.points;
+          pointsExact = pointsEarned >= 3;
+        }
+      } else {
+        // Eliminatorias: cruce FLEXIBLE.
+        // 1) ¿Hay un detail que reclama haber matcheado este partido oficial?
+        const koDetail = knockoutDetails.get(match.matchNo);
+        if (koDetail && isOfficial) {
+          // Cruce ✓: el SQL encontró una predicción del usuario con los mismos 2 equipos.
+          cruceStatus = 'matched';
+          pointsEarned = koDetail.points;
+          pointsExact = pointsEarned >= 3;
+          // prediction_oriented está volteado al lado del actual home/away
+          predictedHomeScore = readNum(koDetail.detail, ['prediction_oriented', 'home']);
+          predictedAwayScore = readNum(koDetail.detail, ['prediction_oriented', 'away']);
+          predictedHomeTeam = home;
+          predictedAwayTeam = away;
+          // Si la predicción venía de OTRO match_no, lo anotamos para mostrar "cruce flexible"
+          const predMatchId = readStr(koDetail.detail, 'pred_match_id');
+          if (predMatchId) {
+            const predMatch = matchById.get(predMatchId);
+            if (predMatch && predMatch.matchNo !== match.matchNo) {
+              predictedFromMatchNo = predMatch.matchNo;
+            }
           }
+          // Si la predicción fue volteada (home↔away), la dejamos anotada implícitamente
+          // mostrando prediction_oriented (que ya está en orden del actual).
+          if (readBool(koDetail.detail, 'flipped') && !predictedFromMatchNo) {
+            // Aún así avisamos al usuario: orden invertido
+            predictedFromMatchNo = match.matchNo; // misma fila pero con flag
+          }
+        } else if (isOfficial) {
+          // No hay detail: el cruce no acertó.
+          cruceStatus = 'missed';
+          // Mostramos la predicción ORIGINAL del usuario para este match.id (para que vea
+          // qué cruce escribió que no se dio).
+          const pred = predictionByMatchId.get(match.id);
+          predictedHomeScore = pred?.home_score ?? null;
+          predictedAwayScore = pred?.away_score ?? null;
+          predictedHomeTeam = pred ? findTeam(fixture.teams, pred.home_team_id) : null;
+          predictedAwayTeam = pred ? findTeam(fixture.teams, pred.away_team_id) : null;
+        } else {
+          // Partido aún no oficial: mostramos predicción original
+          const pred = predictionByMatchId.get(match.id);
+          predictedHomeScore = pred?.home_score ?? null;
+          predictedAwayScore = pred?.away_score ?? null;
+          predictedHomeTeam = pred ? findTeam(fixture.teams, pred.home_team_id) : null;
+          predictedAwayTeam = pred ? findTeam(fixture.teams, pred.away_team_id) : null;
         }
       }
 
@@ -92,17 +186,18 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
         awayTeam: away,
         predictedHomeScore,
         predictedAwayScore,
-        predictedHomeTeam: predictedHome,
-        predictedAwayTeam: predictedAway,
+        predictedHomeTeam,
+        predictedAwayTeam,
         actualHomeScore,
         actualAwayScore,
         actualIsOfficial: isOfficial,
         pointsEarned,
         pointsExact,
-        pointsResult
+        cruceStatus,
+        predictedFromMatchNo
       };
     });
-  }, [fixture.matches, fixture.teams, prediction.groupScores, prediction.knockoutScores]);
+  }, [fixture.matches, fixture.teams, prediction.groupScores, prediction.knockoutScores, bundle.details]);
 
   const matchesByStage = useMemo(() => {
     const m = new Map<Stage, MatchRowView[]>();
@@ -198,7 +293,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
             </div>
             <div className="space-y-2">
               {rows.map((row) => (
-                <div key={row.match.id} className="grid items-center gap-2 rounded-2xl border border-white/10 bg-pitch-800 p-3 sm:grid-cols-[60px_1fr_120px_1fr_120px]">
+                <div key={row.match.id} className="grid items-center gap-2 rounded-2xl border border-white/10 bg-pitch-800 p-3 sm:grid-cols-[60px_1fr_120px_1fr_140px]">
                   <div className="text-xs font-bold text-white/45">
                     <p>#{row.match.matchNo}</p>
                     {row.match.groupCode && <p className="mt-1">Grupo {row.match.groupCode}</p>}
@@ -206,13 +301,18 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
 
                   {/* Predicción */}
                   <div className="min-w-0 rounded-xl bg-pitch-900 p-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/35">Tu predicción</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/35">
+                      Tu predicción
+                      {row.predictedFromMatchNo !== null && row.predictedFromMatchNo !== row.match.matchNo && (
+                        <span className="ml-1 text-cup-blue normal-case">· cruce flexible desde P{row.predictedFromMatchNo}</span>
+                      )}
+                    </p>
                     <div className="mt-1 flex items-center justify-between gap-2 text-sm">
-                      <TeamIdentity team={row.predictedHomeTeam ?? row.homeTeam ?? undefined} label="—" size="sm" />
+                      <TeamIdentity team={row.predictedHomeTeam ?? undefined} label="—" size="sm" />
                       <span className="font-black text-white/85">
                         {row.predictedHomeScore ?? <Minus size={12} className="inline opacity-50" />} - {row.predictedAwayScore ?? <Minus size={12} className="inline opacity-50" />}
                       </span>
-                      <TeamIdentity team={row.predictedAwayTeam ?? row.awayTeam ?? undefined} label="—" size="sm" align="right" />
+                      <TeamIdentity team={row.predictedAwayTeam ?? undefined} label="—" size="sm" align="right" />
                     </div>
                   </div>
 
@@ -224,9 +324,18 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
                     </p>
                   </div>
 
-                  {/* Equipos reales (para R32+ donde pueden diferir) */}
+                  {/* Equipos reales */}
                   <div className="min-w-0 rounded-xl bg-pitch-900 p-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-white/35">Equipos oficiales</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/35">
+                      Equipos oficiales
+                      {row.match.stage !== 'GROUP' && row.actualIsOfficial && (
+                        row.cruceStatus === 'matched'
+                          ? <span className="ml-1 text-cup-green normal-case">· cruce ✓</span>
+                          : row.cruceStatus === 'missed'
+                            ? <span className="ml-1 text-red-300 normal-case">· cruce ✗</span>
+                            : null
+                      )}
+                    </p>
                     <div className="mt-1 flex items-center justify-between gap-2 text-sm">
                       <TeamIdentity team={row.homeTeam ?? undefined} label={row.match.homeSlot ?? '—'} size="sm" />
                       <TeamIdentity team={row.awayTeam ?? undefined} label={row.match.awaySlot ?? '—'} size="sm" align="right" />
@@ -234,7 +343,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
                   </div>
 
                   <div className="text-right">
-                    <ResultBadge official={row.actualIsOfficial} points={row.pointsEarned} exact={row.pointsExact} />
+                    <ResultBadge official={row.actualIsOfficial} points={row.pointsEarned} exact={row.pointsExact} stage={row.match.stage} cruceStatus={row.cruceStatus} />
                   </div>
                 </div>
               ))}
