@@ -104,12 +104,70 @@ begin
 end;
 $$;
 
+-- _try_assign_thirds_at_depth: helper recursivo con backtracking que prueba asignar
+-- los 8 mejores 3°s a los 8 slots R32 garantizando que cada equipo va a un solo slot.
+-- Sin esto, dos R32 distintos pueden tomar el mismo tercero (el primero alfabético de
+-- sus allowed_groups) y romper el bracket.
+create or replace function public._try_assign_thirds_at_depth(
+    p_best_thirds text[],
+    p_slots_remaining int[],
+    p_used text[],
+    p_assignment jsonb
+) returns jsonb
+language plpgsql stable
+set search_path = public
+as $$
+declare
+    v_slot_no int;
+    v_allowed text[];
+    v_g text;
+    v_result jsonb;
+    v_rest int[];
+begin
+    if coalesce(array_length(p_slots_remaining, 1), 0) = 0 then
+        return p_assignment;
+    end if;
+    v_slot_no := p_slots_remaining[1];
+    select allowed_groups into v_allowed from public.r32_third_place_rules where match_no = v_slot_no;
+    if v_allowed is null then return null; end if;
+
+    foreach v_g in array v_allowed loop
+        if not (v_g = any (p_best_thirds)) then continue; end if;
+        if v_g = any (p_used) then continue; end if;
+        v_rest := p_slots_remaining[2:];
+        v_result := public._try_assign_thirds_at_depth(
+            p_best_thirds, v_rest, p_used || v_g,
+            p_assignment || jsonb_build_object(v_slot_no::text, v_g)
+        );
+        if v_result is not null then return v_result; end if;
+    end loop;
+    return null;
+end;
+$$;
+
+-- match_best_thirds_to_r32: punto de entrada del batch-assign.
+create or replace function public.match_best_thirds_to_r32(p_best_thirds text[])
+returns jsonb
+language plpgsql stable
+set search_path = public
+as $$
+declare v_slots int[];
+begin
+    select array_agg(match_no order by match_no) into v_slots
+    from public.r32_third_place_rules;
+    if v_slots is null then return null; end if;
+    return public._try_assign_thirds_at_depth(p_best_thirds, v_slots, '{}'::text[], '{}'::jsonb);
+end;
+$$;
+
 -- resolve_actual_knockout_teams: re-resuelve home_team_id/away_team_id en TODO partido
 -- de eliminatorias que NO esté ya official, sobrescribiendo el valor previo si cambió.
--- Esto permite que cuando se corrige el ganador de un partido upstream (p. ej. corriges
--- el resultado de P73 y el ganador cambia de Ecuador a Colombia), todos los partidos
--- downstream que dependían de "Ganador Partido 73" se actualicen automáticamente.
--- Si un partido downstream ya está official, NO se toca (eso lo debe re-guardar el admin).
+-- Hace dos pasadas:
+--   1) BATCH: para los 8 R32 con slot "3X/Y/Z" hace un matching global con
+--      `match_best_thirds_to_r32` que garantiza que cada mejor 3° aparece UNA sola vez.
+--   2) STANDARD: para todo lo demás (1X, 2X, "Ganador Partido N", "Perdedor Partido N")
+--      usa la resolución individual por slot via resolve_slot_to_team.
+-- Si un partido downstream ya está official, NO se toca (debe re-guardarse manualmente).
 create or replace function public.resolve_actual_knockout_teams()
 returns jsonb
 language plpgsql
@@ -121,9 +179,49 @@ declare
     v_team_id uuid;
     v_rounds text[] := array['R32', 'R16', 'QF', 'SF', 'THIRD_PLACE', 'FINAL'];
     v_round text;
+    v_best_thirds text[];
+    v_third_assignment jsonb;
+    v_match_no_text text;
+    v_assigned_group text;
+    v_team_id_for_third uuid;
 begin
     if not public.is_admin() then raise exception 'Solo admin puede resolver el bracket oficial.'; end if;
 
+    -- 1) BATCH: mejores 3°s con unicidad global
+    with thirds_ranked as (
+        select group_code from public.actual_group_standings
+        where position = 3
+        order by points desc, goal_difference desc, goals_for desc, group_code asc
+        limit 8
+    )
+    select array_agg(group_code order by group_code) into v_best_thirds from thirds_ranked;
+
+    if v_best_thirds is not null and coalesce(array_length(v_best_thirds, 1), 0) = 8 then
+        v_third_assignment := public.match_best_thirds_to_r32(v_best_thirds);
+        if v_third_assignment is not null then
+            for v_match_no_text, v_assigned_group in select * from jsonb_each_text(v_third_assignment) loop
+                select team_id into v_team_id_for_third
+                from public.actual_group_standings
+                where group_code = v_assigned_group and position = 3;
+
+                update public.matches
+                set home_team_id = v_team_id_for_third, updated_at = now()
+                where match_no = v_match_no_text::int
+                  and home_slot like '3%'
+                  and status <> 'official'
+                  and home_team_id is distinct from v_team_id_for_third;
+
+                update public.matches
+                set away_team_id = v_team_id_for_third, updated_at = now()
+                where match_no = v_match_no_text::int
+                  and away_slot like '3%'
+                  and status <> 'official'
+                  and away_team_id is distinct from v_team_id_for_third;
+            end loop;
+        end if;
+    end if;
+
+    -- 2) STANDARD: 1X, 2X, Ganador, Perdedor (no toca slots "3..." porque ya están)
     foreach v_round in array v_rounds loop
         for v_match in
             select id, match_no, stage, home_slot, away_slot, home_team_id, away_team_id, status
@@ -131,15 +229,13 @@ begin
             where stage = v_round
             order by match_no
         loop
-            -- Home: re-resolver siempre que no esté oficial. Sobrescribe si cambió.
-            if v_match.status <> 'official' and v_match.home_slot is not null then
+            if v_match.status <> 'official' and v_match.home_slot is not null and v_match.home_slot not like '3%' then
                 v_team_id := public.resolve_slot_to_team(v_match.match_no, 'home', v_match.home_slot);
                 if v_team_id is distinct from v_match.home_team_id then
                     update public.matches set home_team_id = v_team_id, updated_at = now() where id = v_match.id;
                 end if;
             end if;
-            -- Away: igual.
-            if v_match.status <> 'official' and v_match.away_slot is not null then
+            if v_match.status <> 'official' and v_match.away_slot is not null and v_match.away_slot not like '3%' then
                 v_team_id := public.resolve_slot_to_team(v_match.match_no, 'away', v_match.away_slot);
                 if v_team_id is distinct from v_match.away_team_id then
                     update public.matches set away_team_id = v_team_id, updated_at = now() where id = v_match.id;
