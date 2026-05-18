@@ -192,6 +192,91 @@ select 'H. CONFIG', 'app_config con app_settings', '>=1',
        (select count(*)::text from public.app_config where key='app_settings');
 
 -- =================================================================
+-- I. DEADLINE + GATE (file 20)
+-- =================================================================
+insert into tmp_verify (seccion, check_name, esperado, actual)
+select 'I. DEADLINE', 'is_deadline_passed() existe', '',
+       coalesce((select pg_get_function_identity_arguments(oid)
+        from pg_proc where proname='is_deadline_passed' and pronamespace='public'::regnamespace), 'AUSENTE');
+
+insert into tmp_verify (seccion, check_name, esperado, actual, detail)
+select 'I. DEADLINE', 'prediction_deadline = 2026-06-10T23:59',
+       '2026-06-10T23:59:59-05:00',
+       (select value->>'deadline_at' from public.app_config where key='prediction_deadline'),
+       (select case when (value->>'deadline_at')::timestamptz > now()
+                    then 'todavía abierto'
+                    else 'deadline pasó' end
+        from public.app_config where key='prediction_deadline');
+
+-- =================================================================
+-- J. ADMIN EDIT LOGIC (file 19)
+-- =================================================================
+insert into tmp_verify (seccion, check_name, esperado, actual)
+select 'J. ADMIN EDIT', 'can_edit_prediction existe', 'p_ticket_id uuid',
+       coalesce((select pg_get_function_identity_arguments(oid)
+        from pg_proc where proname='can_edit_prediction' and pronamespace='public'::regnamespace), 'AUSENTE');
+
+-- can_edit_prediction tiene la nueva semántica (admin solo edita sold)?
+-- Lo detectamos buscando el patrón nuevo en el cuerpo de la función.
+insert into tmp_verify (seccion, check_name, esperado, actual, detail)
+select 'J. ADMIN EDIT', 'can_edit_prediction usa nueva semántica (sold-only)',
+       'true',
+       case when (select prosrc from pg_proc
+                  where proname='can_edit_prediction'
+                    and pronamespace='public'::regnamespace) like '%status = ''sold''%'
+            then 'true' else 'false' end,
+       'admin solo puede editar tickets sold (no claimed)';
+
+-- =================================================================
+-- K. BUGS HISTÓRICOS — ya no deben aparecer
+-- =================================================================
+
+-- Bug propagación bracket: ningún partido R16+ con upstream oficial debe
+-- tener home/away team distinto al winner del upstream.
+insert into tmp_verify (seccion, check_name, esperado, actual, detail)
+select 'K. SANITY', 'propagación bracket sin huérfanos', '0',
+       (select count(*)::text
+        from public.matches d
+        join public.matches up_h on d.home_slot ~ '^Ganador Partido'
+            and up_h.match_no = (regexp_match(d.home_slot, '([0-9]+)'))[1]::int
+        where d.stage in ('R16','QF','SF','THIRD_PLACE','FINAL')
+          and up_h.status='official' and up_h.winner_team_id is not null
+          and d.home_team_id is distinct from up_h.winner_team_id),
+       'partidos downstream con stale team de upstream';
+
+-- Bug duplicado 3°s: ningún equipo debe aparecer 2 veces en R32
+insert into tmp_verify (seccion, check_name, esperado, actual)
+select 'K. SANITY', 'sin equipos duplicados en R32', '0',
+       (select count(*)::text from (
+          select fifa_code from (
+            select t.fifa_code from public.matches m
+            join public.teams t on t.id = m.home_team_id where m.stage='R32'
+            union all
+            select t.fifa_code from public.matches m
+            join public.teams t on t.id = m.away_team_id where m.stage='R32'
+          ) x group by fifa_code having count(*) > 1
+        ) y);
+
+-- Score_details sin duplicados
+insert into tmp_verify (seccion, check_name, esperado, actual)
+select 'K. SANITY', 'score_details sin duplicados', '0',
+       (select count(*)::text from (
+          select ticket_id, category, item_ref
+          from public.score_details
+          where item_ref is not null
+          group by ticket_id, category, item_ref
+          having count(*) > 1
+        ) x);
+
+-- Total points = suma de categorías (ticket_scores consistente)
+insert into tmp_verify (seccion, check_name, esperado, actual)
+select 'K. SANITY', 'ticket_scores con total = suma de categorías', '0 inconsistencias',
+       (select count(*)::text || ' inconsistencias' from public.ticket_scores
+        where total_points <> coalesce(group_match_points,0) + coalesce(group_position_points,0)
+                            + coalesce(knockout_points,0)   + coalesce(advancement_points,0)
+                            + coalesce(champion_bonus,0)    + coalesce(runner_up_bonus,0));
+
+-- =================================================================
 -- OUTPUT FINAL
 -- =================================================================
 select seq, seccion, check_name, esperado, actual,
