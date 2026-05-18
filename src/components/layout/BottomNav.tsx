@@ -14,7 +14,7 @@ export function BottomNav({ user, onNavigate }: { user: AppUser | null; onNaviga
         {items.map((item) => {
           const Icon = item.icon;
           return (
-            <button key={item.route} onClick={() => onNavigate(item.route)} className="rounded-xl p-2 text-xs font-bold text-white/70 hover:bg-pitch-800 hover:text-white">
+            <button key={item.label} onClick={() => onNavigate(item.route)} className="rounded-xl p-2 text-xs font-bold text-white/70 hover:bg-pitch-800 hover:text-white">
               <Icon className="mx-auto mb-1" size={18} />
               {item.label}
             </button>

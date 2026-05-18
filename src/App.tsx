@@ -61,23 +61,23 @@ export default function App() {
 
     if (route.startsWith('#/prediction/')) {
       const ticketId = route.split('/').pop() ?? '';
-      return <ProtectedRoute user={auth.user} onLogin={() => navigate('#/login')}><TicketPredictionPage ticketId={ticketId} /></ProtectedRoute>;
+      return <ProtectedRoute user={auth.user} loading={auth.loading} onLogin={() => navigate('#/login')}><TicketPredictionPage ticketId={ticketId} /></ProtectedRoute>;
     }
 
     // Admin edita la predicción de un ticket ajeno (TTHH transcribe del PDF llenado a mano).
     const adminEditMatch = route.match(/^#\/admin\/tickets\/([^/]+)\/edit$/);
     if (adminEditMatch) {
       const ticketId = adminEditMatch[1];
-      return <AdminRoute user={auth.user}><TicketPredictionPage ticketId={ticketId} adminMode /></AdminRoute>;
+      return <AdminRoute user={auth.user} loading={auth.loading}><TicketPredictionPage ticketId={ticketId} adminMode /></AdminRoute>;
     }
 
-    if (route === '#/admin') return <AdminRoute user={auth.user}><AdminHomePage onNavigate={navigate} /></AdminRoute>;
-    if (route === '#/admin/sales') return <AdminRoute user={auth.user}><AdminSalesPage onNavigate={navigate} /></AdminRoute>;
-    if (route === '#/admin/tickets') return <AdminRoute user={auth.user}><AdminTicketsPage onNavigate={navigate} /></AdminRoute>;
-    if (route === '#/admin/results') return <AdminRoute user={auth.user}><AdminResultsPage onNavigate={navigate} /></AdminRoute>;
+    if (route === '#/admin') return <AdminRoute user={auth.user} loading={auth.loading}><AdminHomePage onNavigate={navigate} /></AdminRoute>;
+    if (route === '#/admin/sales') return <AdminRoute user={auth.user} loading={auth.loading}><AdminSalesPage onNavigate={navigate} /></AdminRoute>;
+    if (route === '#/admin/tickets') return <AdminRoute user={auth.user} loading={auth.loading}><AdminTicketsPage onNavigate={navigate} /></AdminRoute>;
+    if (route === '#/admin/results') return <AdminRoute user={auth.user} loading={auth.loading}><AdminResultsPage onNavigate={navigate} /></AdminRoute>;
 
     if (route === '#/dashboard' || route === '#/') {
-      return <ProtectedRoute user={auth.user} onLogin={() => navigate('#/login')}>{auth.user && <DashboardPage user={auth.user} onNavigate={navigate} />}</ProtectedRoute>;
+      return <ProtectedRoute user={auth.user} loading={auth.loading} onLogin={() => navigate('#/login')}>{auth.user && <DashboardPage user={auth.user} onNavigate={navigate} />}</ProtectedRoute>;
     }
 
     return <NotFoundPage onNavigate={navigate} />;

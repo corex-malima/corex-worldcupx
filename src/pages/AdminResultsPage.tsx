@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Calculator, RefreshCw } from 'lucide-react';
-import { mockRanking } from '../data/mock/ranking';
+import { useAdminKpis } from '../hooks/useAdminKpis';
 import { AdminGroupResultsPanel, type SaveStatus } from '../components/admin/AdminGroupResultsPanel';
 import { AdminGroupStandingsPanel } from '../components/admin/AdminGroupStandingsPanel';
 import { AdminKnockoutResultsPanel } from '../components/admin/AdminKnockoutResultsPanel';
@@ -24,6 +24,7 @@ type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking' | 'pdf';
 
 export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => void }) {
   const { fixture, reload: reloadFixture } = useTournamentFixture();
+  const { kpis } = useAdminKpis();
   const allMatches = fixture.matches;
   const allTeams = fixture.teams;
   const [tab, setTab] = useState<Tab>('groups');
@@ -267,7 +268,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
             officialMatchIds={officialMatchIds}
           />
         )}
-        {tab === 'ranking' && <AdminRecalculateScoresPanel status={rankingStatus} processed={mockRanking.length} updatedAt={rankingUpdatedAt} onRecalculate={recalculate} />}
+        {tab === 'ranking' && <AdminRecalculateScoresPanel status={rankingStatus} processed={kpis.ticketsSold} updatedAt={rankingUpdatedAt} onRecalculate={recalculate} />}
         {tab === 'pdf' && (
           <Suspense fallback={<Card><p className="text-white/55">Cargando módulo de PDFs…</p></Card>}>
             <AdminPdfPanel teams={allTeams} matches={allMatches} />
