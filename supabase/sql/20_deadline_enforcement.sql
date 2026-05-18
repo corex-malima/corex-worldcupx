@@ -13,6 +13,19 @@
 -- Idempotente.
 
 -- =============================================================================
+-- 0) DROP de funciones que cambian de nombre/defaults de parámetros
+--    (PostgreSQL no permite eso con CREATE OR REPLACE FUNCTION).
+-- =============================================================================
+drop function if exists public.sell_ticket(text) cascade;
+drop function if exists public.sell_ticket(text, text, text, text, text, text, text) cascade;
+drop function if exists public.sell_ticket(text, numeric) cascade;
+drop function if exists public.claim_ticket(text) cascade;
+drop function if exists public.submit_complete_prediction(uuid, jsonb) cascade;
+drop function if exists public.save_prediction_match_score(uuid, uuid, int, int, uuid, uuid, uuid) cascade;
+drop function if exists public.save_prediction_match_score(uuid, uuid, int, int, uuid) cascade;
+drop function if exists public.is_deadline_passed() cascade;
+
+-- =============================================================================
 -- 1) Update deadline en app_config
 -- =============================================================================
 insert into public.app_config (key, value, description)

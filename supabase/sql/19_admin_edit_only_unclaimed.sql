@@ -12,6 +12,16 @@
 -- Idempotente: re-ejecutar no rompe nada.
 
 -- =============================================================================
+-- 0) DROP de funciones que cambian de nombre/defaults de parámetros
+--    (PostgreSQL no permite eso con CREATE OR REPLACE FUNCTION).
+-- =============================================================================
+drop function if exists public.claim_ticket(text) cascade;
+drop function if exists public.save_prediction_match_score(uuid, uuid, int, int, uuid, uuid, uuid) cascade;
+drop function if exists public.save_prediction_match_score(uuid, uuid, int, int, uuid) cascade;
+drop function if exists public.submit_complete_prediction(uuid, jsonb) cascade;
+drop function if exists public.can_edit_prediction(uuid) cascade;
+
+-- =============================================================================
 -- 1) can_edit_prediction: nueva semántica
 -- =============================================================================
 create or replace function public.can_edit_prediction(p_ticket_id uuid)
