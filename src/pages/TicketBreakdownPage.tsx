@@ -199,6 +199,24 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
     });
   }, [fixture.matches, fixture.teams, prediction.groupScores, prediction.knockoutScores, bundle.details]);
 
+  // Counts por categoría derivados de score_details (mucho más fiables que los
+  // campos agregados exact_count/result_count de ticket_scores, que mezclaban
+  // grupos + eliminatorias y producían textos inconsistentes con los puntos).
+  const categoryStats = useMemo(() => {
+    let groupExact = 0, groupResult = 0;
+    let koExact = 0, koResult = 0;
+    for (const d of bundle.details) {
+      if (d.category === 'group_match') {
+        if (d.points === 3) groupExact += 1;
+        else if (d.points === 1) groupResult += 1;
+      } else if (d.category === 'knockout_match') {
+        if (d.points === 3) koExact += 1;
+        else if (d.points === 1) koResult += 1;
+      }
+    }
+    return { groupExact, groupResult, koExact, koResult };
+  }, [bundle.details]);
+
   const matchesByStage = useMemo(() => {
     const m = new Map<Stage, MatchRowView[]>();
     matchesView.forEach((row) => {
@@ -247,7 +265,7 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Grupo · marcador</p>
             <p className="mt-1 text-2xl font-black text-white">{total?.group_match_points ?? 0}</p>
-            <p className="text-xs text-white/45">{total?.exact_count ?? 0} exactos · {total?.result_count ?? 0} aciertos de resultado</p>
+            <p className="text-xs text-white/45">{categoryStats.groupExact} exactos · {categoryStats.groupResult} aciertos de resultado</p>
           </div>
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Grupo · posiciones</p>
@@ -257,7 +275,8 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Eliminatoria · marcador</p>
             <p className="mt-1 text-2xl font-black text-white">{total?.knockout_points ?? 0}</p>
-            <p className="text-xs text-white/45">+3 exacto / +1 resultado (sólo si el cruce es exacto)</p>
+            <p className="text-xs text-white/45">{categoryStats.koExact} exactos · {categoryStats.koResult} aciertos de resultado</p>
+            <p className="mt-1 text-[10px] text-white/35">+3 exacto / +1 resultado · solo si el cruce acierta</p>
           </div>
           <div className="rounded-2xl bg-pitch-800 p-3">
             <p className="text-xs font-bold text-white/45">Avance por ronda</p>
