@@ -474,6 +474,36 @@
     .ui-podio-meta { font-size: 9px; color: var(--ash); }
     .ui-podio-pts { font-weight: 800; color: var(--signal); font-size: 13px; }
 
+    /* === INFO CHIP (recordatorios discretos) === */
+    .info-chip {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      background: rgba(251, 111, 146, 0.05);
+      border: 1px solid rgba(251, 111, 146, 0.22);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--slate);
+      margin: 6px 0 14px;
+      line-height: 1.45;
+    }
+    .info-chip::before {
+      content: "i";
+      flex-shrink: 0;
+      width: 16px; height: 16px;
+      border-radius: 999px;
+      background: var(--signal);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 10px;
+      font-style: italic;
+      font-family: Georgia, serif;
+      display: grid; place-items: center;
+      margin-top: 1px;
+    }
+    .info-chip strong { color: var(--ink); }
+
     /* === ARROW CALLOUT === */
     .arrow-callout {
       background: rgba(251, 111, 146, 0.08);
@@ -559,7 +589,7 @@
       <div class="cover-meta">
         <span>Versión <strong>v0.1.8</strong></span>
         <span>Deadline <strong>10 jun 2026 · 23:59 ECT</strong></span>
-        <span>Tu polla interna 🌸</span>
+        <span>Edición <strong>Mundial 2026</strong></span>
       </div>
     </header>
 
@@ -593,7 +623,11 @@
           <h2 class="section-title">Qué es WorldCupX y cómo funciona</h2>
         </div>
       </div>
-      <p class="lead">WorldCupX es la <strong>polla mundialista interna de Malima</strong>, producto CoreX by P&amp;P. Una herramienta para que todos los colaboradores compitan prediciendo resultados del Mundial 2026.</p>
+      <p class="lead">WorldCupX es la <strong>quiniela interna de Malima para el Mundial 2026</strong>, producto CoreX by P&amp;P. Una herramienta para que todos los colaboradores compitan prediciendo resultados.</p>
+
+      <div class="info-chip">
+        <span><strong>¿Necesitas internet?</strong> Sí, pero solo para registrarte y enviar tu predicción. Puedes llenar todo desde el celular, la oficina o casa.</span>
+      </div>
       <p>Vas a hacer 4 cosas:</p>
       <ol>
         <li>Comprar tu ticket con TTHH (offline).</li>
@@ -626,6 +660,10 @@
       <div class="callout callout-tip">
         <strong>💡 Tip</strong>
         Puedes recibir <strong>varios tickets</strong> si quieres tener varias "jugadas" independientes. Cada ticket = una predicción aparte que compite por su cuenta en el ranking.
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Pierdo mi código?</strong> El código solo se usa para registrarte la primera vez. Después de eso, ingresas con tu cédula y contraseña.</span>
       </div>
     </section>
 
@@ -773,6 +811,10 @@
       </div>
 
       <p>Una vez dentro, llegas a tu <strong>Dashboard</strong> con la lista de tickets activos y un acceso rápido a tu predicción y al ranking.</p>
+
+      <div class="info-chip">
+        <span><strong>¿Tu sesión se mantiene?</strong> Sí. La app recuerda que iniciaste sesión, incluso si cierras el navegador y vuelves después. No tienes que volver a escribir tu cédula cada vez.</span>
+      </div>
     </section>
 
     <!-- 5. ACTIVAR TICKET ADICIONAL -->
@@ -931,6 +973,14 @@
         <strong>💡 Cómo se calculan tus puntos de grupo</strong>
         <strong>Marcador exacto = +3 pts</strong> · <strong>Resultado correcto (1X2) = +1 pt</strong> · Sin acertar = 0 pts.
       </div>
+
+      <div class="info-chip">
+        <span><strong>¿Qué es "resultado correcto"?</strong> Acertar quién gana (local, visitante o empate) aunque no aciertes los goles exactos. Ejemplo: predijiste 2-1 y quedó 3-0 → ganó el local en ambos → resultado correcto = +1 pt.</span>
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Y si no llego a llenar todo?</strong> Los partidos que dejes sin marcador simplemente dan 0 puntos. Pero tu predicción de los que sí llenaste se mantiene.</span>
+      </div>
     </section>
 
     <!-- 7. DESEMPATES -->
@@ -1034,6 +1084,10 @@
         <strong>💡 Cruce flexible — reglas reales</strong>
         Si predices <strong>Ecuador vs Colombia en Partido 89</strong> y en la realidad ese cruce ocurre en <strong>Partido 91 como Colombia vs Ecuador</strong>, <em>tu predicción igual cuenta</em>. La app reconoce el cruce sin importar el match_no ni el orden home/away.
       </div>
+
+      <div class="info-chip">
+        <span><strong>¿Qué es un "cruce"?</strong> Es la pareja de equipos que se enfrentan. Si tu cruce predicho aparece en la vida real (en cualquier partido de la misma ronda), tu marcador cuenta. Si no aparece el cruce → 0 pts en ese partido aunque tu marcador "habría sido" exacto.</span>
+      </div>
     </section>
 
     <!-- 10. CAMPEÓN + 3° -->
@@ -1057,6 +1111,10 @@
         <strong>🏆 Bonos</strong>
         Acertar campeón = <strong>+10 pts</strong>. Acertar 3.º puesto = <strong>+5 pts</strong>.
       </div>
+
+      <div class="info-chip">
+        <span><strong>Pista estratégica:</strong> los bonos son una oportunidad gigante (15 pts en total). Aunque no aciertes muchos partidos, acertar el campeón y el 3.º puesto puede mover muchísimo tu ranking.</span>
+      </div>
     </section>
 
     <!-- 11. ENVIAR -->
@@ -1078,6 +1136,10 @@
       <div class="callout callout-warn">
         <strong>📅 Después del deadline (10 jun 23:59)</strong>
         Ya no podrás editar. El botón <em>Editar</em> queda inactivo. Pero seguirás viendo el ranking y tu detalle de puntos cuando se carguen resultados reales.
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Y si cambio de opinión a último momento?</strong> Puedes editar tu predicción todas las veces que quieras hasta el 10 de junio 23:59. La app guarda solo la última versión enviada.</span>
       </div>
     </section>
 
@@ -1159,6 +1221,10 @@
           </div>
           <p class="device-label">Vista móvil</p>
         </div>
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Cuándo aparecen puntos en el ranking?</strong> Solo cuando TTHH carga el resultado oficial de un partido y luego recalcula. Hasta entonces, todos los tickets están en 0 puntos. Es normal — espera a que comience el Mundial.</span>
       </div>
 
       <p>Click en <strong>Ver detalle</strong> de tu ticket para revisar partido por partido:</p>
