@@ -4,7 +4,9 @@ import { TicketAdminTable } from '../components/admin/TicketAdminTable';
 import { ExportCsvButton } from '../components/admin/ExportCsvButton';
 import { AdminSidebar } from '../components/layout/AdminSidebar';
 import { Input } from '../components/ui/Input';
+import { InfoButton } from '../components/ui/InfoButton';
 import { useAdminTickets } from '../hooks/useAdminTickets';
+import { help } from '../lib/help/helpContent';
 
 export function AdminTicketsPage({ onNavigate }: { onNavigate: (to: string) => void }) {
   const { rows, totalCount, loading, error, cancelTicket, query, setQuery } = useAdminTickets();
@@ -28,7 +30,10 @@ export function AdminTicketsPage({ onNavigate }: { onNavigate: (to: string) => v
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Control</p>
-            <h1 className="text-3xl font-semibold text-corex-ink">Tickets vendidos y reclamados</h1>
+            <h1 className="text-3xl font-semibold text-corex-ink">
+              Tickets vendidos y reclamados
+              <InfoButton title={help.adminTickets.title} className="ml-2 align-middle">{help.adminTickets.body}</InfoButton>
+            </h1>
           </div>
           <ExportCsvButton filename="worldcupx-tickets.xlsx" rows={csvRows} />
         </div>

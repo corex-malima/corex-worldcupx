@@ -7,6 +7,8 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { LoadingState } from '../components/ui/LoadingState';
 import { ClaimTicketForm } from '../components/tickets/ClaimTicketForm';
 import { TicketCard } from '../components/tickets/TicketCard';
+import { InfoButton } from '../components/ui/InfoButton';
+import { help } from '../lib/help/helpContent';
 
 export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate: (to: string) => void }) {
   const { tickets, loading, claimTicket } = useTickets();
@@ -18,7 +20,10 @@ export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate:
       <section className="grid gap-4 lg:grid-cols-[1.4fr_.6fr]">
         <Card className="overflow-hidden">
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Hola, {user.name}</p>
-          <h1 className="mt-2 text-3xl font-semibold text-corex-ink md:text-5xl">Tus tickets para competir por el ranking</h1>
+          <h1 className="mt-2 text-3xl font-semibold text-corex-ink md:text-5xl">
+            Tus tickets para competir por el ranking
+            <InfoButton title={help.dashboard.title} className="ml-2 align-middle">{help.dashboard.body}</InfoButton>
+          </h1>
           <p className="mt-3 max-w-2xl text-corex-ink/65">Cada ticket es una jugada independiente. Activa el código que te entregó TTHH y completa marcadores, clasificados, cruces y campeón antes del deadline.</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Button onClick={() => onNavigate('#/ranking')} icon={<Medal size={18} />}>Ver ranking</Button>

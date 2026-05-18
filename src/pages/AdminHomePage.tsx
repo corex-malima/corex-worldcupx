@@ -3,7 +3,9 @@ import { AdminMetricCard } from '../components/admin/AdminMetricCard';
 import { AdminSidebar } from '../components/layout/AdminSidebar';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { InfoButton } from '../components/ui/InfoButton';
 import { useAdminKpis } from '../hooks/useAdminKpis';
+import { help } from '../lib/help/helpContent';
 
 function formatCurrency(value: number): string {
   return value.toLocaleString('es-EC', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
@@ -19,7 +21,10 @@ export function AdminHomePage({ onNavigate }: { onNavigate: (to: string) => void
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Panel TTHH</p>
-            <h1 className="text-3xl font-semibold text-corex-ink">Panel de control TTHH</h1>
+            <h1 className="text-3xl font-semibold text-corex-ink">
+              Panel de control TTHH
+              <InfoButton title={help.adminSummary.title} className="ml-2 align-middle">{help.adminSummary.body}</InfoButton>
+            </h1>
           </div>
           <Button variant="secondary" onClick={() => void reload()} disabled={loading}>{loading ? 'Cargando…' : 'Actualizar'}</Button>
         </div>

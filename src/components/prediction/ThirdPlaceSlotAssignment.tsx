@@ -5,6 +5,8 @@ import { getThirdPlaceOptionState, validateThirdPlaceAssignmentSolvability } fro
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { TeamIdentity } from '../ui/TeamIdentity';
+import { InfoButton } from '../ui/InfoButton';
+import { help } from '../../lib/help/helpContent';
 
 export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, onAssign, onAutoAssign }: {
   slots: ThirdPlaceSlot[];
@@ -21,7 +23,10 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
     <div className="rounded-2xl border border-corex-ink/10 bg-pitch-900 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-semibold text-corex-ink">Asignacion manual de terceros</h3>
+          <h3 className="font-semibold text-corex-ink">
+            Asignacion manual de terceros
+            <InfoButton title={help.predictionThird.title} className="ml-2 align-middle">{help.predictionThird.body}</InfoButton>
+          </h3>
           <p className="text-sm text-corex-ink/60">Cada cruce respeta los grupos permitidos. Puedes autocompletar una combinacion valida.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

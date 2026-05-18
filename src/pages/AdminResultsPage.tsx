@@ -10,6 +10,8 @@ import { AdminTieBreakersPanel } from '../components/admin/AdminTieBreakersPanel
 import { AdminSidebar } from '../components/layout/AdminSidebar';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { InfoButton } from '../components/ui/InfoButton';
+import { help } from '../lib/help/helpContent';
 import type { ScorePrediction } from '../types/tournament';
 import { buildInitialBracket, createThirdPlaceSlots, updateBracketScore } from '../lib/bracketBuilder';
 import { validateGroupStep, validateThirdPlaceAssignments } from '../lib/predictionValidation';
@@ -192,7 +194,10 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Resultados reales</p>
-            <h1 className="text-3xl font-semibold text-corex-ink">Carga de resultados oficiales</h1>
+            <h1 className="text-3xl font-semibold text-corex-ink">
+              Carga de resultados oficiales
+              <InfoButton title={help.adminResultsGroups.title} className="ml-2 align-middle">{help.adminResultsGroups.body}</InfoButton>
+            </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" onClick={() => void reloadFixture()} icon={<RefreshCw size={15} />}>Refrescar</Button>
@@ -223,7 +228,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
           </p>
         </Card>
 
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+        <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {[
             ['groups', 'Grupos'],
             ['standings', 'Tablas'],
@@ -232,6 +237,25 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
             ['ranking', 'Ranking'],
             ['pdf', 'Plantillas PDF']
           ].map(([key, label]) => <Button key={key} variant={tab === key ? 'primary' : 'secondary'} onClick={() => setTab(key as Tab)}>{label}</Button>)}
+          <InfoButton
+            title={
+              tab === 'groups' ? help.adminResultsGroups.title :
+              tab === 'thirds' ? help.predictionThird.title :
+              tab === 'knockout' ? help.adminResultsKO.title :
+              tab === 'ranking' ? help.adminRecalc.title :
+              tab === 'pdf' ? help.adminPdfs.title :
+              help.adminResultsGroups.title
+            }
+          >
+            {
+              tab === 'groups' ? help.adminResultsGroups.body :
+              tab === 'thirds' ? help.predictionThird.body :
+              tab === 'knockout' ? help.adminResultsKO.body :
+              tab === 'ranking' ? help.adminRecalc.body :
+              tab === 'pdf' ? help.adminPdfs.body :
+              help.adminResultsGroups.body
+            }
+          </InfoButton>
         </div>
 
         {tab === 'groups' && (

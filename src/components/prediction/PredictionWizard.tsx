@@ -12,6 +12,8 @@ import { KnockoutStep } from './KnockoutStep';
 import { PredictionLockBanner } from './PredictionLockBanner';
 import { PredictionProgress } from './PredictionProgress';
 import { PredictionSummaryStep } from './PredictionSummaryStep';
+import { InfoButton } from '../ui/InfoButton';
+import { help } from '../../lib/help/helpContent';
 
 const tabs = [
   { key: 'groups', label: 'Grupos', icon: Grid2X2 },
@@ -81,7 +83,10 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? `Modo TTHH · ${ticketMeta.alias || 'editando ticket'}` : (ticketMeta.alias || `Ticket ${ticketId.slice(0, 8)}`)}</p>
-          <h1 className="text-3xl font-semibold text-corex-ink">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
+          <h1 className="text-3xl font-semibold text-corex-ink">
+            {adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}
+            <InfoButton title={help.deadline.title} className="ml-2 align-middle">{help.deadline.body}</InfoButton>
+          </h1>
         </div>
         <div className="flex items-center gap-3">
           <SaveStatusBadge hydrating={prediction.hydrating} status={prediction.autoSaveStatus} error={prediction.autoSaveError} />
@@ -94,11 +99,16 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
 
       {errors.length > 0 && <div className="rounded-2xl border border-cup-red/30 bg-cup-red/10 p-4 text-sm font-bold text-cup-red">{errors[0]}</div>}
 
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+      <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {tabs.map((item) => {
           const Icon = item.icon;
           return <Button key={item.key} variant={tab === item.key ? 'primary' : 'secondary'} onClick={() => setTab(item.key)} icon={<Icon size={17} />}>{item.label}</Button>;
         })}
+        <InfoButton
+          title={tab === 'groups' ? help.predictionGroups.title : tab === 'bracket' ? help.predictionKnockout.title : help.predictionSummary.title}
+        >
+          {tab === 'groups' ? help.predictionGroups.body : tab === 'bracket' ? help.predictionKnockout.body : help.predictionSummary.body}
+        </InfoButton>
       </div>
 
       {tab === 'groups' && (
