@@ -25,7 +25,7 @@ select 'A. EXTENSIONS', 'pgcrypto presente', 'true',
 -- B. TABLAS CORE
 -- =================================================================
 insert into tmp_verify (seccion, check_name, esperado, actual, detail)
-select 'B. TABLAS', 'tablas core presentes', '18 (todas)',
+select 'B. TABLAS', 'tablas core presentes', '18',
        (select count(*)::text from information_schema.tables
         where table_schema='public' and table_name in (
           'employees','profiles','tickets','prediction_headers','prediction_match_scores',
@@ -67,12 +67,12 @@ select 'D. RPCs', 'recalculate_ticket_score',
         from pg_proc where proname='recalculate_ticket_score' and pronamespace='public'::regnamespace), 'AUSENTE');
 
 insert into tmp_verify (seccion, check_name, esperado, actual)
-select 'D. RPCs', 'recalculate_all_scores', '(sin args)',
+select 'D. RPCs', 'recalculate_all_scores', '',
        coalesce((select pg_get_function_identity_arguments(oid)
         from pg_proc where proname='recalculate_all_scores' and pronamespace='public'::regnamespace), 'AUSENTE');
 
 insert into tmp_verify (seccion, check_name, esperado, actual)
-select 'D. RPCs', 'resolve_actual_knockout_teams', '(sin args)',
+select 'D. RPCs', 'resolve_actual_knockout_teams', '',
        coalesce((select pg_get_function_identity_arguments(oid)
         from pg_proc where proname='resolve_actual_knockout_teams' and pronamespace='public'::regnamespace), 'AUSENTE');
 
@@ -119,40 +119,36 @@ insert into tmp_verify (seccion, check_name, esperado, actual)
 select 'E. FIXTURE', 'r32_third_place_rules (8)', '8',
        (select count(*)::text from public.r32_third_place_rules);
 
-insert into tmp_verify (seccion, check_name, esperado, actual)
-select 'E. FIXTURE', '4 equipos por grupo', '12 grupos × 4 = 48',
+insert into tmp_verify (seccion, check_name, esperado, actual, detail)
+select 'E. FIXTURE', '4 equipos por grupo (12 × 4 = 48)', '12',
+       (select count(*)::text from (
+          select group_code from public.teams where group_code is not null
+          group by group_code having count(*) = 4
+        ) x),
        (select string_agg(group_code||':'||cnt::text, ', ' order by group_code)
         from (select group_code, count(*) as cnt from public.teams
               where group_code is not null
-              group by group_code) x);
+              group by group_code) y);
 
 insert into tmp_verify (seccion, check_name, esperado, actual)
-select 'E. FIXTURE', '6 partidos por grupo', '12 grupos × 6 = 72',
-       (select case when count(distinct group_code) = 12 and bool_and(c = 6) then '12 grupos × 6 OK'
-                    else 'INCONSISTENTE' end
-        from (select group_code, count(*) c from public.matches
-              where stage='GROUP'
-              group by group_code) x);
+select 'E. FIXTURE', '6 partidos por grupo (12 × 6 = 72)', '12',
+       (select count(*)::text from (
+          select group_code from public.matches where stage='GROUP'
+          group by group_code having count(*) = 6
+        ) x);
 
 -- =================================================================
 -- F. RLS
 -- =================================================================
 insert into tmp_verify (seccion, check_name, esperado, actual, detail)
-select 'F. RLS', 'tablas con rowsecurity ON', 'todas',
-       (select case when bool_and(rowsecurity) then 'OK'
-                    else (select string_agg(tablename, ',') from pg_tables
-                          where schemaname='public' and not rowsecurity
-                          and tablename in (
-                            'profiles','employees','tickets','prediction_headers',
-                            'prediction_match_scores','prediction_third_place_assignments',
-                            'admin_audit_log','score_details','ticket_scores'
-                          )) end
-        from pg_tables
-        where schemaname='public' and tablename in (
-          'profiles','employees','tickets','prediction_headers',
-          'prediction_match_scores','prediction_third_place_assignments',
-          'admin_audit_log','score_details','ticket_scores'
-        )),
+select 'F. RLS', 'tablas sensibles con rowsecurity (9)', '9',
+       (select count(*)::text from pg_tables
+        where schemaname='public' and rowsecurity = true
+          and tablename in (
+            'profiles','employees','tickets','prediction_headers',
+            'prediction_match_scores','prediction_third_place_assignments',
+            'admin_audit_log','score_details','ticket_scores'
+          )),
        null;
 
 insert into tmp_verify (seccion, check_name, esperado, actual)
@@ -184,8 +180,16 @@ select 'G. ADMIN', 'auth.users con email @mundial.malima sincronizados con profi
 -- H. CONFIG
 -- =================================================================
 insert into tmp_verify (seccion, check_name, esperado, actual)
-select 'H. CONFIG', 'app_config con deadline', '>=1',
-       (select count(*)::text from public.app_config where key='deadline');
+select 'H. CONFIG', 'app_config con prediction_deadline', '>=1',
+       (select count(*)::text from public.app_config where key='prediction_deadline');
+
+insert into tmp_verify (seccion, check_name, esperado, actual)
+select 'H. CONFIG', 'app_config con scoring_rules', '>=1',
+       (select count(*)::text from public.app_config where key='scoring_rules');
+
+insert into tmp_verify (seccion, check_name, esperado, actual)
+select 'H. CONFIG', 'app_config con app_settings', '>=1',
+       (select count(*)::text from public.app_config where key='app_settings');
 
 -- =================================================================
 -- OUTPUT FINAL
