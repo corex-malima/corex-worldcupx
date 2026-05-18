@@ -171,7 +171,7 @@ select 'G. ADMIN', 'admin_tthh existe', '1',
        'cedula 0000000002 / TTHH2026!';
 
 insert into tmp_verify (seccion, check_name, esperado, actual)
-select 'G. ADMIN', 'auth.users con email @mundial.malima sincronizados con profiles', '0 huérfanos',
+select 'G. ADMIN', 'auth.users @mundial.malima sin profile (huérfanos)', '0',
        (select count(*)::text from auth.users u
         where u.email like '%@mundial.malima'
           and not exists (select 1 from public.profiles p where p.user_id=u.id));
