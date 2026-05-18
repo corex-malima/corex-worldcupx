@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WorldCupX · Reglamento de puntuación</title>
+  <style>
+    :root {
+      --ink: #1F232A;
+      --slate: #5C6573;
+      --ash: #8E98A2;
+      --paper: #F4F5F8;
+      --ivory: #E6E8EC;
+      --fog: #DCDFE5;
+      --stone: #C8C5CD;
+      --signal: #fb6f92;
+      --signal-soft: #ff8fab;
+      --signal-mist: #ffc2d1;
+      --signal-fog: #ffe5ec;
+      --lavender: #B889C4;
+      --green: #3FA869;
+      --red: #C2585F;
+      --gold: #B59A5A;
+      --shadow: 0 6px 18px rgba(31, 35, 42, 0.08);
+      --shadow-pink: 0 14px 30px rgba(251, 111, 146, 0.10);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background: #FAFBFC;
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 880px; margin: 0 auto; padding: 48px 32px 80px; }
+
+    /* COVER */
+    .cover {
+      background: linear-gradient(135deg, #FFFFFF 0%, var(--paper) 100%);
+      border: 1px solid var(--fog);
+      border-radius: 28px;
+      padding: 80px 48px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      margin-bottom: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: "";
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--signal-mist) 0%, transparent 60%);
+      opacity: 0.6;
+    }
+    .cover::after {
+      content: "";
+      position: absolute;
+      bottom: -100px; left: -100px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(184, 137, 196, 0.18) 0%, transparent 60%);
+    }
+    .cover-brand {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--signal); margin-bottom: 24px;
+    }
+    .cover-role-pill {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+    }
+    .cover-title { font-size: 56px; font-weight: 800; margin: 0 0 12px; letter-spacing: -0.02em; }
+    .cover-subtitle { font-size: 22px; color: var(--slate); margin: 0 0 32px; font-weight: 500; }
+    .cover-meta {
+      display: inline-flex; gap: 24px; padding: 16px 32px; border-radius: 999px;
+      background: rgba(251, 111, 146, 0.08);
+      border: 1px solid rgba(251, 111, 146, 0.2);
+      font-size: 13px; color: var(--slate); font-weight: 600;
+      position: relative;
+      z-index: 2;
+    }
+    .cover-meta strong { color: var(--ink); }
+
+    /* TOC */
+    .toc {
+      background: #FFFFFF; border: 1px solid var(--fog); border-radius: 16px;
+      padding: 28px 32px; margin-bottom: 48px; box-shadow: var(--shadow);
+    }
+    .toc h2 {
+      font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--signal); margin: 0 0 20px; font-weight: 800;
+    }
+    .toc ol { margin: 0; padding-left: 0; list-style: none; counter-reset: toc; }
+    .toc li {
+      counter-increment: toc; padding: 10px 0;
+      border-bottom: 1px solid var(--fog);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .toc li:last-child { border-bottom: none; }
+    .toc li::before {
+      content: counter(toc, decimal-leading-zero);
+      font-size: 11px; font-weight: 800; color: var(--signal);
+      background: var(--signal-fog); padding: 4px 10px;
+      border-radius: 999px; letter-spacing: 0.1em;
+    }
+    .toc a { color: var(--ink); text-decoration: none; font-weight: 600; flex: 1; }
+
+    /* SECTIONS */
+    .section {
+      background: #FFFFFF; border: 1px solid var(--fog); border-radius: 20px;
+      padding: 40px; margin-bottom: 36px;
+      box-shadow: var(--shadow); page-break-inside: avoid;
+    }
+    .section-header {
+      display: flex; align-items: flex-start; gap: 20px;
+      margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--fog);
+    }
+    .section-num {
+      flex-shrink: 0; width: 56px; height: 56px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--signal), var(--signal-soft));
+      color: #FFFFFF; display: grid; place-items: center;
+      font-size: 24px; font-weight: 800; box-shadow: var(--shadow-pink);
+    }
+    .section-num.gold {
+      background: linear-gradient(135deg, var(--gold), #d8c285);
+    }
+    .section-num.purple {
+      background: linear-gradient(135deg, var(--lavender), #d7b2e2);
+    }
+    .section-num.dark {
+      background: linear-gradient(135deg, var(--ink), #3F4550);
+    }
+    .section-title-block { flex: 1; }
+    .section-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.25em; text-transform: uppercase; color: var(--signal); margin: 0 0 4px; }
+    .section-title { font-size: 28px; font-weight: 800; margin: 0; letter-spacing: -0.01em; line-height: 1.2; }
+    .section-lead { font-size: 16px; color: var(--slate); margin: 6px 0 0; }
+
+    p { margin: 0 0 14px; color: var(--ink); }
+    .lead { font-size: 17px; color: var(--slate); }
+
+    /* PUNTOS PILL grande */
+    .pts-stack {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0 24px;
+    }
+    .pts-card {
+      background: var(--paper);
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      border: 1px solid var(--fog);
+    }
+    .pts-card.green { background: rgba(63, 168, 105, 0.06); border-color: rgba(63, 168, 105, 0.3); }
+    .pts-card.yellow { background: rgba(229, 169, 59, 0.08); border-color: rgba(229, 169, 59, 0.3); }
+    .pts-card.red { background: rgba(194, 88, 95, 0.06); border-color: rgba(194, 88, 95, 0.3); }
+    .pts-card.pink { background: rgba(251, 111, 146, 0.08); border-color: rgba(251, 111, 146, 0.3); }
+    .pts-card.purple { background: rgba(184, 137, 196, 0.08); border-color: rgba(184, 137, 196, 0.3); }
+    .pts-card-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--slate);
+      font-weight: 700;
+    }
+    .pts-card-pts {
+      font-size: 38px;
+      font-weight: 800;
+      margin: 8px 0 4px;
+      letter-spacing: -0.02em;
+    }
+    .pts-card.green .pts-card-pts { color: var(--green); }
+    .pts-card.yellow .pts-card-pts { color: var(--gold); }
+    .pts-card.red .pts-card-pts { color: var(--red); }
+    .pts-card.pink .pts-card-pts { color: var(--signal); }
+    .pts-card.purple .pts-card-pts { color: var(--lavender); }
+    .pts-card-desc {
+      font-size: 12px;
+      color: var(--slate);
+      line-height: 1.4;
+    }
+
+    /* EJEMPLO BLOQUE */
+    .example {
+      background: linear-gradient(135deg, #FFFFFF 0%, var(--paper) 100%);
+      border: 2px solid var(--signal-mist);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+    .example-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--signal);
+      margin-bottom: 14px;
+    }
+    .example-title::before {
+      content: "🔍";
+      font-size: 14px;
+    }
+    .match-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #FFFFFF;
+      border-radius: 12px;
+      border: 1px solid var(--fog);
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .match-team {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+    }
+    .match-team.right { justify-content: flex-end; }
+    .match-flag {
+      width: 20px; height: 20px;
+      border-radius: 999px;
+      background: var(--stone);
+      display: inline-block;
+    }
+    .match-flag.mx { background: linear-gradient(90deg, #006847 33%, #FFFFFF 33% 66%, #CE1126 66%); }
+    .match-flag.bra { background: linear-gradient(180deg, #009C3B 60%, #FFDF00 60% 80%, #002776 80%); }
+    .match-flag.ecu { background: linear-gradient(180deg, #FFCE00 33%, #034EA2 33% 66%, #ED1C24 66%); }
+    .match-flag.col { background: linear-gradient(180deg, #FCD116 50%, #003893 50% 75%, #CE1126 75%); }
+    .match-flag.cpv { background: linear-gradient(180deg, #003893 50%, #CE1126 50%); }
+    .match-flag.kor { background: #FFFFFF; border: 1px solid var(--stone); }
+    .match-flag.deu { background: linear-gradient(180deg, #000 33%, #DD0000 33% 66%, #FFCE00 66%); }
+    .match-score-pair {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--ink);
+      min-width: 80px;
+      justify-content: center;
+      padding: 4px 12px;
+      background: var(--paper);
+      border-radius: 8px;
+    }
+    .match-score-pair.predicted {
+      background: rgba(251, 111, 146, 0.06);
+      border: 1px solid rgba(251, 111, 146, 0.3);
+    }
+    .match-result-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      border: 1px solid;
+    }
+    .match-result-pill.exact {
+      background: rgba(63, 168, 105, 0.1);
+      color: var(--green);
+      border-color: rgba(63, 168, 105, 0.3);
+    }
+    .match-result-pill.result {
+      background: rgba(229, 169, 59, 0.12);
+      color: var(--gold);
+      border-color: rgba(229, 169, 59, 0.3);
+    }
+    .match-result-pill.miss {
+      background: rgba(194, 88, 95, 0.08);
+      color: var(--red);
+      border-color: rgba(194, 88, 95, 0.3);
+    }
+    .match-vs-label {
+      font-size: 10px;
+      color: var(--ash);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* CALLOUTS */
+    .callout {
+      padding: 16px 20px; border-radius: 12px; margin: 16px 0;
+      border-left: 4px solid; font-size: 14px;
+    }
+    .callout-info { background: rgba(251, 111, 146, 0.06); border-color: var(--signal); }
+    .callout-warn { background: #FFF8E6; border-color: #E5A93B; }
+    .callout-tip  { background: #EBF7EF; border-color: var(--green); }
+    .callout-bad  { background: #FBEDEF; border-color: var(--red); }
+    .callout-purple { background: rgba(184, 137, 196, 0.1); border-color: var(--lavender); }
+    .callout strong { display: block; font-weight: 800; margin-bottom: 4px; }
+
+    /* INFO CHIP */
+    .info-chip {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      background: rgba(251, 111, 146, 0.05);
+      border: 1px solid rgba(251, 111, 146, 0.22);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--slate);
+      margin: 6px 0 14px;
+      line-height: 1.45;
+    }
+    .info-chip::before {
+      content: "i";
+      flex-shrink: 0;
+      width: 16px; height: 16px;
+      border-radius: 999px;
+      background: var(--signal);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 10px;
+      font-style: italic;
+      font-family: Georgia, serif;
+      display: grid; place-items: center;
+      margin-top: 1px;
+    }
+    .info-chip strong { color: var(--ink); }
+
+    /* TABLE */
+    table.kv {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+    table.kv th, table.kv td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--fog);
+    }
+    table.kv th {
+      background: var(--paper);
+      font-weight: 700;
+      color: var(--slate);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    table.kv tr:last-child td { border-bottom: none; }
+    table.kv td .pts-inline {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--signal-fog);
+      color: var(--signal);
+      font-weight: 800;
+      font-size: 13px;
+    }
+    table.kv td .pts-inline.green { background: rgba(63, 168, 105, 0.1); color: var(--green); }
+    table.kv td .pts-inline.gold { background: rgba(229, 169, 59, 0.12); color: var(--gold); }
+    table.kv td .pts-inline.purple { background: rgba(184, 137, 196, 0.12); color: var(--lavender); }
+
+    /* RESULTADO TOTAL — bloque final con sumas */
+    .total-card {
+      background: linear-gradient(135deg, var(--ink), #2A2E36);
+      color: #FFFFFF;
+      border-radius: 16px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 14px;
+    }
+    .total-row:last-of-type { border-bottom: none; }
+    .total-row.sum {
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 2px solid var(--signal);
+      border-bottom: none;
+      font-size: 18px;
+    }
+    .total-label { color: rgba(255, 255, 255, 0.7); }
+    .total-value { font-weight: 800; }
+    .total-value.signal { color: var(--signal-soft); }
+    .total-final { font-size: 26px; font-weight: 800; color: var(--signal-soft); }
+
+    /* COMPARACIÓN VISUAL DE CRUCE FLEX */
+    .cruce-flex {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin: 18px 0;
+    }
+    .cruce-box {
+      background: #FFFFFF;
+      border: 1px solid var(--fog);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+    }
+    .cruce-box-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ash);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .cruce-box-teams {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .cruce-box-meta {
+      font-size: 10px;
+      color: var(--slate);
+    }
+    .cruce-arrow {
+      font-size: 22px;
+      color: var(--signal);
+      font-weight: 800;
+    }
+    .cruce-box.match { border-color: var(--green); background: rgba(63, 168, 105, 0.04); }
+    .cruce-box.match .cruce-box-eyebrow { color: var(--green); }
+
+    /* FOOTER */
+    .footer {
+      margin-top: 60px;
+      padding: 20px;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ash);
+      border-top: 1px solid var(--fog);
+    }
+
+    @media print {
+      body { background: #FFFFFF; }
+      .page { padding: 12px 0; max-width: 100%; }
+      .section, .cover, .toc { box-shadow: none; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- COVER -->
+    <header class="cover">
+      <div style="margin-bottom: 28px; position: relative; z-index: 2">
+        <svg width="88" height="88" viewBox="0 0 1000 1000">
+          <rect width="1000" height="1000" rx="220" fill="#0B0B0D" />
+          <path d="M 750 230 A 360 360 0 1 0 750 770" fill="none" stroke="#FFFFFF" stroke-width="110" stroke-linecap="round" />
+          <circle cx="500" cy="500" r="195" fill="none" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="3" stroke-dasharray="6 9" />
+          <circle cx="500" cy="500" r="62" fill="#FFFFFF" />
+          <circle cx="500" cy="305" r="20" fill="#FFFFFF" />
+          <circle cx="332" cy="500" r="18" fill="#A8AFB7" />
+          <circle cx="695" cy="500" r="42" fill="#0B0B0D" />
+          <circle cx="695" cy="500" r="32" fill="#fb6f92" />
+          <circle cx="500" cy="695" r="20" fill="#FFFFFF" />
+        </svg>
+      </div>
+      <p class="cover-brand" style="position: relative; z-index: 2">CoreX · WorldCupX · by P&amp;P · Malima</p>
+      <span class="cover-role-pill" style="position: relative; z-index: 2">Reglamento oficial</span>
+      <h1 class="cover-title" style="position: relative; z-index: 2">Cómo se ganan los puntos</h1>
+      <p class="cover-subtitle" style="position: relative; z-index: 2">Reglamento de puntuación · Edición Mundial 2026</p>
+      <div class="cover-meta">
+        <span>Versión <strong>v0.1.8</strong></span>
+        <span>Máximo posible <strong>201 pts</strong></span>
+        <span>Edición <strong>Mundial 2026</strong></span>
+      </div>
+    </header>
+
+    <!-- TOC -->
+    <nav class="toc">
+      <h2>Índice</h2>
+      <ol>
+        <li><a href="#intro">Idea general · cómo se reparten los puntos</a></li>
+        <li><a href="#grupo-marc">Fase de grupos · marcador (max 216 pts teóricos)</a></li>
+        <li><a href="#grupo-pos">Fase de grupos · posiciones 1°/2°/3°</a></li>
+        <li><a href="#ko-cruce">Eliminatorias · cruce + marcador (cruce flexible)</a></li>
+        <li><a href="#ko-avance">Eliminatorias · avance por ronda</a></li>
+        <li><a href="#bonos">Bonos · campeón y tercer puesto</a></li>
+        <li><a href="#ejemplo">Ejemplo completo · un ticket con 201 pts</a></li>
+        <li><a href="#tabla">Tabla resumen del reglamento</a></li>
+        <li><a href="#faq">Preguntas frecuentes</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. INTRO -->
+    <section id="intro" class="section">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Idea general</p>
+          <h2 class="section-title">Cómo se reparten los puntos</h2>
+        </div>
+      </div>
+      <p class="lead">Tu predicción puede ganar puntos por <strong>6 razones distintas</strong>. La idea es premiar tanto al que arriesga marcadores exactos como al que tiene buena lectura del torneo en general.</p>
+
+      <table class="kv">
+        <thead><tr><th>Categoría</th><th>Pts máx · 1 ticket</th></tr></thead>
+        <tbody>
+          <tr><td>Grupo · marcador <span style="color: var(--ash); font-size: 12px">(72 partidos × 3)</span></td><td><span class="pts-inline">216</span></td></tr>
+          <tr><td>Grupo · posiciones 1°/2°/3°</td><td><span class="pts-inline">36</span></td></tr>
+          <tr><td>Eliminatoria · marcador (cruce flexible)</td><td><span class="pts-inline">96</span></td></tr>
+          <tr><td>Avance por ronda</td><td><span class="pts-inline">52</span></td></tr>
+          <tr><td>Bono campeón</td><td><span class="pts-inline gold">10</span></td></tr>
+          <tr><td>Bono 3.º puesto</td><td><span class="pts-inline purple">5</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-chip">
+        <span><strong>Máximo teórico:</strong> 415 puntos si aciertas literalmente <em>todo</em>. En la práctica, un ticket bien jugado en producción saca entre 80 y 200. El máximo realista observado en pruebas internas: <strong>201 pts</strong> (sin acertar todos los marcadores exactos).</span>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>📌 La regla de oro</strong>
+        En grupos el marcador SIEMPRE se evalúa. En eliminatorias el marcador <strong>solo se evalúa si acertaste el cruce</strong> (los dos equipos que se enfrentan). Si no acertaste el cruce, el marcador no cuenta — aunque "habrías acertado".
+      </div>
+    </section>
+
+    <!-- 2. GRUPO MARCADOR -->
+    <section id="grupo-marc" class="section">
+      <div class="section-header">
+        <div class="section-num green">2</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Fase de grupos · 72 partidos</p>
+          <h2 class="section-title">Marcador de cada partido</h2>
+          <p class="section-lead">Por cada partido de la fase de grupos, hay 3 escenarios posibles.</p>
+        </div>
+      </div>
+
+      <div class="pts-stack">
+        <div class="pts-card green">
+          <div class="pts-card-eyebrow">Marcador exacto</div>
+          <div class="pts-card-pts">+3</div>
+          <div class="pts-card-desc">Predijiste los goles exactos de ambos equipos.</div>
+        </div>
+        <div class="pts-card yellow">
+          <div class="pts-card-eyebrow">Resultado correcto</div>
+          <div class="pts-card-pts">+1</div>
+          <div class="pts-card-desc">Acertaste quién gana (o si empatan) pero no los goles exactos.</div>
+        </div>
+        <div class="pts-card red">
+          <div class="pts-card-eyebrow">Sin acertar</div>
+          <div class="pts-card-pts">0</div>
+          <div class="pts-card-desc">Ni marcador ni outcome correcto.</div>
+        </div>
+      </div>
+
+      <div class="example">
+        <p class="example-title">Ejemplos · Grupo A</p>
+        <div class="match-row">
+          <div class="match-team"><span class="match-flag mx"></span>México</div>
+          <span class="match-score-pair predicted">2 - 1</span>
+          <div class="match-team right">Sudáfrica <span class="match-flag"></span></div>
+          <div class="match-vs-label">Real: 2 - 1</div>
+          <span class="match-result-pill exact">Exacto +3</span>
+        </div>
+        <div class="match-row">
+          <div class="match-team"><span class="match-flag kor"></span>Corea</div>
+          <span class="match-score-pair predicted">1 - 0</span>
+          <div class="match-team right">Rep. Checa <span class="match-flag"></span></div>
+          <div class="match-vs-label">Real: 2 - 0</div>
+          <span class="match-result-pill result">Resultado +1</span>
+        </div>
+        <div class="match-row">
+          <div class="match-team"><span class="match-flag"></span>Rep. Checa</div>
+          <span class="match-score-pair predicted">1 - 1</span>
+          <div class="match-team right">Sudáfrica <span class="match-flag"></span></div>
+          <div class="match-vs-label">Real: 2 - 0</div>
+          <span class="match-result-pill miss">Fallo · 0</span>
+        </div>
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Cómo distingue la app "exacto" de "resultado"?</strong> Compara cada caja. Si los dos goles coinciden → exacto (+3). Si no, mira el outcome (gana local / empata / gana visitante) — si coincide ese sentido → resultado (+1). Si no coincide ni eso → 0.</span>
+      </div>
+    </section>
+
+    <!-- 3. GRUPO POSICIONES -->
+    <section id="grupo-pos" class="section">
+      <div class="section-header">
+        <div class="section-num green">3</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Fase de grupos · 12 grupos</p>
+          <h2 class="section-title">Posiciones 1.º, 2.º y 3.º</h2>
+          <p class="section-lead">Bonus por acertar quién termina en qué puesto dentro de cada grupo.</p>
+        </div>
+      </div>
+
+      <div class="pts-stack" style="grid-template-columns: 1fr 1fr">
+        <div class="pts-card green">
+          <div class="pts-card-eyebrow">Cada posición acertada</div>
+          <div class="pts-card-pts">+1</div>
+          <div class="pts-card-desc">Por cada equipo que acertaste en su posición exacta (1°, 2° o 3°).</div>
+        </div>
+        <div class="pts-card pink">
+          <div class="pts-card-eyebrow">Máximo por grupo</div>
+          <div class="pts-card-pts">+3</div>
+          <div class="pts-card-desc">Si aciertas el 1°, 2° y 3° de un mismo grupo.</div>
+        </div>
+      </div>
+
+      <div class="example">
+        <p class="example-title">Ejemplo · Grupo D — tu predicción vs realidad</p>
+        <table class="kv" style="margin: 0">
+          <thead><tr><th style="width: 50px">#</th><th>Tu predicción</th><th>Real</th><th style="width: 110px">Pts</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1°</strong></td><td>USA</td><td>USA</td><td><span class="pts-inline green">+1</span></td></tr>
+            <tr><td><strong>2°</strong></td><td>Paraguay</td><td>Paraguay</td><td><span class="pts-inline green">+1</span></td></tr>
+            <tr><td><strong>3°</strong></td><td>Australia</td><td>Turquía</td><td><span class="pts-inline" style="background: rgba(194,88,95,0.1); color: var(--red)">0</span></td></tr>
+            <tr><td colspan="3" style="text-align: right; font-weight: 800">Total grupo D</td><td><span class="pts-inline">+2</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>🔒 Solo cuenta si el grupo está COMPLETO</strong>
+        Los puntos de posiciones SOLO se asignan cuando los 6 partidos del grupo ya están cargados como oficiales por TTHH. Mientras no estén los 6, ese grupo no aporta puntos de posiciones. Esto evita "regalar" puntos basados en standings parciales.
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Qué pasa si el 4.º acierta?</strong> No suma — solo se cuentan 1°, 2° y 3°. El 4° no aporta porque no clasifica a eliminatorias.</span>
+      </div>
+    </section>
+
+    <!-- 4. KO CRUCE -->
+    <section id="ko-cruce" class="section">
+      <div class="section-header">
+        <div class="section-num pink" style="background: linear-gradient(135deg, var(--signal), var(--signal-soft))">4</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Eliminatorias · 32 partidos</p>
+          <h2 class="section-title">Cruce + marcador (cruce flexible)</h2>
+          <p class="section-lead">El cruce (qué dos equipos se enfrentan) es un prerequisito para que se evalúe tu marcador.</p>
+        </div>
+      </div>
+
+      <p>Para cada partido de eliminatoria (R32, R16, Cuartos, Semis, 3.º puesto, Final), hay 3 escenarios:</p>
+
+      <div class="pts-stack">
+        <div class="pts-card green">
+          <div class="pts-card-eyebrow">Cruce ✓ y marcador exacto</div>
+          <div class="pts-card-pts">+3</div>
+          <div class="pts-card-desc">Acertaste los dos equipos Y los goles exactos.</div>
+        </div>
+        <div class="pts-card yellow">
+          <div class="pts-card-eyebrow">Cruce ✓ y resultado</div>
+          <div class="pts-card-pts">+1</div>
+          <div class="pts-card-desc">Acertaste los dos equipos y quién gana, pero no los goles.</div>
+        </div>
+        <div class="pts-card red">
+          <div class="pts-card-eyebrow">Cruce ✗</div>
+          <div class="pts-card-pts">0</div>
+          <div class="pts-card-desc">No acertaste la pareja de equipos. El marcador <em>no se evalúa</em>.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>📌 ¿Qué es un "cruce"?</strong>
+        Es la <strong>pareja de equipos</strong> que se enfrentan en una eliminatoria. Por ejemplo: <em>Ecuador vs Colombia</em>. La app considera ese cruce <strong>independiente del orden y del número de partido</strong>.
+      </div>
+
+      <h3 style="margin-top: 28px; font-size: 18px; font-weight: 800">🔄 Cruce flexible · cómo funciona en realidad</h3>
+      <p>La app no es estricta con el número de partido. Si tu cruce predicho aparece en la <strong>misma ronda</strong> de eliminatorias, aunque sea otro número de partido, igual cuenta.</p>
+
+      <div class="cruce-flex">
+        <div class="cruce-box">
+          <div class="cruce-box-eyebrow">Tu predicción</div>
+          <div class="cruce-box-teams">
+            <span class="match-flag ecu" style="width: 14px; height: 14px"></span> Ecuador <span style="color: var(--ash)">vs</span> Colombia <span class="match-flag col" style="width: 14px; height: 14px"></span>
+          </div>
+          <div class="cruce-box-meta">Partido 89 · R16 · 2-1</div>
+        </div>
+        <div class="cruce-arrow">→</div>
+        <div class="cruce-box match">
+          <div class="cruce-box-eyebrow">Real (cruce flexible ✓)</div>
+          <div class="cruce-box-teams">
+            <span class="match-flag col" style="width: 14px; height: 14px"></span> Colombia <span style="color: var(--ash)">vs</span> Ecuador <span class="match-flag ecu" style="width: 14px; height: 14px"></span>
+          </div>
+          <div class="cruce-box-meta">Partido 91 · R16 · 1-2</div>
+        </div>
+      </div>
+
+      <p>En el ejemplo: predijiste P89 Ecuador-Colombia 2-1. La realidad lo puso en P91 como Colombia-Ecuador 1-2 (mismo cruce, score invertido). La app:</p>
+      <ol>
+        <li>Detecta que el cruce coincide (mismos 2 equipos, misma ronda R16).</li>
+        <li>Detecta que tu predicción está <em>volteada</em> respecto al real (flipped=true).</li>
+        <li>Re-orienta el marcador para compararlo: tu 2-1 con el local "Ecuador" se compara con 1-2 con el local "Colombia". Match exacto → <strong>+3 pts</strong>.</li>
+      </ol>
+
+      <div class="callout callout-tip">
+        <strong>💡 ¿Cuándo conviene "diversificar"?</strong>
+        Si tienes varios tickets, puedes intentar diferentes cruces en eliminatorias. El que acierte el cruce gana puntos por marcador; el que no, gana 0 ahí pero todavía puede ganar por avance.
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Qué cuenta como "misma ronda"?</strong> R32, R16, Cuartos, Semis, 3.º puesto y Final son 6 rondas separadas. Solo se hace match flexible <em>dentro</em> de la misma ronda. Si predijiste Ecuador-Colombia en Cuartos y aparecieron en Semis, NO cuenta.</span>
+      </div>
+    </section>
+
+    <!-- 5. KO AVANCE -->
+    <section id="ko-avance" class="section">
+      <div class="section-header">
+        <div class="section-num purple">5</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Eliminatorias</p>
+          <h2 class="section-title">Puntos por avance correcto</h2>
+          <p class="section-lead">Cada equipo que predijiste que avanzaría desde una ronda, y que realmente avanzó, suma puntos. Las rondas más difíciles valen más.</p>
+        </div>
+      </div>
+
+      <div class="pts-stack">
+        <div class="pts-card pink">
+          <div class="pts-card-eyebrow">Avance R32 → R16</div>
+          <div class="pts-card-pts">+1</div>
+          <div class="pts-card-desc">Por cada equipo que predijiste y avanzó a octavos.</div>
+        </div>
+        <div class="pts-card pink">
+          <div class="pts-card-eyebrow">Avance R16 → Cuartos</div>
+          <div class="pts-card-pts">+2</div>
+          <div class="pts-card-desc">Por cada equipo que avanzó a cuartos.</div>
+        </div>
+        <div class="pts-card pink">
+          <div class="pts-card-eyebrow">Avance Cuartos → Semis</div>
+          <div class="pts-card-pts">+3</div>
+          <div class="pts-card-desc">Por cada equipo que llegó a semifinales.</div>
+        </div>
+      </div>
+      <div class="pts-stack" style="grid-template-columns: 1fr">
+        <div class="pts-card pink">
+          <div class="pts-card-eyebrow">Avance Semis → Final</div>
+          <div class="pts-card-pts">+4</div>
+          <div class="pts-card-desc">Por cada equipo que llegó a jugar la Final.</div>
+        </div>
+      </div>
+
+      <div class="example">
+        <p class="example-title">Ejemplo · acertaste el camino completo de un equipo</p>
+        <p style="font-size: 13px; color: var(--slate); margin-bottom: 14px">Predijiste que <strong>Cabo Verde llegaba a la Final</strong> y así fue. Estos son los puntos que sumas por su recorrido:</p>
+        <table class="kv" style="margin: 0">
+          <tbody>
+            <tr><td>Avance R32</td><td>Cabo Verde pasó a R16</td><td><span class="pts-inline">+1</span></td></tr>
+            <tr><td>Avance R16</td><td>Cabo Verde pasó a Cuartos</td><td><span class="pts-inline">+2</span></td></tr>
+            <tr><td>Avance Cuartos</td><td>Cabo Verde pasó a Semis</td><td><span class="pts-inline">+3</span></td></tr>
+            <tr><td>Avance Semis</td><td>Cabo Verde llegó a Final</td><td><span class="pts-inline">+4</span></td></tr>
+            <tr><td colspan="2" style="text-align: right; font-weight: 800">Subtotal avance · Cabo Verde</td><td><span class="pts-inline">+10</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Y si NO acertaste el cruce pero SÍ que el equipo avanzó?</strong> Los puntos de avance son independientes del cruce. Si tú predijiste que Cabo Verde ganaba su R32 (sin importar contra quién la app decidió emparejarlo) y Cabo Verde realmente ganó su R32, sumas +1 de avance.</span>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>🚫 Final no genera avance</strong>
+        Quien gana la Final se lleva el bono de campeón (+10), pero <em>no</em> suma "avance" porque no hay siguiente ronda. Lo mismo aplica al partido de 3.º puesto.
+      </div>
+    </section>
+
+    <!-- 6. BONOS -->
+    <section id="bonos" class="section">
+      <div class="section-header">
+        <div class="section-num gold">6</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Bonos · trofeo gordo</p>
+          <h2 class="section-title">Campeón y tercer puesto</h2>
+          <p class="section-lead">Acertar el podio premia con bonos grandes.</p>
+        </div>
+      </div>
+
+      <div class="pts-stack" style="grid-template-columns: 1fr 1fr">
+        <div class="pts-card" style="background: linear-gradient(135deg, rgba(229, 169, 59, 0.15), rgba(229, 169, 59, 0.05)); border-color: rgba(229, 169, 59, 0.4)">
+          <div class="pts-card-eyebrow">🏆 Bono campeón</div>
+          <div class="pts-card-pts" style="color: var(--gold)">+10</div>
+          <div class="pts-card-desc">Si el equipo que predijiste como campeón realmente ganó la Final.</div>
+        </div>
+        <div class="pts-card purple">
+          <div class="pts-card-eyebrow">🥉 Bono 3.º puesto</div>
+          <div class="pts-card-pts">+5</div>
+          <div class="pts-card-desc">Si el equipo que predijiste como tercero ganó el partido por el 3.º puesto.</div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>📌 Estos bonos son binarios</strong>
+        O ganas los 10 (acertaste campeón) o ganas 0. No hay puntos parciales por "el subcampeón sí lo acertaste". Mismo principio para el 3.º puesto.
+      </div>
+
+      <div class="info-chip">
+        <span><strong>Pista de estrategia:</strong> 15 puntos solo en bonos es muchísimo. Un ticket que acertó campeón + 3.º puesto + algunos avances puede competir contra uno que acertó muchos marcadores pero falló el podio.</span>
+      </div>
+    </section>
+
+    <!-- 7. EJEMPLO COMPLETO -->
+    <section id="ejemplo" class="section">
+      <div class="section-header">
+        <div class="section-num dark">7</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Ejemplo completo</p>
+          <h2 class="section-title">Un ticket de 201 puntos</h2>
+          <p class="section-lead">Caso real validado durante pruebas internas — desglose paso a paso.</p>
+        </div>
+      </div>
+
+      <p>Este ticket acertó <strong>1 marcador exacto en grupos</strong>, <strong>21 resultados (sin exacto)</strong>, <strong>14 posiciones</strong> repartidas entre los 12 grupos, <strong>1 cruce + marcador exacto en eliminatorias</strong>, varios avances y el bono de campeón. Sin bono de tercer puesto.</p>
+
+      <div class="total-card">
+        <div class="total-row">
+          <span class="total-label">Grupo · marcador (1 exacto + 21 resultados)</span>
+          <span class="total-value">1×3 + 21×1 = <strong class="signal">24 pts</strong></span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Grupo · posiciones (14 equipos en posición correcta)</span>
+          <span class="total-value">14×1 = <strong class="signal">14 pts</strong></span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Eliminatoria · marcador (1 cruce ✓ + exacto)</span>
+          <span class="total-value">1×3 = <strong class="signal">3 pts</strong></span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Eliminatoria · avance por ronda</span>
+          <span class="total-value">16+16+12+8 = <strong class="signal">52 pts</strong></span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Bono campeón ✓</span>
+          <span class="total-value">+<strong class="signal">10 pts</strong></span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Bono 3.º puesto ✗</span>
+          <span class="total-value" style="opacity: 0.5">+0 pts</span>
+        </div>
+        <div class="total-row sum">
+          <span class="total-label" style="color: #FFFFFF">PUNTOS TOTALES</span>
+          <span class="total-final">201 pts</span>
+        </div>
+      </div>
+
+      <div class="info-chip">
+        <span><strong>¿Por qué no es la nota máxima?</strong> El máximo teórico es 415 pts si aciertas <em>todos</em> los marcadores exactos de los 104 partidos + posiciones + bonos. En la práctica, eso es prácticamente imposible. 201 es un ticket EXTRAORDINARIO.</span>
+      </div>
+
+      <p class="lead" style="margin-top: 24px">Donde se ve en la app:</p>
+      <p>Cuando entras al <strong>Detalle del ticket</strong> (Ranking → Ver detalle), arriba ves las 7 cards (una por cada categoría) y abajo el desglose partido por partido con badges <em>Exacto +3</em>, <em>+1 pts</em>, <em>0 pts</em>, <em>cruce ✓</em>, <em>cruce ✗</em>.</p>
+    </section>
+
+    <!-- 8. TABLA RESUMEN -->
+    <section id="tabla" class="section">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Resumen</p>
+          <h2 class="section-title">Tabla de todas las reglas</h2>
+        </div>
+      </div>
+
+      <table class="kv">
+        <thead><tr><th>Concepto</th><th style="width: 130px">Puntos</th></tr></thead>
+        <tbody>
+          <tr><td>Marcador exacto · grupo</td><td><span class="pts-inline green">+3</span></td></tr>
+          <tr><td>Resultado correcto 1X2 · grupo</td><td><span class="pts-inline gold">+1</span></td></tr>
+          <tr><td>Posición exacta 1°/2°/3° · grupo (por equipo)</td><td><span class="pts-inline green">+1</span></td></tr>
+          <tr><td>Marcador exacto · eliminatoria <em>(con cruce ✓)</em></td><td><span class="pts-inline green">+3</span></td></tr>
+          <tr><td>Resultado correcto · eliminatoria <em>(con cruce ✓)</em></td><td><span class="pts-inline gold">+1</span></td></tr>
+          <tr><td>Cruce fallido · eliminatoria</td><td><span class="pts-inline" style="background: rgba(194,88,95,0.1); color: var(--red)">0</span></td></tr>
+          <tr><td>Avance correcto · R32 → R16 (por equipo)</td><td><span class="pts-inline">+1</span></td></tr>
+          <tr><td>Avance correcto · R16 → Cuartos (por equipo)</td><td><span class="pts-inline">+2</span></td></tr>
+          <tr><td>Avance correcto · Cuartos → Semis (por equipo)</td><td><span class="pts-inline">+3</span></td></tr>
+          <tr><td>Avance correcto · Semis → Final (por equipo)</td><td><span class="pts-inline">+4</span></td></tr>
+          <tr><td>Bono campeón</td><td><span class="pts-inline gold">+10</span></td></tr>
+          <tr><td>Bono 3.º puesto</td><td><span class="pts-inline purple">+5</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-purple">
+        <strong>♻️ Sobre la actualización del ranking</strong>
+        El motor de puntos se ejecuta cuando <strong>TTHH presiona "Recalcular ranking"</strong> después de cargar resultados. Mientras eso no pase, los puntos del ranking pueden estar "atrasados" respecto a los resultados que ya están cargados. Es completamente normal.
+      </div>
+    </section>
+
+    <!-- 9. FAQ -->
+    <section id="faq" class="section">
+      <div class="section-header">
+        <div class="section-num">?</div>
+        <div class="section-title-block">
+          <p class="section-eyebrow">Preguntas frecuentes</p>
+          <h2 class="section-title">FAQ del reglamento</h2>
+        </div>
+      </div>
+
+      <p><strong>¿Por qué la fase de grupos puede valer 216 pts pero las eliminatorias solo 96?</strong></p>
+      <p>Porque hay 72 partidos en grupos (× 3 máximo) vs 32 en eliminatorias. Aunque eliminatorias parece "más grande", numéricamente es menos. La compensación está en los puntos de avance y bonos, que pesan en eliminatorias.</p>
+
+      <p><strong>¿Por qué los puntos de posiciones tardan en aparecer?</strong></p>
+      <p>Porque solo se calculan cuando el grupo está completo (los 6 partidos cargados como oficiales). Mientras no estén los 6, ese grupo aporta 0 en posiciones. En cuanto se carga el último, todos los tickets del grupo se actualizan.</p>
+
+      <p><strong>¿Si predigo 3-3 y la realidad fue 2-2 cuánto saco?</strong></p>
+      <p>+1. Ambos son empates → el outcome 1X2 coincide. Pero los goles no son exactos, así que no es +3.</p>
+
+      <p><strong>¿Si predigo 0-1 y la realidad fue 0-2?</strong></p>
+      <p>+1. Ambos son victorias del visitante → outcome coincide. Sin exactitud → +1.</p>
+
+      <p><strong>¿El bono campeón se gana aunque la final termine en penales?</strong></p>
+      <p>Sí. Lo que cuenta es quién termina como campeón oficial, sin importar si ganó en tiempo regular, prórroga o penales.</p>
+
+      <p><strong>¿Puedo ganar el bono campeón si elegí cierto campeón pero ese equipo no llegó a la Final?</strong></p>
+      <p>No. Solo se gana si tu predicción de campeón ganó la Final. Si tu campeón perdió en alguna ronda antes, son 0 puntos de bono.</p>
+
+      <p><strong>¿Hay desempate si dos tickets quedan con el mismo total?</strong></p>
+      <p>Sí. El ranking ordena por: (1) puntos totales descendente, (2) marcadores exactos descendente, (3) fecha de creación del ticket ascendente. El que predijo más exactos rompe el empate.</p>
+
+      <p><strong>¿Pierdo puntos si me equivoco?</strong></p>
+      <p>Nunca. Los puntos siempre suman, nunca restan. Un fallo simplemente da 0 en ese partido.</p>
+
+      <p><strong>¿El "Cruce flexible" funciona también en la Final?</strong></p>
+      <p>Técnicamente sí — la Final es su propia ronda (1 partido). Si predijiste cierto cruce en la Final y aciertas los dos equipos, cuenta. Pero como solo hay 1 partido, el flexible no agrega valor extra: tu predicción de Final solo puede matchear con la Final.</p>
+
+      <div class="callout callout-tip">
+        <strong>💡 Resumen para llevarse</strong>
+        <strong>Apuesta seguro</strong> en grupos (mucho volumen, riesgo bajo). <strong>Especula</strong> en eliminatorias (cada cruce vale 3 puntos pero solo si aciertas la pareja). <strong>Apuesta fuerte</strong> al campeón — 10 pts gratis si aciertas.
+      </div>
+    </section>
+
+    <footer class="footer">
+      COREX · BY P&amp;P · MALIMA · WORLDCUPX v0.1.8 · REGLAMENTO DE PUNTUACIÓN
+    </footer>
+
+  </div>
+</body>
+</html>
