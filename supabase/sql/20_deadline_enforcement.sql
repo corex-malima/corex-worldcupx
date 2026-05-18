@@ -168,7 +168,7 @@ grant execute on function public.sell_ticket(text, text, text, text, text, text,
 -- 5) claim_ticket: bloquear post-deadline
 --    También transfiere ownership del prediction_header (heredado de file 19)
 -- =============================================================================
-create or replace function public.claim_ticket(p_ticket_code text)
+create or replace function public.claim_ticket(p_code text)
 returns jsonb
 language plpgsql
 security definer
@@ -183,7 +183,7 @@ begin
     if v_user is null then raise exception 'Usuario no autenticado.'; end if;
     if public.is_deadline_passed() then raise exception 'El deadline ya pasó. No se pueden reclamar tickets.'; end if;
 
-    v_clean_code := trim(coalesce(p_ticket_code, ''));
+    v_clean_code := trim(coalesce(p_code, ''));
     if v_clean_code = '' then raise exception 'Código vacío.'; end if;
 
     select cedula into v_profile_cedula from public.profiles where user_id = v_user;
