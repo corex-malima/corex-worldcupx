@@ -76,7 +76,7 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
     return {
       code: prediction.ticketCode ?? null,
       ownerName: row.personName,
-      alias: row.codeMasked
+      alias: row.alias  // "Ticket N" amigable, no el código enmascarado
     };
   }
 
@@ -128,13 +128,14 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
 
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      {onEdit && row.status === 'claimed' && (
+      {onEdit && row.status === 'sold' && (
         <Button
           variant="secondary"
           icon={<Pencil size={14} />}
           onClick={() => onEdit(row.id)}
+          title="Transcribir predicción de papel (solo tickets sin reclamar)"
         >
-          Editar
+          Cargar predicción
         </Button>
       )}
       {row.status !== 'cancelled' && (

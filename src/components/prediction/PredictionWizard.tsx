@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Trophy } from 'lucide-react';
-import { DEFAULT_DEADLINE_ISO } from '../../lib/constants';
+import { DEFAULT_DEADLINE_ISO, USE_MOCKS } from '../../lib/constants';
+import { supabase } from '../../lib/supabase';
 import { isPredictionLocked } from '../../lib/tournament';
 import { usePrediction } from '../../hooks/usePrediction';
 import { useTournamentFixture } from '../../hooks/useTournamentFixture';
@@ -33,9 +34,31 @@ function SaveStatusBadge({ hydrating, status, error }: { hydrating: boolean; sta
 export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: string; adminMode?: boolean }) {
   const [tab, setTab] = useState<Tab>('groups');
   const [errors, setErrors] = useState<string[]>([]);
+  const [ticketMeta, setTicketMeta] = useState<{ alias: string; ownerName: string | null }>({ alias: '', ownerName: null });
   const { fixture } = useTournamentFixture();
   const prediction = usePrediction(ticketId, { teams: fixture.teams, matches: fixture.matches, adminMode });
   const locked = isPredictionLocked(DEFAULT_DEADLINE_ISO);
+
+  // Carga alias amigable ("Ticket N") + ownerName para que el comprobante PDF
+  // y el header del wizard muestren la info real en vez del UUID.
+  useEffect(() => {
+    let cancelled = false;
+    if (USE_MOCKS || !supabase || !ticketId) return;
+    (async () => {
+      const { data } = await supabase
+        .from('v_admin_tickets')
+        .select('alias, person_name')
+        .eq('id', ticketId)
+        .maybeSingle();
+      if (!cancelled && data) {
+        setTicketMeta({
+          alias: (data.alias as string) ?? '',
+          ownerName: (data.person_name as string | null) ?? null
+        });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [ticketId]);
 
   function buildBracket() {
     const nextErrors = prediction.buildKnockoutBracket();
@@ -57,7 +80,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? 'Modo TTHH · editando ticket' : `Ticket ${ticketId.slice(0, 8)}`}</p>
+          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? `Modo TTHH · ${ticketMeta.alias || 'editando ticket'}` : (ticketMeta.alias || `Ticket ${ticketId.slice(0, 8)}`)}</p>
           <h1 className="text-3xl font-semibold text-white">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
         </div>
         <div className="flex items-center gap-3">
@@ -97,7 +120,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
         />
       )}
       {tab === 'bracket' && <KnockoutStep matches={prediction.draft.bracketMatches} teams={prediction.teams} disabled={locked} onBackToGroups={() => setTab('groups')} onChange={prediction.setKnockoutScore} />}
-      {tab === 'summary' && <PredictionSummaryStep ticketId={ticketId} ticketAlias={null} ownerName={null} draft={prediction.draft} teams={prediction.teams} matches={prediction.matches} thirdPlaceSlots={prediction.thirdPlaceSlots} summary={prediction.finalSummary} disabled={locked || prediction.saving} onSubmit={() => void submit()} />}
+      {tab === 'summary' && <PredictionSummaryStep ticketId={ticketId} ticketAlias={ticketMeta.alias} ownerName={ticketMeta.ownerName} draft={prediction.draft} teams={prediction.teams} matches={prediction.matches} thirdPlaceSlots={prediction.thirdPlaceSlots} summary={prediction.finalSummary} disabled={locked || prediction.saving} onSubmit={() => void submit()} />}
     </div>
   );
 }

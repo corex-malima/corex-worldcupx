@@ -5,32 +5,40 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Backgrounds CoreX (gris carbón corporativo, no azul deportivo)
         pitch: {
-          950: '#081525',
-          900: '#0f2235',
-          800: '#1b3348',
-          700: '#2a4963'
+          950: '#0B0B0D', // base brand dark
+          900: '#141519',
+          800: '#1E1F25',
+          700: '#2C2E37'
         },
+        // Acentos del producto WorldCupX (puente entre brand y deporte)
         cup: {
-          gold: '#8fa3b8',
-          green: '#4f9d72',
-          blue: '#5b9bd5',
-          red: '#d86f7a'
+          gold: '#C9B27A',
+          green: '#5BB582',
+          blue: '#5A78D5',   // signal blue oficial CoreX
+          red: '#D86F7A'
         },
+        // Paleta CoreX corporativa (brand sheet)
         corex: {
           coal: '#0B0B0D',
           graphite: '#1A1B1E',
-          bone: '#F5F4F1',
+          ivory: '#F5F4F1',
           slate: '#5C6F89',
-          mist: '#8A9099'
+          mist: '#8A9099',
+          signal: '#5A78D5',    // azul principal (REVERSE · SIGNAL)
+          lavender: '#B589C4',  // violeta (status pending)
+          sky: '#EAF1F8'        // azul claro (status sq-50)
         }
       },
       boxShadow: {
-        glow: '0 10px 30px rgba(8, 21, 37, 0.24)',
-        card: '0 12px 34px rgba(0, 0, 0, 0.18)'
+        glow: '0 10px 30px rgba(90, 120, 213, 0.18)',
+        card: '0 12px 34px rgba(0, 0, 0, 0.22)',
+        signal: '0 0 0 1px rgba(90, 120, 213, 0.35), 0 14px 30px rgba(90, 120, 213, 0.15)'
       },
       backgroundImage: {
-        'stadium': 'linear-gradient(180deg,#081525,#0b1a2d)'
+        'stadium': 'linear-gradient(180deg,#0B0B0D,#141519)',
+        'signal-fade': 'linear-gradient(135deg,#5A78D5,#8DA8FF)'
       },
       animation: {
         float: 'float 5s ease-in-out infinite',

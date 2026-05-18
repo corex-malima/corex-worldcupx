@@ -69,11 +69,12 @@ export function PredictionSummaryStep({ ticketId, ticketAlias, ownerName, draft,
           bracketMatches={draft.bracketMatches}
           championTeamId={summary.championTeamId}
           thirdPlaceTeamId={summary.thirdPlaceTeamId}
-          ticket={{ code: ticketId, ownerName: ownerName ?? null, alias: ticketAlias ?? null, submittedAt: draft.submittedAt ?? null }}
+          ticket={{ code: null, ownerName: ownerName ?? null, alias: ticketAlias ?? null, submittedAt: draft.submittedAt ?? null }}
           flagPngs={flagPngs}
         />
       ).toBlob();
-      const safeName = (ticketAlias ?? ticketId).replace(/\s/g, '_');
+      // El nombre del archivo usa el alias amigable (Ticket_N) y no el UUID.
+      const safeName = (ticketAlias ?? `Ticket-${ticketId.slice(0, 8)}`).replace(/\s/g, '_');
       triggerDownload(blob, `worldcupx-comprobante-${safeName}.pdf`);
     } catch (err) {
       window.alert(err instanceof Error ? err.message : 'No se pudo generar el comprobante.');
