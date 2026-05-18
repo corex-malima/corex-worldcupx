@@ -163,19 +163,27 @@ security definer
 set search_path = public
 as $$
 declare
+    v_user uuid := auth.uid();
+    v_ticket public.tickets%rowtype;
     v_owner_user uuid;
     v_prediction_id uuid;
 begin
+    if v_user is null then raise exception 'Usuario no autenticado.'; end if;
     if not public.can_edit_prediction(p_ticket_id) then
         raise exception 'Sin permisos para editar esta predicción.';
     end if;
 
-    select claimed_by_user_id into v_owner_user from public.tickets where id = p_ticket_id;
-    if v_owner_user is null then raise exception 'El ticket no está reclamado.'; end if;
+    select * into v_ticket from public.tickets where id = p_ticket_id for update;
+    if not found then raise exception 'Ticket no encontrado.'; end if;
+
+    -- Owner: colaborador si ya reclamó; si no, el admin (claim_ticket lo transfiere)
+    v_owner_user := coalesce(v_ticket.claimed_by_user_id, v_user);
 
     insert into public.prediction_headers (ticket_id, user_id, status)
     values (p_ticket_id, v_owner_user, 'in_progress')
-    on conflict (ticket_id) do update set updated_at = now()
+    on conflict (ticket_id) do update set
+        status = case when public.prediction_headers.status = 'pending' then 'in_progress' else public.prediction_headers.status end,
+        updated_at = now()
     returning id into v_prediction_id;
 
     insert into public.prediction_third_place_assignments (prediction_id, slot_match_id, team_id)

@@ -54,9 +54,13 @@ function triggerDownload(blob: Blob, filename: string) {
 function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsProps) {
   const { fixture } = useTournamentFixture();
   const groupsComplete = row.groupsFilled >= 72;
-  // Solo carga la predicción cuando el ticket está reclamado Y grupos completos
-  // (porque el PDF de eliminatorias requiere las predicciones de grupo).
-  const { data: prediction } = useTicketPrediction(row.status === 'claimed' && groupsComplete ? row.id : null);
+  // Carga la predicción para tickets reclamados O vendidos (admin/TTHH también
+  // llena predicciones de tickets sold para colaboradores que no se registraron).
+  // Solo se carga cuando los 72 grupos están completos: el PDF de eliminatorias
+  // necesita los scores de grupo para emparejar R32.
+  const { data: prediction } = useTicketPrediction(
+    (row.status === 'claimed' || row.status === 'sold') && groupsComplete ? row.id : null
+  );
   const [pdfBusy, setPdfBusy] = useState<'groups' | 'knockout' | null>(null);
 
   async function handleCancel() {
