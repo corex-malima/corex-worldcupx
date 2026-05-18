@@ -45,11 +45,11 @@ export function AdminGroupResultsPanel({ matches, teams, results, onChange, onSa
         const errorMsg = saveErrorByMatch?.[match.id];
         const official = match.status === 'official';
         return (
-          <div key={match.id} className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-2 text-xs font-bold text-white/45">
+          <div key={match.id} className="rounded-2xl border border-corex-ink/10 bg-pitch-900 p-4">
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-2 text-xs font-bold text-corex-ink/45">
               <div>
                 <span className="block">Partido {match.matchNo} · Grupo {match.groupCode}</span>
-                <span className="mt-1 block break-words text-white/35">{match.venue}</span>
+                <span className="mt-1 block break-words text-corex-ink/35">{match.venue}</span>
               </div>
               <SaveBadge status={status} official={official} />
             </div>
@@ -70,7 +70,7 @@ export function AdminGroupResultsPanel({ matches, teams, results, onChange, onSa
                   onChange={(event) => onChange(match.id, event.target.value === '' ? null : Number(event.target.value), result?.awayScore ?? null)}
                   className="h-14 text-center text-2xl font-black"
                 />
-                <span className="text-center text-white/35">-</span>
+                <span className="text-center text-corex-ink/35">-</span>
                 <Input
                   aria-label="Goles visitante"
                   type="number"
@@ -101,7 +101,7 @@ export function AdminGroupResultsPanel({ matches, teams, results, onChange, onSa
             </div>
 
             {errorMsg && (
-              <p className="mt-2 rounded-xl bg-cup-red/15 p-2 text-xs font-bold text-red-100">{errorMsg}</p>
+              <p className="mt-2 rounded-xl bg-cup-red/15 p-2 text-xs font-bold text-cup-red">{errorMsg}</p>
             )}
           </div>
         );

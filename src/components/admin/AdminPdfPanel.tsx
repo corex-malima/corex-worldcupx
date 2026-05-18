@@ -67,15 +67,15 @@ export function AdminPdfPanel({ teams, matches }: Props) {
   return (
     <Card>
       <div className="flex items-center gap-3">
-        <span className="grid size-12 place-items-center rounded-2xl border border-white/10 bg-pitch-800 text-cup-blue">
+        <span className="grid size-12 place-items-center rounded-2xl border border-corex-ink/10 bg-pitch-800 text-cup-blue">
           <FileText size={22} />
         </span>
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Plantillas imprimibles</p>
-          <h2 className="text-xl font-semibold text-white">PDF para colaboradores sin internet</h2>
+          <h2 className="text-xl font-semibold text-corex-ink">PDF para colaboradores sin internet</h2>
         </div>
       </div>
-      <p className="mt-3 max-w-3xl text-sm text-white/65">
+      <p className="mt-3 max-w-3xl text-sm text-corex-ink/65">
         Descarga e imprime las plantillas para que los colaboradores que no tienen acceso a la app
         llenen sus pronósticos a mano. Tú las pasas al sistema desde "Cargar resultados".
       </p>
@@ -88,9 +88,9 @@ export function AdminPdfPanel({ teams, matches }: Props) {
         </Button>
       </div>
       {error && (
-        <p className="mt-4 rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-red-100">{error}</p>
+        <p className="mt-4 rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-cup-red">{error}</p>
       )}
-      <p className="mt-4 text-xs text-white/45">
+      <p className="mt-4 text-xs text-corex-ink/45">
         Las plantillas usan el fixture cargado actualmente en Supabase. Si el fixture cambia, vuelve a descargar.
       </p>
     </Card>

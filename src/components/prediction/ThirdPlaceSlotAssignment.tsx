@@ -18,11 +18,11 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
   const solvability = hasEnoughThirds ? validateThirdPlaceAssignmentSolvability(slots, bestThirds) : { ok: true, blockedSlotLabels: [] };
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
+    <div className="rounded-2xl border border-corex-ink/10 bg-pitch-900 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-semibold text-white">Asignacion manual de terceros</h3>
-          <p className="text-sm text-white/60">Cada cruce respeta los grupos permitidos. Puedes autocompletar una combinacion valida.</p>
+          <h3 className="font-semibold text-corex-ink">Asignacion manual de terceros</h3>
+          <p className="text-sm text-corex-ink/60">Cada cruce respeta los grupos permitidos. Puedes autocompletar una combinacion valida.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={solvability.ok ? 'blue' : 'red'}>{slots.filter((slot) => slot.assignedTeamId).length}/{slots.length}</Badge>
@@ -34,12 +34,12 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
         </div>
       </div>
       {!hasEnoughThirds && (
-        <div className="mb-3 rounded-xl border border-white/10 bg-pitch-950/40 p-3 text-sm font-bold text-white/60">
+        <div className="mb-3 rounded-xl border border-corex-ink/10 bg-corex-fog p-3 text-sm font-bold text-corex-ink/60">
           Completa todos los grupos para calcular los mejores terceros.
         </div>
       )}
       {!solvability.ok && (
-        <div className="mb-3 rounded-xl border border-cup-red/30 bg-cup-red/10 p-3 text-sm font-bold text-red-100">
+        <div className="mb-3 rounded-xl border border-cup-red/30 bg-cup-red/10 p-3 text-sm font-bold text-cup-red">
           Esta asignacion deja cruces sin terceros validos{solvability.blockedSlotLabels.length ? `: ${solvability.blockedSlotLabels.join(', ')}` : ''}.
         </div>
       )}
@@ -48,9 +48,9 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
           const selectedIds = new Set(slots.flatMap((item) => (item.slotId !== slot.slotId && item.assignedTeamId) ? [item.assignedTeamId] : []));
           const assignedTeam = teams.find((team) => team.id === slot.assignedTeamId);
           return (
-            <label key={slot.slotId} className="block min-w-0 rounded-2xl border border-white/10 bg-pitch-900 p-3">
-              <span className="block text-xs font-black uppercase tracking-widest text-white/45">Partido {slot.matchNo}</span>
-              <span className="mt-1 block text-sm font-black text-white">{slot.label}</span>
+            <label key={slot.slotId} className="block min-w-0 rounded-2xl border border-corex-ink/10 bg-pitch-900 p-3">
+              <span className="block text-xs font-black uppercase tracking-widest text-corex-ink/45">Partido {slot.matchNo}</span>
+              <span className="mt-1 block text-sm font-black text-corex-ink">{slot.label}</span>
               <span className="mt-1 block text-xs font-bold text-cup-blue">
                 Permitidos: {slot.allowedGroupCodes?.length ? slot.allowedGroupCodes.join('/') : 'Todos'}
               </span>
@@ -58,7 +58,7 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
                 disabled={disabled}
                 value={slot.assignedTeamId ?? ''}
                 onChange={(event) => onAssign(slot.slotId, event.target.value || null)}
-                className="mt-3 min-h-12 w-full rounded-2xl border border-white/10 bg-pitch-900 px-3 text-white outline-none focus:border-cup-blue"
+                className="mt-3 min-h-12 w-full rounded-2xl border border-corex-ink/10 bg-pitch-900 px-3 text-corex-ink outline-none focus:border-cup-blue"
               >
                 <option value="">Seleccionar tercero</option>
                 {bestThirds.map((row) => {
@@ -77,10 +77,10 @@ export function ThirdPlaceSlotAssignment({ slots, bestThirds, teams, disabled, o
                   const team = teams.find((item) => item.id === row.teamId);
                   const state = getThirdPlaceOptionState(slot, row, slots, bestThirds);
                   if (!state.disabled) return null;
-                  return <span key={row.teamId} className="rounded-full bg-pitch-950/50 px-2 py-1 text-[11px] font-bold text-white/45">{team?.fifaCode ?? row.groupCode}: {state.reason}</span>;
+                  return <span key={row.teamId} className="rounded-full bg-corex-fog px-2 py-1 text-[11px] font-bold text-corex-ink/45">{team?.fifaCode ?? row.groupCode}: {state.reason}</span>;
                 })}
               </div>
-              {assignedTeam && <TeamIdentity team={assignedTeam} size="sm" className="mt-3 rounded-xl bg-pitch-950/50 px-3 py-2" />}
+              {assignedTeam && <TeamIdentity team={assignedTeam} size="sm" className="mt-3 rounded-xl bg-corex-fog px-3 py-2" />}
             </label>
           );
         })}

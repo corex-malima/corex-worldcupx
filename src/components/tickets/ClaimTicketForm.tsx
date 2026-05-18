@@ -33,12 +33,12 @@ export function ClaimTicketForm({ onClaim }: { onClaim: (code: string) => Promis
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-corex-ink/10 bg-pitch-900 p-4">
       <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <Input label="Activar nuevo ticket" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} maxLength={12} placeholder="WCX-ABC12345" helper="Ingresa el codigo entregado por TTHH." />
         <Button type="submit" disabled={loading} icon={<KeyRound size={17} />}>{loading ? 'Validando' : 'Activar'}</Button>
       </div>
-      {message && <p className="mt-3 text-sm font-bold text-white/75">{message}</p>}
+      {message && <p className="mt-3 text-sm font-bold text-corex-ink/75">{message}</p>}
     </form>
   );
 }

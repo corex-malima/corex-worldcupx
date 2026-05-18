@@ -5,15 +5,15 @@ import { Button } from '../ui/Button';
 
 export function RankingTable({ rows, onView }: { rows: RankingRow[]; onView?: (row: RankingRow) => void }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-pitch-900">
+    <div className="overflow-hidden rounded-2xl border border-corex-ink/10 bg-pitch-900">
       <div className="overflow-x-auto scrollbar-thin">
         <table className="w-full min-w-[780px] text-sm">
-          <thead className="bg-pitch-800 text-left text-white/50">
+          <thead className="bg-pitch-800 text-left text-corex-ink/50">
             <tr><th className="p-4">#</th><th>Ticket</th><th>Colaborador</th><th>Área</th><th>Puntos</th><th>Exactos</th><th>Resultado</th><th>Bonus</th><th></th></tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.ticketId} className="border-t border-white/10 text-white/80">
+              <tr key={row.ticketId} className="border-t border-corex-ink/10 text-corex-ink/80">
                 <td className="p-4 font-black">{row.rank}</td>
                 <td className="font-bold">{row.alias}</td>
                 <td>{row.employeeName}</td>

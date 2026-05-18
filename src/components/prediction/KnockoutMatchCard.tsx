@@ -38,8 +38,8 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange, onSave, sa
   }
 
   return (
-    <div className={`min-w-0 rounded-2xl border p-3 sm:p-4 ${isReady ? 'border-white/10 bg-pitch-900' : 'border-white/5 bg-pitch-900/70'}`}>
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-2 text-xs font-bold text-white/45">
+    <div className={`min-w-0 rounded-2xl border p-3 sm:p-4 ${isReady ? 'border-corex-ink/10 bg-pitch-900' : 'border-corex-ink/5 bg-pitch-900/70'}`}>
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-2 text-xs font-bold text-corex-ink/45">
         <span>Partido {match.matchNo}</span>
         {badgeContent()}
       </div>
@@ -65,7 +65,7 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange, onSave, sa
           onChange={(event) => onChange(match.id, event.target.value === '' ? null : Number(event.target.value), match.awayScore)}
           className="h-14 text-center text-2xl font-black"
         />
-        <span className="text-center text-white/35">-</span>
+        <span className="text-center text-corex-ink/35">-</span>
         <Input
           aria-label="Goles visitante"
           type="number"
@@ -94,10 +94,10 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange, onSave, sa
       )}
 
       {saveError && status === 'error' && (
-        <p className="mt-2 rounded-xl bg-cup-red/15 p-2 text-xs font-bold text-red-100">{saveError}</p>
+        <p className="mt-2 rounded-xl bg-cup-red/15 p-2 text-xs font-bold text-cup-red">{saveError}</p>
       )}
 
-      {match.venue && <p className="mt-3 break-words text-xs font-bold text-white/45">{match.venue}</p>}
+      {match.venue && <p className="mt-3 break-words text-xs font-bold text-corex-ink/45">{match.venue}</p>}
     </div>
   );
 }

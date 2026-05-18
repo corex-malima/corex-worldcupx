@@ -14,8 +14,8 @@ export function AdminRecalculateScoresPanel({ status, processed, updatedAt, onRe
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Ranking</p>
-          <h3 className="text-xl font-semibold text-white">Recalcular ranking</h3>
-          <p className="mt-1 text-sm text-white/60">{updatedAt ? `Último cálculo: ${new Date(updatedAt).toLocaleString()}` : 'Aún no hay cálculo registrado.'}</p>
+          <h3 className="text-xl font-semibold text-corex-ink">Recalcular ranking</h3>
+          <p className="mt-1 text-sm text-corex-ink/60">{updatedAt ? `Último cálculo: ${new Date(updatedAt).toLocaleString()}` : 'Aún no hay cálculo registrado.'}</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge tone={status === 'calculated' ? 'green' : status === 'error' ? 'red' : 'gold'}>{status}</Badge>

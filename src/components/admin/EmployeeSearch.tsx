@@ -24,14 +24,14 @@ function ResultCard({ result, onSelect }: { result: CollaboratorSearchResult; on
       title={hasCedula ? undefined : 'Este colaborador no tiene cédula registrada en HR. Cárgala antes de vender el ticket.'}
       className={`w-full rounded-2xl border p-4 text-left transition ${
         hasCedula
-          ? 'border-white/10 bg-pitch-800 hover:border-cup-blue/40 hover:bg-pitch-700'
+          ? 'border-corex-ink/10 bg-pitch-800 hover:border-cup-blue/40 hover:bg-pitch-700'
           : 'cursor-not-allowed border-cup-red/30 bg-pitch-900/60 opacity-60'
       }`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="truncate text-base font-black text-white">{result.person_name ?? 'Colaborador sin nombre'}</p>
-          <p className="mt-1 text-sm text-white/60">
+          <p className="truncate text-base font-black text-corex-ink">{result.person_name ?? 'Colaborador sin nombre'}</p>
+          <p className="mt-1 text-sm text-corex-ink/60">
             Cedula {result.masked_national_id ?? 'sin registro'} · Codigo {result.person_id}
           </p>
         </div>
@@ -39,7 +39,7 @@ function ResultCard({ result, onSelect }: { result: CollaboratorSearchResult; on
           {hasCedula ? 'Seleccionar' : 'Sin cédula'}
         </span>
       </div>
-      <div className="mt-3 grid gap-2 text-sm text-white/60 md:grid-cols-2">
+      <div className="mt-3 grid gap-2 text-sm text-corex-ink/60 md:grid-cols-2">
         <span>{result.area_name ?? result.area_id ?? 'Area pendiente'}</span>
         <span>{result.job_title ?? 'Cargo pendiente'}</span>
       </div>
@@ -61,7 +61,7 @@ export function EmployeeSearch({ onSelect }: { onSelect: (employee: EmployeeSear
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-pitch-900 p-4">
+    <div className="rounded-2xl border border-corex-ink/10 bg-pitch-900 p-4">
       <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto] lg:items-end">
         <Input
           label="Buscar por cedula, codigo o nombre"
@@ -82,16 +82,16 @@ export function EmployeeSearch({ onSelect }: { onSelect: (employee: EmployeeSear
       </div>
 
       {error && (
-        <p className="mt-3 rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-red-100">
+        <p className="mt-3 rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-cup-red">
           No se pudo consultar la base de colaboradores. Verifique la conexion con Supabase/API.
         </p>
       )}
-      {showShortHint && <p className="mt-3 text-sm text-white/55">Escribe al menos 2 caracteres para buscar por nombre. Para cedula o codigo puedes escribir numeros parciales.</p>}
-      {showNoResults && <p className="mt-3 rounded-2xl bg-pitch-800 p-3 text-sm font-bold text-white/70">No se encontro ningun colaborador con ese dato.</p>}
+      {showShortHint && <p className="mt-3 text-sm text-corex-ink/55">Escribe al menos 2 caracteres para buscar por nombre. Para cedula o codigo puedes escribir numeros parciales.</p>}
+      {showNoResults && <p className="mt-3 rounded-2xl bg-pitch-800 p-3 text-sm font-bold text-corex-ink/70">No se encontro ningun colaborador con ese dato.</p>}
 
       {results.length > 0 && (
         <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2 text-sm font-bold text-white/65">
+          <div className="flex items-center gap-2 text-sm font-bold text-corex-ink/65">
             <Users size={16} />
             <span>{results.length} coincidencia{results.length === 1 ? '' : 's'}</span>
           </div>

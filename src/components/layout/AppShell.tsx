@@ -6,7 +6,7 @@ import { Footer } from './Footer';
 
 export function AppShell({ user, children, onNavigate, onSignOut }: { user: AppUser | null; children: ReactNode; onNavigate: (to: string) => void; onSignOut: () => void }) {
   return (
-    <div className="flex min-h-screen flex-col bg-pitch-950 text-white">
+    <div className="flex min-h-screen flex-col bg-pitch-950 text-corex-ink">
       <div className="stadium-lines pointer-events-none fixed inset-0 opacity-35" />
       <div className="relative z-10 flex min-h-screen flex-col">
         <TopBar user={user} onNavigate={onNavigate} onSignOut={onSignOut} />

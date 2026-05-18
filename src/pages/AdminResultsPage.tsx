@@ -192,7 +192,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Resultados reales</p>
-            <h1 className="text-3xl font-semibold text-white">Carga de resultados oficiales</h1>
+            <h1 className="text-3xl font-semibold text-corex-ink">Carga de resultados oficiales</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="secondary" onClick={() => void reloadFixture()} icon={<RefreshCw size={15} />}>Refrescar</Button>
@@ -208,7 +208,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
 
         {pendingRecalc > 0 && (
           <Card className="border-cup-gold/40 bg-cup-gold/10">
-            <p className="text-sm font-bold text-white">
+            <p className="text-sm font-bold text-corex-ink">
               <Calculator size={15} className="mr-1 inline" />
               Hay {pendingRecalc} cambio{pendingRecalc === 1 ? '' : 's'} sin recalcular. Los puntos del ranking no reflejan los últimos resultados hasta que recalcules.
             </p>
@@ -216,7 +216,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         )}
 
         <Card>
-          <p className="text-sm text-white/65">
+          <p className="text-sm text-corex-ink/65">
             {USE_MOCKS
               ? 'Modo mock: TTHH puede practicar carga de grupos, asignación de terceros, eliminatorias y recálculo.'
               : 'Modo real: cada marcador se guarda con el botón "Guardar" de cada partido (llama save_actual_result en Supabase). El recálculo del ranking se dispara con el botón superior derecho cuando estás listo.'}
@@ -270,7 +270,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
         )}
         {tab === 'ranking' && <AdminRecalculateScoresPanel status={rankingStatus} processed={kpis.ticketsSold} updatedAt={rankingUpdatedAt} onRecalculate={recalculate} />}
         {tab === 'pdf' && (
-          <Suspense fallback={<Card><p className="text-white/55">Cargando módulo de PDFs…</p></Card>}>
+          <Suspense fallback={<Card><p className="text-corex-ink/55">Cargando módulo de PDFs…</p></Card>}>
             <AdminPdfPanel teams={allTeams} matches={allMatches} />
           </Suspense>
         )}

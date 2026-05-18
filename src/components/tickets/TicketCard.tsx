@@ -14,14 +14,14 @@ export function TicketCard({ ticket, onOpen }: { ticket: Ticket; onOpen: (ticket
           <div className="mb-3 flex items-center gap-2">
             <span className="grid size-10 place-items-center rounded-2xl bg-pitch-800"><TicketIcon size={19} /></span>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-white/45">Código</p>
-              <p className="text-2xl font-black tracking-widest text-white">{ticket.codeMasked}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-corex-ink/45">Código</p>
+              <p className="text-2xl font-black tracking-widest text-corex-ink">{ticket.codeMasked}</p>
             </div>
           </div>
           <TicketStatusBadge status={ticket.status} predictionStatus={ticket.predictionStatus} />
         </div>
         <div className="text-right">
-          <p className="text-xs font-bold uppercase tracking-widest text-white/45">Puntos</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-corex-ink/45">Puntos</p>
           <p className="text-3xl font-black text-cup-blue">{formatPoints(ticket.points)}</p>
         </div>
       </div>

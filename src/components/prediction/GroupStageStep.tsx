@@ -33,7 +33,7 @@ export function GroupStageStep({ teams, matches, predictions, standings, bestThi
       <div className="space-y-4">
         {groupCodes.map((groupCode) => (
           <section key={groupCode} className="space-y-3">
-            <h2 className="text-xl font-semibold text-white">Grupo {groupCode}</h2>
+            <h2 className="text-xl font-semibold text-corex-ink">Grupo {groupCode}</h2>
             {matches.flatMap((match) => match.groupCode !== groupCode ? [] : [
               <GroupMatchCard key={match.id} match={match} teams={teams} prediction={predictions.find((prediction) => prediction.matchId === match.id)} disabled={disabled} onChange={(home, away) => onChange(match.id, home, away)} />
             ])}
@@ -45,7 +45,7 @@ export function GroupStageStep({ teams, matches, predictions, standings, bestThi
         <BestThirdsSummary rows={bestThirds} teams={teams} />
         <ThirdPlaceSlotAssignment slots={thirdPlaceSlots} bestThirds={bestThirds} teams={teams} disabled={disabled} onAssign={onAssignThird} onAutoAssign={onAutoAssignThirds} />
         {errors.length > 0 && (
-          <div className="rounded-2xl border border-cup-red/25 bg-cup-red/10 p-4 text-sm font-bold text-red-100">
+          <div className="rounded-2xl border border-cup-red/25 bg-cup-red/10 p-4 text-sm font-bold text-cup-red">
             <AlertTriangle className="mb-2" />
             {errors[0]}
           </div>

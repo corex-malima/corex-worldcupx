@@ -24,8 +24,8 @@ type Tab = typeof tabs[number]['key'];
 type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 function SaveStatusBadge({ hydrating, status, error }: { hydrating: boolean; status: AutoSaveStatus; error: string | null }) {
-  if (hydrating) return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/55"><Loader2 size={13} className="animate-spin" /> Cargando…</span>;
-  if (status === 'saving') return <span className="inline-flex items-center gap-1 text-xs font-bold text-white/65"><Loader2 size={13} className="animate-spin" /> Guardando</span>;
+  if (hydrating) return <span className="inline-flex items-center gap-1 text-xs font-bold text-corex-ink/55"><Loader2 size={13} className="animate-spin" /> Cargando…</span>;
+  if (status === 'saving') return <span className="inline-flex items-center gap-1 text-xs font-bold text-corex-ink/65"><Loader2 size={13} className="animate-spin" /> Guardando</span>;
   if (status === 'saved') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-green"><CheckCircle2 size={13} /> Guardado</span>;
   if (status === 'error') return <span className="inline-flex items-center gap-1 text-xs font-bold text-cup-red" title={error ?? undefined}><CloudOff size={13} /> Error al guardar</span>;
   return null;
@@ -81,7 +81,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? `Modo TTHH · ${ticketMeta.alias || 'editando ticket'}` : (ticketMeta.alias || `Ticket ${ticketId.slice(0, 8)}`)}</p>
-          <h1 className="text-3xl font-semibold text-white">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
+          <h1 className="text-3xl font-semibold text-corex-ink">{adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}</h1>
         </div>
         <div className="flex items-center gap-3">
           <SaveStatusBadge hydrating={prediction.hydrating} status={prediction.autoSaveStatus} error={prediction.autoSaveError} />
@@ -92,7 +92,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
       <PredictionLockBanner locked={locked} submitted={prediction.draft.status === 'submitted'} />
       <PredictionProgress value={prediction.progress} />
 
-      {errors.length > 0 && <div className="rounded-2xl border border-cup-red/30 bg-cup-red/10 p-4 text-sm font-bold text-red-100">{errors[0]}</div>}
+      {errors.length > 0 && <div className="rounded-2xl border border-cup-red/30 bg-cup-red/10 p-4 text-sm font-bold text-cup-red">{errors[0]}</div>}
 
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
         {tabs.map((item) => {

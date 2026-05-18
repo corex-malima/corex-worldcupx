@@ -180,12 +180,12 @@ export function TicketAdminTable({ rows, loading, error, onCancel, onEdit }: Pro
   const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-pitch-900">
+    <div className="overflow-hidden rounded-2xl border border-corex-ink/10 bg-pitch-900">
       {error && (
-        <p className="border-b border-white/10 bg-cup-red/15 p-3 text-sm font-bold text-red-100">{error}</p>
+        <p className="border-b border-corex-ink/10 bg-cup-red/15 p-3 text-sm font-bold text-cup-red">{error}</p>
       )}
       <table className="w-full min-w-[960px] text-sm">
-        <thead className="bg-pitch-800 text-left text-white/50">
+        <thead className="bg-pitch-800 text-left text-corex-ink/50">
           <tr>
             <th className="p-4">Alias</th>
             <th>Colaborador</th>
@@ -199,24 +199,24 @@ export function TicketAdminTable({ rows, loading, error, onCancel, onEdit }: Pro
         <tbody>
           {loading && (
             <tr>
-              <td colSpan={7} className="p-6 text-center text-white/55">Cargando tickets…</td>
+              <td colSpan={7} className="p-6 text-center text-corex-ink/55">Cargando tickets…</td>
             </tr>
           )}
           {!loading && rows.length === 0 && !error && (
             <tr>
-              <td colSpan={7} className="p-6 text-center text-white/55">No se encontraron tickets con esos filtros.</td>
+              <td colSpan={7} className="p-6 text-center text-corex-ink/55">No se encontraron tickets con esos filtros.</td>
             </tr>
           )}
           {!loading && rows.map((row) => (
-            <tr key={row.id} className="border-t border-white/10 text-white/80">
-              <td className="p-4 font-black text-white" title={row.codeMasked}>{row.alias}</td>
+            <tr key={row.id} className="border-t border-corex-ink/10 text-corex-ink/80">
+              <td className="p-4 font-black text-corex-ink" title={row.codeMasked}>{row.alias}</td>
               <td>
                 <div className="leading-tight">{row.personName}</div>
-                <div className="mt-1 text-xs text-white/45">{row.codeMasked}</div>
+                <div className="mt-1 text-xs text-corex-ink/45">{row.codeMasked}</div>
               </td>
               <td>
                 <div className="leading-tight">{row.areaName ?? row.areaId ?? '—'}</div>
-                {row.jobClassificationCode && <div className="mt-1 text-xs text-white/45">{row.jobClassificationCode}</div>}
+                {row.jobClassificationCode && <div className="mt-1 text-xs text-corex-ink/45">{row.jobClassificationCode}</div>}
               </td>
               <td>
                 <Badge tone={row.status === 'claimed' ? 'green' : row.status === 'cancelled' ? 'red' : 'gold'}>
@@ -224,7 +224,7 @@ export function TicketAdminTable({ rows, loading, error, onCancel, onEdit }: Pro
                 </Badge>
               </td>
               <td>
-                <span className="text-xs font-bold text-white/65">{row.groupsFilled}/72 grupos</span>
+                <span className="text-xs font-bold text-corex-ink/65">{row.groupsFilled}/72 grupos</span>
                 {row.predictionStatus === 'submitted' && <Badge tone="green" className="ml-2">Enviada</Badge>}
               </td>
               <td className="font-black">{row.points}</td>

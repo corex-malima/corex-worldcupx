@@ -5,40 +5,50 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Backgrounds CoreX (gris carbón corporativo, no azul deportivo)
+        // === LIGHT THEME ===
+        // pitch-* mantiene su NOMBRE para no romper todos los className del proyecto,
+        // pero su SEMÁNTICA está invertida: ahora 950 es la página (clara) y 700 es
+        // el contraste más fuerte (gris medio). Compatibilidad sin sed gigante.
         pitch: {
-          950: '#0B0B0D', // base brand dark
-          900: '#141519',
-          800: '#1E1F25',
-          700: '#2C2E37'
+          950: '#FFFFFF', // page bg (era #0B0B0D)
+          900: '#F4F5F8', // tarjeta sutil / panel
+          800: '#E6E8EC', // card principal / input bg
+          700: '#DCDFE5'  // hover / separadores
         },
-        // Acentos del producto WorldCupX (puente entre brand y deporte)
+        // Acentos producto WorldCupX
         cup: {
-          gold: '#C9B27A',
-          green: '#5BB582',
-          blue: '#5A78D5',   // signal blue oficial CoreX
-          red: '#D86F7A'
+          gold: '#B59A5A',
+          green: '#3FA869',
+          blue: '#5A78D5',  // signal blue oficial CoreX
+          red: '#C2585F'
         },
-        // Paleta CoreX corporativa (brand sheet)
+        // Paleta CoreX corporativa actualizada al brand sheet light
         corex: {
-          coal: '#0B0B0D',
-          graphite: '#1A1B1E',
-          ivory: '#F5F4F1',
-          slate: '#5C6F89',
-          mist: '#8A9099',
-          signal: '#5A78D5',    // azul principal (REVERSE · SIGNAL)
-          lavender: '#B589C4',  // violeta (status pending)
-          sky: '#EAF1F8'        // azul claro (status sq-50)
+          coal: '#1F232A',     // texto principal (semántica anterior era el bg oscuro)
+          ink: '#1F232A',      // alias semántico para texto
+          graphite: '#2A2E36',
+          slate: '#5C6573',
+          ash: '#8E98A2',      // texto terciario
+          mist: '#A8AEB8',
+          stone: '#C8C5CD',    // borders
+          fog: '#DCDFE5',
+          ivory: '#E6E8EC',
+          paper: '#F4F5F8',
+          white: '#FFFFFF',
+          signal: '#5A78D5',
+          lavender: '#B889C4',
+          sky: '#EAF1F8'
         }
       },
       boxShadow: {
         glow: '0 10px 30px rgba(90, 120, 213, 0.18)',
-        card: '0 12px 34px rgba(0, 0, 0, 0.22)',
-        signal: '0 0 0 1px rgba(90, 120, 213, 0.35), 0 14px 30px rgba(90, 120, 213, 0.15)'
+        card: '0 6px 18px rgba(31, 35, 42, 0.08)',
+        signal: '0 0 0 1px rgba(90, 120, 213, 0.25), 0 14px 30px rgba(90, 120, 213, 0.10)'
       },
       backgroundImage: {
-        'stadium': 'linear-gradient(180deg,#0B0B0D,#141519)',
-        'signal-fade': 'linear-gradient(135deg,#5A78D5,#8DA8FF)'
+        'stadium': 'linear-gradient(180deg,#FFFFFF,#F4F5F8)',
+        'signal-fade': 'linear-gradient(135deg,#5A78D5,#8DA8FF)',
+        'lavender-fade': 'linear-gradient(135deg,#B889C4,#D7B2E2)'
       },
       animation: {
         float: 'float 5s ease-in-out infinite',
