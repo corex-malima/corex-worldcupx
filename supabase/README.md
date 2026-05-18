@@ -2,29 +2,52 @@
 
 Esta carpeta contiene SQL ejecutable, seeds, plantillas CSV y documentación operativa para montar el backend de la Polla Mundialista.
 
-## Orden de ejecución
+## Orden de ejecución (instalación fresca v0.1.5)
 
-Ejecutar en Supabase SQL Editor, en este orden:
+Ejecutar en Supabase SQL Editor, **en este orden**. Cada archivo es idempotente — se puede ejecutar dos veces sin errores.
 
-1. `sql/00_extensions.sql`
-2. `sql/01_schema_core.sql`
-3. `sql/02_schema_tournament.sql`
-4. `sql/03_schema_predictions.sql`
-5. `sql/04_indexes_constraints.sql`
-6. `sql/05_rls_policies.sql`
-7. `sql/06_functions_auth_profiles.sql`
-8. `sql/07_functions_tickets.sql`
-9. `sql/08_functions_predictions.sql`
-10. `sql/09_functions_actual_results.sql`
-11. `sql/10_functions_scoring.sql`
-12. `sql/11_views_rankings.sql`
-13. `sql/12_seed_config.sql`
-14. `sql/13_seed_demo_worldcup.sql`
-15. `sql/14_real_person_profile_integration.sql`
+| # | Archivo | Qué hace |
+|---|---|---|
+| 1 | `sql/00_extensions.sql` | Extensiones pgcrypto, uuid |
+| 2 | `sql/01_schema_core.sql` | employees, profiles, app_config, admin_audit_log |
+| 3 | `sql/02_schema_tournament.sql` | tournament_groups, teams, matches |
+| 4 | `sql/03_schema_predictions.sql` | prediction_headers, prediction_match_scores, prediction_third_place_assignments |
+| 5 | `sql/04_indexes_constraints.sql` | Índices y constraints |
+| 6 | `sql/05_rls_policies.sql` | Row-level security |
+| 7 | `sql/06_functions_auth_profiles.sql` | is_admin, current_profile, resolve_auth_email_by_cedula |
+| 8 | `sql/07_functions_tickets.sql` | sell_ticket, claim_ticket, cancel_ticket |
+| 9 | `sql/08_functions_predictions.sql` | submit_complete_prediction, save_prediction_match_score |
+| 10 | `sql/09_functions_actual_results.sql` | save_actual_result + resolve bracket (con fix propagación + unicidad 3°s) |
+| 11 | `sql/10_functions_scoring.sql` | recalculate_ticket_score (con cruce flexible) |
+| 12 | `sql/11_views_rankings.sql` | v_ranking_public, v_my_tickets |
+| 13 | `sql/12_seed_config.sql` | Config inicial (deadline) |
+| 14 | `sql/13_seed_demo_worldcup.sql` | **48 equipos + 104 partidos + 8 reglas mejores 3°s** |
+| 15 | `sql/14_real_person_profile_integration.sql` | sell_ticket overload con datos de personal |
+| 16 | `sql/15_resync_v0_1_1.sql` | Catch-up para BDs viejas (idempotente en frescas) |
+| 17 | `sql/16_v0_1_2_admin_edit_and_autosave.sql` | can_edit_prediction + auto-save granular |
+| 18 | `sql/17_v0_1_3_admin_search_and_filters.sql` | v_admin_tickets + v_ranking_public con clasificación |
+| 19 | **`sql/18_seed_admin_accounts.sql`** | **Crea admin maestro + admin TTHH** |
 
-`sql/99_reset_dev.sql` es destructivo y solo debe usarse en desarrollo.
+Después corre `sql/verify_install.sql` para confirmar que TODO quedó correcto. Debe devolver `✓ OK` en cada fila.
 
-Cada archivo es idempotente: se puede ejecutar dos veces seguidas sin errores (usa `if not exists` / `on conflict` / `create or replace`). Para reset completo: ejecutar `99_reset_dev.sql` y volver a correr `00 → 14`.
+### Reset completo (para development o reinstall)
+
+```text
+1. Edita sql/99_reset_dev.sql y descomenta el bloque /* … */
+2. Ejecuta sql/99_reset_dev.sql en Supabase SQL Editor
+3. Authentication → Users → borra todos los usuarios manualmente
+4. Re-ejecuta sql/00 hasta sql/18 en orden
+5. Ejecuta sql/verify_install.sql y verifica que todo dé ✓ OK
+```
+
+### Cuentas admin creadas por `18_seed_admin_accounts.sql`
+
+| Cédula (login) | Password (cambiar después) | Rol |
+|---|---|---|
+| `0000000001` | `WorldCupX2026!` | `super_admin` (ADMIN MAESTRO) |
+| `0000000002` | `TTHH2026!` | `admin_tthh` (ADMIN TTHH) |
+
+⚠️ **Antes de correr `18_seed_admin_accounts.sql` en producción**, edita las variables `password` adentro del DO block para usar passwords seguras. O cambia las passwords después desde Supabase Dashboard → Authentication → Users.
 
 ### Si tu BD ya corrió 00→14 ANTES de v0.1.1
 
