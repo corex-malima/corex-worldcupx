@@ -5,16 +5,32 @@ function isAllowed(slot: ThirdPlaceSlot, row: StandingRow): boolean {
   return !slot.allowedGroupCodes?.length || slot.allowedGroupCodes.includes(row.groupCode);
 }
 
+// Versión rápida con Sets pre-construidos para evitar O(n) por isAllowed en el backtracking.
+function isAllowedFast(allowedSet: Set<string> | null, row: StandingRow): boolean {
+  return allowedSet === null || allowedSet.has(row.groupCode);
+}
+
+function buildAllowedMap(slots: ThirdPlaceSlot[]): Map<string, Set<string> | null> {
+  const map = new Map<string, Set<string> | null>();
+  for (const slot of slots) {
+    map.set(slot.slotId, slot.allowedGroupCodes?.length ? new Set(slot.allowedGroupCodes) : null);
+  }
+  return map;
+}
+
 function search(slots: ThirdPlaceSlot[], candidates: StandingRow[], fixed = new Map<string, string | null>()): ThirdPlaceSlot[] | null {
   const fixedValues = Array.from(fixed.values()).filter(Boolean) as string[];
   if (new Set(fixedValues).size !== fixedValues.length) return null;
   const used = new Set(fixedValues);
+  const allowedMap = buildAllowedMap(slots);
   const orderedSlots = slots.toSorted((a, b) => {
     const aFixed = fixed.has(a.slotId);
     const bFixed = fixed.has(b.slotId);
     if (aFixed !== bFixed) return aFixed ? -1 : 1;
-    const aOptions = candidates.filter((row) => !used.has(row.teamId) && isAllowed(a, row)).length;
-    const bOptions = candidates.filter((row) => !used.has(row.teamId) && isAllowed(b, row)).length;
+    const aAllowed = allowedMap.get(a.slotId) ?? null;
+    const bAllowed = allowedMap.get(b.slotId) ?? null;
+    const aOptions = candidates.filter((row) => !used.has(row.teamId) && isAllowedFast(aAllowed, row)).length;
+    const bOptions = candidates.filter((row) => !used.has(row.teamId) && isAllowedFast(bAllowed, row)).length;
     return aOptions - bOptions || a.order - b.order;
   });
   const assigned = new Map<string, string | null>(fixed);
@@ -22,14 +38,15 @@ function search(slots: ThirdPlaceSlot[], candidates: StandingRow[], fixed = new 
   function backtrack(index: number): boolean {
     if (index >= orderedSlots.length) return true;
     const slot = orderedSlots[index];
+    const allowedSet = allowedMap.get(slot.slotId) ?? null;
     const fixedTeamId = assigned.get(slot.slotId);
     if (fixedTeamId) {
       const fixedRow = candidates.find((row) => row.teamId === fixedTeamId);
-      if (!fixedRow || !isAllowed(slot, fixedRow)) return false;
+      if (!fixedRow || !isAllowedFast(allowedSet, fixedRow)) return false;
       return backtrack(index + 1);
     }
 
-    const options = candidates.filter((row) => !used.has(row.teamId) && isAllowed(slot, row));
+    const options = candidates.filter((row) => !used.has(row.teamId) && isAllowedFast(allowedSet, row));
     for (const row of options) {
       assigned.set(slot.slotId, row.teamId);
       used.add(row.teamId);

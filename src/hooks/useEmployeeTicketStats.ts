@@ -52,10 +52,14 @@ export function useEmployeeTicketStats({ cedula, personId }: UseEmployeeTicketSt
     setState({ stats: EMPTY, loading: true, error: null });
 
     (async () => {
+      // Guard sincrónico: si el efecto ya se canceló antes de iniciar el fetch
+      // (re-render rápido), no disparamos la query.
+      if (cancelled) return;
       const query = supabase.from('v_employee_ticket_stats').select('tickets_sold,tickets_claimed,tickets_pending,cedula,person_id');
       const filtered = cleanCedula ? query.eq('cedula', cleanCedula) : query.eq('person_id', cleanPerson);
       const { data, error: queryError } = await filtered.maybeSingle();
 
+      // Guard post-await: la suscripción se canceló durante la query
       if (cancelled) return;
 
       if (queryError) {
