@@ -16,10 +16,12 @@ const config: Config = {
           700: '#DCDFE5'  // hover / separadores
         },
         // Acentos producto WorldCupX
+        // "cup.blue" mantiene el NOMBRE pero ahora es el rosa Loriva/CoreX.
+        // No renombramos para no tocar 200+ usos de text-cup-blue/bg-cup-blue.
         cup: {
           gold: '#B59A5A',
           green: '#3FA869',
-          blue: '#5A78D5',  // signal blue oficial CoreX
+          blue: '#fb6f92',  // rosa principal Loriva (antes signal blue #5A78D5)
           red: '#C2585F'
         },
         // Paleta CoreX corporativa actualizada al brand sheet light
@@ -35,19 +37,22 @@ const config: Config = {
           ivory: '#E6E8EC',
           paper: '#F4F5F8',
           white: '#FFFFFF',
-          signal: '#5A78D5',
+          signal: '#fb6f92',     // rosa principal Loriva
+          signalSoft: '#ff8fab',  // rosa medio (hovers / segundo plano)
+          signalMist: '#ffc2d1',  // rosa claro (badges / pills sutiles)
+          signalFog: '#ffe5ec',   // rosa muy claro (bg de banners)
           lavender: '#B889C4',
           sky: '#EAF1F8'
         }
       },
       boxShadow: {
-        glow: '0 10px 30px rgba(90, 120, 213, 0.18)',
+        glow: '0 10px 30px rgba(251, 111, 146, 0.18)',
         card: '0 6px 18px rgba(31, 35, 42, 0.08)',
-        signal: '0 0 0 1px rgba(90, 120, 213, 0.25), 0 14px 30px rgba(90, 120, 213, 0.10)'
+        signal: '0 0 0 1px rgba(251, 111, 146, 0.25), 0 14px 30px rgba(251, 111, 146, 0.10)'
       },
       backgroundImage: {
         'stadium': 'linear-gradient(180deg,#FFFFFF,#F4F5F8)',
-        'signal-fade': 'linear-gradient(135deg,#5A78D5,#8DA8FF)',
+        'signal-fade': 'linear-gradient(135deg,#fb6f92,#ff8fab)',
         'lavender-fade': 'linear-gradient(135deg,#B889C4,#D7B2E2)'
       },
       animation: {

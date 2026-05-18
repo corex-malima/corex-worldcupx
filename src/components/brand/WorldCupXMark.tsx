@@ -42,8 +42,8 @@ export function WorldCupXMark({ size = 40, className, withBackground = true, tit
           <stop offset="1" stopColor="#F1F3F6" />
         </linearGradient>
         <radialGradient id={blueId} cx="35%" cy="35%" r="75%">
-          <stop offset="0" stopColor="#8DA8FF" />
-          <stop offset="1" stopColor="#5A78D5" />
+          <stop offset="0" stopColor="#ff8fab" />
+          <stop offset="1" stopColor="#fb6f92" />
         </radialGradient>
       </defs>
 
