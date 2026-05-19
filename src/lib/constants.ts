@@ -8,7 +8,7 @@ export const APP_DESCRIPTOR = 'Polla Mundialista';
 export const BRAND = 'CoreX';
 export const SIGNATURE = 'by P&P';
 export const COMPANY = 'Malima';
-export const APP_VERSION = '0.1.0';
+export const APP_VERSION = '0.1.9';
 // Deadline duro: 10 de junio 2026, 23:59:59 hora Ecuador (UTC-5).
 // Después de este instante, sell_ticket / claim_ticket / submit_complete_prediction
 // quedan bloqueados. Admin sigue pudiendo cargar resultados oficiales y recalcular.
