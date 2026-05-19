@@ -204,6 +204,7 @@ from pg_policies where schemaname='public' and tablename='tickets';
 
 -- =============================================================================
 -- G. ADMIN AUDIT LOG (si hay actividad)
+-- Schema real: admin_user_id, action, target_table, target_id, payload jsonb, created_at
 -- =============================================================================
 insert into tmp_health (seccion, check_name, esperado, actual, verdict)
 select 'G. AUDIT', 'Eventos registrados', '>=0',
@@ -211,12 +212,12 @@ select 'G. AUDIT', 'Eventos registrados', '>=0',
        '✓';
 
 insert into tmp_health (seccion, check_name, esperado, actual, verdict, detail)
-select 'G. AUDIT', 'Cancelaciones con motivo', '100%',
-       count(*) filter (where coalesce(reason, '') <> '')::text || ' / ' || count(*)::text,
-       case when count(*) = 0 or count(*) = count(*) filter (where coalesce(reason, '') <> '') then '✓' else '⚠' end,
-       'Cancelaciones sin motivo registrado'
+select 'G. AUDIT', 'Cancelaciones con motivo (payload.reason)', '100%',
+       count(*) filter (where coalesce(payload->>'reason', '') <> '')::text || ' / ' || count(*)::text,
+       case when count(*) = 0 or count(*) = count(*) filter (where coalesce(payload->>'reason', '') <> '') then '✓' else '⚠' end,
+       'Cancelaciones sin payload.reason registrado'
 from public.admin_audit_log
-where event_type = 'ticket_cancelled';
+where action = 'cancel_ticket' or action = 'ticket_cancelled';
 
 -- =============================================================================
 -- H. SUMMARY
