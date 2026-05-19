@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Sparkles, Trophy } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Sparkles, Trash2, Trophy } from 'lucide-react';
 import { DEFAULT_DEADLINE_ISO, DEMO_AUTOFILL_ENABLED, USE_MOCKS } from '../../lib/constants';
 import { randomGroupScore, randomKnockoutScore } from '../../lib/demoAutofill';
 import { supabase } from '../../lib/supabase';
@@ -79,7 +79,16 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
     setErrors(nextErrors);
   }
 
+  // Ref que mantiene el bracket más actualizado para que el autofill pueda
+  // leerlo después de las propagaciones (closures capturadas al click serían stale).
+  const bracketRef = useRef(prediction.draft.bracketMatches);
+  useEffect(() => {
+    bracketRef.current = prediction.draft.bracketMatches;
+  }, [prediction.draft.bracketMatches]);
+
   // DEMO: llena los 72 grupos + terceros + bracket + ganadores de un click.
+  // Ronda por ronda con setTimeout para que la propagación (R32 → R16, etc.)
+  // surta efecto antes de leer las siguientes rondas desde el ref.
   // Borrable junto con DEMO_AUTOFILL_ENABLED cuando se cierre el lanzamiento.
   function autofillDemo() {
     // 1) Grupos
@@ -87,21 +96,51 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
       const [h, a] = randomGroupScore();
       prediction.setScore(match.id, h, a);
     });
-    // 2) Mejores terceros (función ya existente)
-    prediction.autoAssignThirdPlaces();
-    // 3) Construir bracket inicial
-    prediction.buildKnockoutBracket();
-    // 4) Llenar bracket con scores y ganadores (esperar tick para que el
-    //    bracket recién construido esté en draft.bracketMatches)
+
+    // 2) Esperar tick, asignar terceros y construir bracket inicial
     setTimeout(() => {
-      prediction.draft.bracketMatches.forEach((match) => {
-        if (!match.homeTeamId || !match.awayTeamId) return;
-        const [h, a] = randomKnockoutScore();
-        const winnerId = h > a ? match.homeTeamId : match.awayTeamId;
-        prediction.setKnockoutScore(match.id, h, a, winnerId);
-      });
-      setTab('summary');
-    }, 50);
+      prediction.autoAssignThirdPlaces();
+      prediction.buildKnockoutBracket();
+      // 3) Llenar bracket ronda por ronda (R32 → R16 → QF → SF → TP → F)
+      const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
+      let roundIdx = 0;
+      const fillNextRound = () => {
+        if (roundIdx >= rounds.length) {
+          setTab('summary');
+          return;
+        }
+        const round = rounds[roundIdx];
+        roundIdx += 1;
+        bracketRef.current
+          .filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId)
+          .forEach((match) => {
+            const [h, a] = randomKnockoutScore();
+            const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
+            prediction.setKnockoutScore(match.id, h, a, winnerId);
+          });
+        // Esperar próximo tick para que la propagación llegue a la siguiente ronda
+        setTimeout(fillNextRound, 80);
+      };
+      fillNextRound();
+    }, 100);
+  }
+
+  // Limpieza de toda la predicción (botón permanente, no solo demo).
+  function clearAll() {
+    if (!window.confirm('¿Vaciar TODOS los marcadores y selecciones de esta predicción? No se puede deshacer.')) return;
+    // Grupos
+    prediction.groupMatches.forEach((match) => {
+      prediction.setScore(match.id, null, null);
+    });
+    // Terceros
+    prediction.thirdPlaceSlots.forEach((slot) => {
+      prediction.setThirdAssignment(slot.slotId, null);
+    });
+    // Bracket: limpiar scores y ganadores (los teams se quedan, son inferidos)
+    bracketRef.current.forEach((match) => {
+      prediction.setKnockoutScore(match.id, null, null, null);
+    });
+    setTab('groups');
   }
 
   return (
@@ -114,10 +153,15 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
             <InfoButton title={help.deadline.title} className="ml-2 align-middle">{help.deadline.body}</InfoButton>
           </h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {DEMO_AUTOFILL_ENABLED && !locked && (
             <Button variant="primary" onClick={autofillDemo} icon={<Sparkles size={15} />} title="DEMO: llena marcadores aleatorios en grupos + bracket + campeón">
               Autorrellenar (DEMO)
+            </Button>
+          )}
+          {!locked && (
+            <Button variant="danger" onClick={clearAll} icon={<Trash2 size={15} />} title="Vaciar TODA la predicción (grupos + terceros + bracket)">
+              Vaciar
             </Button>
           )}
           <SaveStatusBadge hydrating={prediction.hydrating} status={prediction.autoSaveStatus} error={prediction.autoSaveError} />

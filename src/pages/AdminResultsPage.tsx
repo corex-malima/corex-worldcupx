@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Calculator, RefreshCw, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Calculator, RefreshCw, Save, Sparkles, Trash2 } from 'lucide-react';
 import { useAdminKpis } from '../hooks/useAdminKpis';
 import { AdminGroupResultsPanel, type SaveStatus } from '../components/admin/AdminGroupResultsPanel';
 import { AdminGroupStandingsPanel } from '../components/admin/AdminGroupStandingsPanel';
@@ -186,40 +186,85 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
     setPendingRecalc(0);
   }
 
+  // Ref del bracket actualizado: el autofill round-by-round necesita leer
+  // el estado más reciente DESPUÉS de cada propagación.
+  const bracketRef = useRef(bracket);
+  useEffect(() => { bracketRef.current = bracket; }, [bracket]);
+
   // DEMO: llena los 72 grupos + terceros + bracket KO con scores aleatorios.
   // SOLO local — nada se persiste a BD. TTHH revisa y guarda manualmente cada
-  // partido si quiere persistir. Borrable junto con DEMO_AUTOFILL_ENABLED.
+  // partido (o usa "Guardar todo"). Borrable junto con DEMO_AUTOFILL_ENABLED.
   function autofillDemo() {
     // 1) Grupos (form local, sin save)
     groupMatches.forEach((match) => {
       const [h, a] = randomGroupScore();
       setGroupResult(match.id, h, a);
     });
-    // 2) Asignar terceros con la función ya existente
+    // 2) Esperar tick, asignar terceros y construir bracket
     setTimeout(() => {
       autoAssignThirds();
-      // 3) Construir bracket inicial real
       buildRealBracket();
-      // 4) Llenar bracket con scores aleatorios y ganadores deterministas
-      setTimeout(() => {
-        setBracket((current) => {
-          let next = current;
-          current.forEach((match) => {
-            if (!match.homeTeamId || !match.awayTeamId) return;
-            const [h, a] = randomKnockoutScore();
-            const winnerId = h > a ? match.homeTeamId : match.awayTeamId;
-            next = updateBracketScore(next, match.id, h, a, winnerId);
-          });
-          return next;
+      // 3) Llenar bracket ronda por ronda para que la propagación llene R16+
+      const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
+      let roundIdx = 0;
+      const fillNextRound = () => {
+        if (roundIdx >= rounds.length) {
+          setTab('groups');
+          window.alert('Form lleno con datos aleatorios. NADA se guardó a BD — usa "Guardar todo" o los botones "Guardar" individuales para persistir.');
+          return;
+        }
+        const round = rounds[roundIdx];
+        roundIdx += 1;
+        const matches = bracketRef.current.filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId);
+        matches.forEach((match) => {
+          const [h, a] = randomKnockoutScore();
+          const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
+          setKnockoutResult(match.id, h, a, winnerId);
         });
-        // Marca todos los matches como 'idle' (sin guardar)
-        const draftStatus: Record<string, SaveStatus> = {};
-        [...groupMatches, ...bracket].forEach((m) => { draftStatus[m.id] = 'idle'; });
-        setSaveStatusByMatch((curr) => ({ ...curr, ...draftStatus }));
-        setTab('groups');
-        window.alert('Form lleno con datos aleatorios. NADA se guardó a BD — usa los botones "Guardar" de cada partido si quieres persistir.');
-      }, 100);
-    }, 50);
+        setTimeout(fillNextRound, 80);
+      };
+      fillNextRound();
+    }, 80);
+  }
+
+  // Vaciar formularios (botón permanente, no solo demo). NO toca BD: solo el
+  // form local. Si querían borrar resultados ya guardados deben hacerlo desde
+  // BD por separado.
+  function clearAll() {
+    if (!window.confirm('¿Vaciar TODO el form de resultados (grupos + bracket)? Esto NO borra los resultados ya guardados en BD, solo limpia la pantalla.')) return;
+    groupMatches.forEach((match) => setGroupResult(match.id, null, null));
+    bracketRef.current.forEach((match) => setKnockoutResult(match.id, null, null, null));
+    setTab('groups');
+  }
+
+  // Guarda a BD TODOS los partidos que tienen scores en el form y aún no
+  // están persistidos (status !== 'saved'). Útil para confirmar de un click
+  // toda la simulación o una tanda de resultados oficiales.
+  async function saveAll() {
+    const pending: { id: string; kind: 'group' | 'knockout' }[] = [];
+    Object.entries(results).forEach(([matchId, res]) => {
+      if (res.homeScore !== null && res.awayScore !== null && saveStatusByMatch[matchId] !== 'saved') {
+        pending.push({ id: matchId, kind: 'group' });
+      }
+    });
+    bracketRef.current.forEach((m) => {
+      if (m.homeScore !== null && m.awayScore !== null && saveStatusByMatch[m.id] !== 'saved') {
+        pending.push({ id: m.id, kind: 'knockout' });
+      }
+    });
+    if (pending.length === 0) {
+      window.alert('No hay partidos pendientes por guardar.');
+      return;
+    }
+    if (!window.confirm(`¿Guardar ${pending.length} partido(s) a BD ahora? Esto persiste los marcadores como resultados oficiales.`)) return;
+    for (const item of pending) {
+      if (item.kind === 'group') {
+        await saveGroupResult(item.id);
+      } else {
+        await saveKnockoutResult(item.id);
+      }
+    }
+    window.alert(`${pending.length} partido(s) guardados. Recuerda recalcular el ranking para que los puntos se actualicen.`);
   }
 
   return (
@@ -240,6 +285,12 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
                 Autorrellenar form (DEMO)
               </Button>
             )}
+            <Button variant="danger" onClick={clearAll} icon={<Trash2 size={15} />} title="Vaciar todo el formulario (no toca BD)">
+              Vaciar
+            </Button>
+            <Button variant="secondary" onClick={() => void saveAll()} icon={<Save size={15} />} title="Guardar a BD todos los partidos pendientes">
+              Guardar todo
+            </Button>
             <Button variant="secondary" onClick={() => void reloadFixture()} icon={<RefreshCw size={15} />}>Refrescar</Button>
             <Button
               onClick={() => void recalculate()}
