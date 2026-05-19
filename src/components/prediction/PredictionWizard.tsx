@@ -79,50 +79,58 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
     setErrors(nextErrors);
   }
 
-  // Ref que mantiene el bracket más actualizado para que el autofill pueda
-  // leerlo después de las propagaciones (closures capturadas al click serían stale).
+  // Refs sincronizadas que mantienen el bracket Y el objeto prediction más
+  // actualizados. Esto es CRÍTICO para el autofill: las clausuras capturadas
+  // al click del botón son stale, así que necesitamos releer el estado
+  // fresco entre cada paso para que las funciones autoAssignThirdPlaces,
+  // buildKnockoutBracket y setKnockoutScore vean los standings/terceros
+  // recién actualizados.
   const bracketRef = useRef(prediction.draft.bracketMatches);
+  const predictionRef = useRef(prediction);
   useEffect(() => {
     bracketRef.current = prediction.draft.bracketMatches;
-  }, [prediction.draft.bracketMatches]);
+    predictionRef.current = prediction;
+  }, [prediction]);
+
+  function wait(ms: number) {
+    return new Promise<void>((resolve) => setTimeout(resolve, ms));
+  }
 
   // DEMO: llena los 72 grupos + terceros + bracket + ganadores de un click.
-  // Ronda por ronda con setTimeout para que la propagación (R32 → R16, etc.)
+  // Ronda por ronda con awaits para que la propagación (R32 → R16, etc.)
   // surta efecto antes de leer las siguientes rondas desde el ref.
   // Borrable junto con DEMO_AUTOFILL_ENABLED cuando se cierre el lanzamiento.
-  function autofillDemo() {
+  async function autofillDemo() {
     // 1) Grupos
     prediction.groupMatches.forEach((match) => {
       const [h, a] = randomGroupScore();
       prediction.setScore(match.id, h, a);
     });
+    // Esperar a que React re-renderice y standings/qualified se deriven
+    await wait(250);
 
-    // 2) Esperar tick, asignar terceros y construir bracket inicial
-    setTimeout(() => {
-      prediction.autoAssignThirdPlaces();
-      prediction.buildKnockoutBracket();
-      // 3) Llenar bracket ronda por ronda (R32 → R16 → QF → SF → TP → F)
-      const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
-      let roundIdx = 0;
-      const fillNextRound = () => {
-        if (roundIdx >= rounds.length) {
-          setTab('summary');
-          return;
-        }
-        const round = rounds[roundIdx];
-        roundIdx += 1;
-        bracketRef.current
-          .filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId)
-          .forEach((match) => {
-            const [h, a] = randomKnockoutScore();
-            const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
-            prediction.setKnockoutScore(match.id, h, a, winnerId);
-          });
-        // Esperar próximo tick para que la propagación llegue a la siguiente ronda
-        setTimeout(fillNextRound, 80);
-      };
-      fillNextRound();
-    }, 100);
+    // 2) Auto-assign terceros usando el ref fresco (qualified.bestThirds actualizados)
+    predictionRef.current.autoAssignThirdPlaces();
+    await wait(250);
+
+    // 3) Build bracket inicial con standings y terceros actualizados
+    predictionRef.current.buildKnockoutBracket();
+    await wait(250);
+
+    // 4) Llenar bracket ronda por ronda. Después de cada ronda esperamos a
+    // que setKnockoutScore propague los ganadores a la ronda siguiente,
+    // y leemos bracketRef.current (sincronizado al último render).
+    const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
+    for (const round of rounds) {
+      const matches = bracketRef.current.filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId);
+      matches.forEach((match) => {
+        const [h, a] = randomKnockoutScore();
+        const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
+        predictionRef.current.setKnockoutScore(match.id, h, a, winnerId);
+      });
+      await wait(200);
+    }
+    setTab('summary');
   }
 
   // Limpieza de toda la predicción (botón permanente, no solo demo).

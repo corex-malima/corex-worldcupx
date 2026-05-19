@@ -191,40 +191,40 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
   const bracketRef = useRef(bracket);
   useEffect(() => { bracketRef.current = bracket; }, [bracket]);
 
+  function wait(ms: number) {
+    return new Promise<void>((resolve) => setTimeout(resolve, ms));
+  }
+
   // DEMO: llena los 72 grupos + terceros + bracket KO con scores aleatorios.
   // SOLO local — nada se persiste a BD. TTHH revisa y guarda manualmente cada
   // partido (o usa "Guardar todo"). Borrable junto con DEMO_AUTOFILL_ENABLED.
-  function autofillDemo() {
+  async function autofillDemo() {
     // 1) Grupos (form local, sin save)
     groupMatches.forEach((match) => {
       const [h, a] = randomGroupScore();
       setGroupResult(match.id, h, a);
     });
-    // 2) Esperar tick, asignar terceros y construir bracket
-    setTimeout(() => {
-      autoAssignThirds();
-      buildRealBracket();
-      // 3) Llenar bracket ronda por ronda para que la propagación llene R16+
-      const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
-      let roundIdx = 0;
-      const fillNextRound = () => {
-        if (roundIdx >= rounds.length) {
-          setTab('groups');
-          window.alert('Form lleno con datos aleatorios. NADA se guardó a BD — usa "Guardar todo" o los botones "Guardar" individuales para persistir.');
-          return;
-        }
-        const round = rounds[roundIdx];
-        roundIdx += 1;
-        const matches = bracketRef.current.filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId);
-        matches.forEach((match) => {
-          const [h, a] = randomKnockoutScore();
-          const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
-          setKnockoutResult(match.id, h, a, winnerId);
-        });
-        setTimeout(fillNextRound, 80);
-      };
-      fillNextRound();
-    }, 80);
+    // 2) Esperar a que standings derive, asignar terceros y construir bracket
+    await wait(250);
+    autoAssignThirds();
+    await wait(250);
+    buildRealBracket();
+    await wait(250);
+
+    // 3) Llenar bracket ronda por ronda con await entre cada una para que
+    // la propagación llene las teams de R16+ antes de leer el ref
+    const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
+    for (const round of rounds) {
+      const matches = bracketRef.current.filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId);
+      matches.forEach((match) => {
+        const [h, a] = randomKnockoutScore();
+        const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
+        setKnockoutResult(match.id, h, a, winnerId);
+      });
+      await wait(200);
+    }
+    setTab('groups');
+    window.alert('Form lleno con datos aleatorios. NADA se guardó a BD — usa "Guardar todo" o los botones "Guardar" individuales para persistir.');
   }
 
   // Vaciar formularios (botón permanente, no solo demo). NO toca BD: solo el
