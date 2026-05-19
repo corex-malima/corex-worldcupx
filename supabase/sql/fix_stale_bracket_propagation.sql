@@ -99,9 +99,36 @@ where d.stage in ('R16','QF','SF','THIRD_PLACE','FINAL')
   );
 
 -- ---------- 4) Re-propagar desde upstream ----------
--- Llama a la función que toma los winners official y rellena home/away
--- teams downstream según los slots ('Ganador Partido N', 'Perdedor Partido N', etc).
-select public.resolve_actual_knockout_teams();
+-- Usamos resolve_slot_to_team (sin admin check) inline en vez de
+-- resolve_actual_knockout_teams (que requiere is_admin() y falla en SQL
+-- editor con role postgres). Aplica el mismo loop sobre matches no-official
+-- con home/away_slot != '3...' (terceros se manejan aparte).
+do $$
+declare
+    v_match record;
+    v_team_id uuid;
+begin
+    for v_match in
+        select id, match_no, home_slot, away_slot, home_team_id, away_team_id
+        from public.matches
+        where stage in ('R16','QF','SF','THIRD_PLACE','FINAL')
+          and status <> 'official'
+        order by match_no
+    loop
+        if v_match.home_slot is not null and v_match.home_slot not like '3%' then
+            v_team_id := public.resolve_slot_to_team(v_match.match_no, 'home', v_match.home_slot);
+            if v_team_id is distinct from v_match.home_team_id then
+                update public.matches set home_team_id = v_team_id, updated_at = now() where id = v_match.id;
+            end if;
+        end if;
+        if v_match.away_slot is not null and v_match.away_slot not like '3%' then
+            v_team_id := public.resolve_slot_to_team(v_match.match_no, 'away', v_match.away_slot);
+            if v_team_id is distinct from v_match.away_team_id then
+                update public.matches set away_team_id = v_team_id, updated_at = now() where id = v_match.id;
+            end if;
+        end if;
+    end loop;
+end$$;
 
 -- ---------- 5) Re-verificar ----------
 do $$
