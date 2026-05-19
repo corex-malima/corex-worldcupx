@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Calculator, RefreshCw } from 'lucide-react';
 import { useAdminKpis } from '../hooks/useAdminKpis';
 import { AdminGroupResultsPanel, type SaveStatus } from '../components/admin/AdminGroupResultsPanel';
@@ -20,9 +20,7 @@ import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
 import { useTournamentFixture } from '../hooks/useTournamentFixture';
 import { USE_MOCKS } from '../lib/constants';
 import { supabase } from '../lib/supabase';
-const AdminPdfPanel = lazy(() => import('../components/admin/AdminPdfPanel').then((m) => ({ default: m.AdminPdfPanel })));
-
-type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking' | 'pdf';
+type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking';
 
 export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => void }) {
   const { fixture, reload: reloadFixture } = useTournamentFixture();
@@ -234,8 +232,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
             ['standings', 'Tablas'],
             ['thirds', 'Terceros'],
             ['knockout', 'Eliminatorias'],
-            ['ranking', 'Ranking'],
-            ['pdf', 'Plantillas PDF']
+            ['ranking', 'Ranking']
           ].map(([key, label]) => <Button key={key} variant={tab === key ? 'primary' : 'secondary'} onClick={() => setTab(key as Tab)}>{label}</Button>)}
           <InfoButton
             title={
@@ -243,7 +240,6 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
               tab === 'thirds' ? help.predictionThird.title :
               tab === 'knockout' ? help.adminResultsKO.title :
               tab === 'ranking' ? help.adminRecalc.title :
-              tab === 'pdf' ? help.adminPdfs.title :
               help.adminResultsGroups.title
             }
           >
@@ -252,7 +248,6 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
               tab === 'thirds' ? help.predictionThird.body :
               tab === 'knockout' ? help.adminResultsKO.body :
               tab === 'ranking' ? help.adminRecalc.body :
-              tab === 'pdf' ? help.adminPdfs.body :
               help.adminResultsGroups.body
             }
           </InfoButton>
@@ -293,11 +288,6 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
           />
         )}
         {tab === 'ranking' && <AdminRecalculateScoresPanel status={rankingStatus} processed={kpis.ticketsSold} updatedAt={rankingUpdatedAt} onRecalculate={recalculate} />}
-        {tab === 'pdf' && (
-          <Suspense fallback={<Card><p className="text-corex-ink/55">Cargando módulo de PDFs…</p></Card>}>
-            <AdminPdfPanel teams={allTeams} matches={allMatches} />
-          </Suspense>
-        )}
       </div>
     </div>
   );

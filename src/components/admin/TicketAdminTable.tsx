@@ -1,25 +1,28 @@
 import { useState } from 'react';
-import { Ban, FileText, Pencil } from 'lucide-react';
+import { Ban, FileCheck, FileText, Pencil } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import type { AdminTicketRow } from '../../hooks/useAdminTickets';
 import { useTournamentFixture } from '../../hooks/useTournamentFixture';
 import { useTicketPrediction } from '../../hooks/useTicketPrediction';
 import type { ScorePrediction } from '../../types/tournament';
+import { bundleToReceiptInputs } from '../../lib/pdf/predictionReceiptAdapter';
 
 // Lazy import del módulo PDF (≈500KB gzipped). Solo se carga cuando el admin
 // pide descargar un PDF, no en el initial bundle.
 async function loadPdfModule() {
-  const [renderer, group, knockout, flags] = await Promise.all([
+  const [renderer, group, knockout, receipt, flags] = await Promise.all([
     import('@react-pdf/renderer'),
     import('../../lib/pdf/groupStageTemplate'),
     import('../../lib/pdf/knockoutTemplate'),
+    import('../../lib/pdf/predictionReceiptTemplate'),
     import('../../lib/pdf/flagLoader')
   ]);
   return {
     pdf: renderer.pdf,
     GroupStageTemplateDocument: group.GroupStageTemplateDocument,
     KnockoutTemplateDocument: knockout.KnockoutTemplateDocument,
+    PredictionReceiptDocument: receipt.PredictionReceiptDocument,
     loadFlagPngMap: flags.loadFlagPngMap
   };
 }
@@ -61,7 +64,8 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
   const { data: prediction } = useTicketPrediction(
     (row.status === 'claimed' || row.status === 'sold') && groupsComplete ? row.id : null
   );
-  const [pdfBusy, setPdfBusy] = useState<'groups' | 'knockout' | null>(null);
+  const [pdfBusy, setPdfBusy] = useState<'groups' | 'knockout' | 'receipt' | null>(null);
+  const canDownloadReceipt = row.predictionStatus === 'submitted' && groupsComplete;
 
   async function handleCancel() {
     const reason = window.prompt('Motivo de anulación');
@@ -130,6 +134,36 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
     }
   }
 
+  // Descarga el comprobante completo (predicción enviada) — evidencia auditable
+  // de qué predijo el colaborador. Misma plantilla que el usuario descarga al
+  // enviar, pero accesible desde la tabla admin.
+  async function downloadReceipt() {
+    setPdfBusy('receipt');
+    try {
+      const { pdf, PredictionReceiptDocument, loadFlagPngMap } = await loadPdfModule();
+      const flagPngs = await loadFlagPngMap(fixture.teams);
+      const inputs = bundleToReceiptInputs(prediction, fixture.matches);
+      const blob = await pdf(
+        <PredictionReceiptDocument
+          teams={fixture.teams}
+          matches={fixture.matches}
+          groupScoresByMatch={inputs.groupScoresByMatch}
+          thirdPlaceSlots={inputs.thirdPlaceSlots}
+          bracketMatches={inputs.bracketMatches}
+          championTeamId={prediction.championTeamId}
+          thirdPlaceTeamId={prediction.thirdPlaceTeamId}
+          ticket={{ code: prediction.ticketCode ?? null, ownerName: row.personName, alias: row.alias, submittedAt: row.claimedAt ?? null }}
+          flagPngs={flagPngs}
+        />
+      ).toBlob();
+      triggerDownload(blob, `worldcupx-comprobante-${row.alias.replace(/\s/g, '_')}.pdf`);
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'No se pudo generar el comprobante.');
+    } finally {
+      setPdfBusy(null);
+    }
+  }
+
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
       {onEdit && row.status === 'sold' && (
@@ -144,6 +178,17 @@ function TicketActions({ row, onCancel, onEdit, busy, setBusy }: TicketActionsPr
       )}
       {row.status !== 'cancelled' && (
         <>
+          {canDownloadReceipt && (
+            <Button
+              variant="primary"
+              icon={<FileCheck size={14} />}
+              disabled={pdfBusy !== null}
+              onClick={() => void downloadReceipt()}
+              title="Comprobante PDF de la predicción enviada (evidencia)"
+            >
+              {pdfBusy === 'receipt' ? 'PDF…' : 'Comprobante'}
+            </Button>
+          )}
           <Button
             variant="secondary"
             icon={<FileText size={14} />}

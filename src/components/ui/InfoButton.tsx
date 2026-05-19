@@ -59,6 +59,7 @@ export function InfoButton({ title, children, size = 14, ariaLabel = 'Más infor
   // o si el usuario hace scroll/resize mientras está abierto.
   useLayoutEffect(() => {
     if (!open || isMobile) return;
+    let raf = 0;
     function compute() {
       const btn = buttonRef.current;
       if (!btn) return;
@@ -82,11 +83,15 @@ export function InfoButton({ title, children, size = 14, ariaLabel = 'Más infor
       }
       setPos({ top, left, width });
     }
+    // Doble cálculo: inmediato + después del primer paint con rAF para que
+    // popH sea el real (después de medir el DOM ya renderizado).
     compute();
+    raf = window.requestAnimationFrame(compute);
     const onScrollResize = () => compute();
     window.addEventListener('scroll', onScrollResize, true);
     window.addEventListener('resize', onScrollResize);
     return () => {
+      window.cancelAnimationFrame(raf);
       window.removeEventListener('scroll', onScrollResize, true);
       window.removeEventListener('resize', onScrollResize);
     };
