@@ -65,11 +65,11 @@ where d.stage in ('R16','QF','SF','THIRD_PLACE','FINAL')
   and up_h.status='official' and up_h.winner_team_id is not null
   and d.home_team_id is distinct from up_h.winner_team_id;
 
--- ---------- 3) Resetear downstream stale a estado 'pending' ----------
+-- ---------- 3) Resetear downstream stale a estado 'scheduled' ----------
 -- Limpiamos los downstream: status pending, scores nulos, winner nulo,
 -- teams nulos. resolve_actual_knockout_teams los repoblará desde el upstream.
 update public.matches d
-set status = 'pending',
+set status = 'scheduled',
     home_team_id = case
       when d.home_slot ~ '^Ganador Partido'
        and exists (select 1 from public.matches up where up.match_no = (regexp_match(d.home_slot, '([0-9]+)'))[1]::int
