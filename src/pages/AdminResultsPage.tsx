@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Calculator, RefreshCw } from 'lucide-react';
+import { Calculator, RefreshCw, Sparkles } from 'lucide-react';
 import { useAdminKpis } from '../hooks/useAdminKpis';
 import { AdminGroupResultsPanel, type SaveStatus } from '../components/admin/AdminGroupResultsPanel';
 import { AdminGroupStandingsPanel } from '../components/admin/AdminGroupStandingsPanel';
@@ -18,8 +18,9 @@ import { validateGroupStep, validateThirdPlaceAssignments } from '../lib/predict
 import { calculateGroupStandings, getQualifiedTeams } from '../lib/standings';
 import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
 import { useTournamentFixture } from '../hooks/useTournamentFixture';
-import { USE_MOCKS } from '../lib/constants';
+import { DEMO_AUTOFILL_ENABLED, USE_MOCKS } from '../lib/constants';
 import { supabase } from '../lib/supabase';
+import { randomGroupScore, randomKnockoutScore } from '../lib/demoAutofill';
 type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking';
 
 export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => void }) {
@@ -185,6 +186,42 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
     setPendingRecalc(0);
   }
 
+  // DEMO: llena los 72 grupos + terceros + bracket KO con scores aleatorios.
+  // SOLO local — nada se persiste a BD. TTHH revisa y guarda manualmente cada
+  // partido si quiere persistir. Borrable junto con DEMO_AUTOFILL_ENABLED.
+  function autofillDemo() {
+    // 1) Grupos (form local, sin save)
+    groupMatches.forEach((match) => {
+      const [h, a] = randomGroupScore();
+      setGroupResult(match.id, h, a);
+    });
+    // 2) Asignar terceros con la función ya existente
+    setTimeout(() => {
+      autoAssignThirds();
+      // 3) Construir bracket inicial real
+      buildRealBracket();
+      // 4) Llenar bracket con scores aleatorios y ganadores deterministas
+      setTimeout(() => {
+        setBracket((current) => {
+          let next = current;
+          current.forEach((match) => {
+            if (!match.homeTeamId || !match.awayTeamId) return;
+            const [h, a] = randomKnockoutScore();
+            const winnerId = h > a ? match.homeTeamId : match.awayTeamId;
+            next = updateBracketScore(next, match.id, h, a, winnerId);
+          });
+          return next;
+        });
+        // Marca todos los matches como 'idle' (sin guardar)
+        const draftStatus: Record<string, SaveStatus> = {};
+        [...groupMatches, ...bracket].forEach((m) => { draftStatus[m.id] = 'idle'; });
+        setSaveStatusByMatch((curr) => ({ ...curr, ...draftStatus }));
+        setTab('groups');
+        window.alert('Form lleno con datos aleatorios. NADA se guardó a BD — usa los botones "Guardar" de cada partido si quieres persistir.');
+      }, 100);
+    }, 50);
+  }
+
   return (
     <div className="flex flex-col gap-5 md:flex-row">
       <AdminSidebar onNavigate={onNavigate} />
@@ -198,6 +235,11 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {DEMO_AUTOFILL_ENABLED && (
+              <Button variant="primary" onClick={autofillDemo} icon={<Sparkles size={15} />} title="DEMO: llena el form con resultados aleatorios SIN guardar">
+                Autorrellenar form (DEMO)
+              </Button>
+            )}
             <Button variant="secondary" onClick={() => void reloadFixture()} icon={<RefreshCw size={15} />}>Refrescar</Button>
             <Button
               onClick={() => void recalculate()}

@@ -13,3 +13,15 @@ export const APP_VERSION = '0.1.0';
 // Después de este instante, sell_ticket / claim_ticket / submit_complete_prediction
 // quedan bloqueados. Admin sigue pudiendo cargar resultados oficiales y recalcular.
 export const DEFAULT_DEADLINE_ISO = '2026-06-10T23:59:59-05:00';
+
+/**
+ * DEMO: muestra el botón "Autorrellenar (DEMO)" en el wizard de predicción
+ * y en Admin Resultados Reales para acelerar presentaciones. Cuando se cierre
+ * el lanzamiento poner en `false` y los botones desaparecen — sin tocar más
+ * archivos. Si quieren borrar el código por completo:
+ *   - rm src/lib/demoAutofill.ts
+ *   - quitar imports + autofillDemo() + JSX condicional de
+ *     PredictionWizard.tsx y AdminResultsPage.tsx
+ *   - borrar esta constante
+ */
+export const DEMO_AUTOFILL_ENABLED = true;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Trophy } from 'lucide-react';
-import { DEFAULT_DEADLINE_ISO, USE_MOCKS } from '../../lib/constants';
+import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Sparkles, Trophy } from 'lucide-react';
+import { DEFAULT_DEADLINE_ISO, DEMO_AUTOFILL_ENABLED, USE_MOCKS } from '../../lib/constants';
+import { randomGroupScore, randomKnockoutScore } from '../../lib/demoAutofill';
 import { supabase } from '../../lib/supabase';
 import { isPredictionLocked } from '../../lib/tournament';
 import { usePrediction } from '../../hooks/usePrediction';
@@ -78,6 +79,31 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
     setErrors(nextErrors);
   }
 
+  // DEMO: llena los 72 grupos + terceros + bracket + ganadores de un click.
+  // Borrable junto con DEMO_AUTOFILL_ENABLED cuando se cierre el lanzamiento.
+  function autofillDemo() {
+    // 1) Grupos
+    prediction.groupMatches.forEach((match) => {
+      const [h, a] = randomGroupScore();
+      prediction.setScore(match.id, h, a);
+    });
+    // 2) Mejores terceros (función ya existente)
+    prediction.autoAssignThirdPlaces();
+    // 3) Construir bracket inicial
+    prediction.buildKnockoutBracket();
+    // 4) Llenar bracket con scores y ganadores (esperar tick para que el
+    //    bracket recién construido esté en draft.bracketMatches)
+    setTimeout(() => {
+      prediction.draft.bracketMatches.forEach((match) => {
+        if (!match.homeTeamId || !match.awayTeamId) return;
+        const [h, a] = randomKnockoutScore();
+        const winnerId = h > a ? match.homeTeamId : match.awayTeamId;
+        prediction.setKnockoutScore(match.id, h, a, winnerId);
+      });
+      setTab('summary');
+    }, 50);
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -89,6 +115,11 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
           </h1>
         </div>
         <div className="flex items-center gap-3">
+          {DEMO_AUTOFILL_ENABLED && !locked && (
+            <Button variant="primary" onClick={autofillDemo} icon={<Sparkles size={15} />} title="DEMO: llena marcadores aleatorios en grupos + bracket + campeón">
+              Autorrellenar (DEMO)
+            </Button>
+          )}
           <SaveStatusBadge hydrating={prediction.hydrating} status={prediction.autoSaveStatus} error={prediction.autoSaveError} />
           <Badge tone={locked ? 'red' : prediction.draft.status === 'submitted' ? 'green' : 'gold'}>{locked ? 'Solo lectura' : prediction.draft.status === 'submitted' ? 'Enviado' : 'Editable'}</Badge>
         </div>
