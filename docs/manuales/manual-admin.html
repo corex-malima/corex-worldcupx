@@ -295,7 +295,7 @@
       <h1 class="cover-title">Manual del administrador</h1>
       <p class="cover-subtitle">Cómo operar la polla mundialista (TTHH / super_admin)</p>
       <div class="cover-meta">
-        <span>Versión <strong>v0.1.8</strong></span>
+        <span>Versión <strong>v0.1.9</strong></span>
         <span>Deadline <strong>10 jun 2026 · 23:59 ECT</strong></span>
         <span>Vamos por todo 🌸</span>
       </div>
@@ -315,7 +315,7 @@
         <li><a href="#terceros">Verificar matriz de mejores terceros</a></li>
         <li><a href="#knockout">Cargar resultados de eliminatorias (con penales)</a></li>
         <li><a href="#recalcular">Recalcular ranking general</a></li>
-        <li><a href="#pdfs">Descargar PDFs imprimibles (plantillas)</a></li>
+        <li><a href="#pdfs">Plantillas PDF y comprobantes por ticket</a></li>
         <li><a href="#postdeadline">Después del 10 de junio (post-deadline)</a></li>
         <li><a href="#troubleshooting">Resolución de problemas comunes</a></li>
       </ol>
@@ -356,6 +356,11 @@
         <strong>0000000001</strong> · clave <code>WorldCupX2026!</code> → super_admin (Admin Maestro)<br>
         <strong>0000000002</strong> · clave <code>TTHH2026!</code> → admin_tthh (Admin TTHH)<br>
         <em>Cambia las contraseñas desde Supabase Dashboard → Authentication → Users.</em>
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>💡 Ayuda en cada pantalla</strong>
+        En cada módulo del panel admin verás un <strong>botoncito redondo con una "i"</strong> al lado del título o de cada pestaña. Tócalo y se abre una ventana flotante con la explicación contextual de ese módulo. Pensado para que TTHH no tenga que abrir el manual cada vez. Cierras con click fuera, Escape o ×.
       </div>
     </section>
 
@@ -555,7 +560,7 @@
                         <td><span class="ui-pill ui-pill-green">claimed</span></td>
                         <td><span class="ui-pill ui-pill-green">Enviada</span><br><span style="color:var(--ash); font-size: 9px">72/72 grupos</span></td>
                         <td><strong>201</strong></td>
-                        <td><div class="ui-flex" style="gap:4px"><button class="ui-btn ghost small">PDF G</button><button class="ui-btn ghost small">PDF KO</button><button class="ui-btn danger small">Anular</button></div></td>
+                        <td><div class="ui-flex" style="gap:4px"><button class="ui-btn primary small">Comprobante</button><button class="ui-btn ghost small">PDF G</button><button class="ui-btn ghost small">PDF KO</button><button class="ui-btn danger small">Anular</button></div></td>
                       </tr>
                     </tbody>
                   </table>
@@ -581,13 +586,24 @@
         <thead><tr><th>Estado</th><th>Acciones disponibles</th></tr></thead>
         <tbody>
           <tr><td><span class="ui-pill ui-pill-pink">sold</span> (no reclamado)</td><td><strong>Cargar predicción</strong> · PDF G · PDF KO · Anular</td></tr>
-          <tr><td><span class="ui-pill ui-pill-green">claimed</span> (reclamado)</td><td>PDF G · PDF KO · Anular</td></tr>
+          <tr><td><span class="ui-pill ui-pill-green">claimed</span> + Pendiente</td><td>PDF G · PDF KO · Anular</td></tr>
+          <tr><td><span class="ui-pill ui-pill-green">claimed</span> + <strong>Enviada</strong></td><td><strong>Comprobante</strong> · PDF G · PDF KO · Anular</td></tr>
           <tr><td><span class="ui-pill ui-pill-red">cancelled</span></td><td>(solo lectura)</td></tr>
         </tbody>
       </table>
 
       <div class="callout callout-tip">
-        <strong>💡 Botón "Exportar XLSX"</strong>
+        <strong>🌸 Botón "Comprobante" (rosa)</strong>
+        Aparece solo cuando el ticket está <strong>reclamado y la predicción enviada</strong>. Descarga un PDF con la predicción completa del colaborador: campeón, tercer puesto, los 72 marcadores de grupos, mejores terceros asignados y el bracket lleno con ganadores. Sirve como <strong>evidencia auditable</strong> para disputas.
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>💡 PDF Grupos / PDF KO (plantillas)</strong>
+        Son las plantillas en blanco para que el colaborador llene a mano si no quiere usar la app. PDF KO se desbloquea solo cuando el ticket tiene los 72 grupos predichos (porque necesita esos datos para emparejar los R32).
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>💾 Botón "Exportar XLSX"</strong>
         Genera un archivo Excel descargable con todos los tickets. Útil para reportes a contabilidad o auditoría.
       </div>
 
@@ -667,7 +683,6 @@
                     <span class="ui-pill ui-pill-gray">Terceros</span>
                     <span class="ui-pill ui-pill-gray">Eliminatorias</span>
                     <span class="ui-pill ui-pill-gray">Ranking</span>
-                    <span class="ui-pill ui-pill-gray">Plantillas PDF</span>
                   </div>
                   <div class="ui-card gray">
                     <p style="margin:0; font-size: 11px"><strong>Partido 1 · Grupo A</strong> · Ciudad de México</p>
@@ -801,25 +816,39 @@
       </div>
     </section>
 
-    <!-- 12. PDFs -->
+    <!-- 12. PDFs por ticket -->
     <section id="pdfs" class="section">
       <div class="section-header">
         <div class="section-num">12</div>
         <div class="section-title-block">
           <p class="section-eyebrow">Paso 11 (opcional)</p>
-          <h2 class="section-title">Pestaña Plantillas PDF</h2>
-          <p class="section-lead">PDFs imprimibles del bracket vacío para colaboradores sin internet.</p>
+          <h2 class="section-title">Plantillas PDF y comprobantes por ticket</h2>
+          <p class="section-lead">Todos los PDFs viven en la <strong>tabla de tickets</strong>, fila por fila. No hay pestaña global.</p>
         </div>
       </div>
-      <p>En la pestaña <strong>Plantillas PDF</strong>, dos botones:</p>
-      <ul>
-        <li><strong>Descargar fase de grupos</strong>: hoja con los 12 grupos y 72 partidos, con cajitas vacías para llenar a mano.</li>
-        <li><strong>Descargar eliminatorias</strong>: hoja con el bracket R32 → Final, con cajitas vacías.</li>
-      </ul>
-      <p>El colaborador llena en papel, te lo entrega, y tú transcribes en "Cargar predicción" (paso 6).</p>
+      <p>Desde <strong>Admin → Tickets</strong>, cada fila tiene hasta 3 botones de PDF según el estado del ticket:</p>
+      <table class="kv">
+        <thead><tr><th>Botón</th><th>Cuándo aparece</th><th>Qué descarga</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ui-pill ui-pill-pink">Comprobante</span></td><td>Estado <code>claimed</code> + predicción <code>Enviada</code></td><td>PDF con la predicción completa: campeón, 3.º puesto, 72 marcadores de grupo, terceros, bracket con ganadores. <strong>Evidencia auditable</strong>.</td></tr>
+          <tr><td><span class="ui-pill ui-pill-gray">PDF Grupos</span></td><td>Cualquier ticket activo</td><td>Plantilla en blanco de los 12 grupos para llenar a mano.</td></tr>
+          <tr><td><span class="ui-pill ui-pill-gray">PDF KO</span></td><td>Ticket con los 72 grupos predichos</td><td>Plantilla del bracket R32 → Final ya emparejado según la predicción de grupos del ticket.</td></tr>
+        </tbody>
+      </table>
+
       <div class="callout callout-tip">
-        <strong>📄 Bonus: PDF por ticket</strong>
-        Desde la tabla de tickets, click <em>"PDF G"</em> o <em>"PDF KO"</em> para descargar la plantilla específica de un ticket con su nombre amigable (Ticket N) impreso.
+        <strong>🌸 Comprobante (evidencia)</strong>
+        Es el mismo PDF que el colaborador descarga en su pantalla de Resumen al enviar. Bajalo en cualquier momento si te piden evidencia o si necesitas archivar la predicción enviada.
+      </div>
+
+      <div class="callout callout-info">
+        <strong>📄 Plantillas en blanco (para imprimir)</strong>
+        Si un colaborador prefiere papel: imprimes "PDF Grupos" en blanco, lo llena, te lo entrega, y tú transcribes en "Cargar predicción" (paso 6). Una vez tiene los grupos predichos, ya puedes generar también el "PDF KO" emparejado del mismo ticket.
+      </div>
+
+      <div class="callout callout-good">
+        <strong>✅ Nombres amigables</strong>
+        Todos los PDFs salen con el alias del ticket (<em>Ticket 1, Ticket 2…</em>) en el archivo y dentro del header, no el código real enmascarado. Más fácil de archivar.
       </div>
     </section>
 
@@ -888,7 +917,7 @@
     </section>
 
     <footer class="footer">
-      COREX · BY P&amp;P · MALIMA · WORLDCUPX v0.1.8 · MANUAL TTHH
+      COREX · BY P&amp;P · MALIMA · WORLDCUPX v0.1.9 · MANUAL TTHH
     </footer>
 
   </div>
