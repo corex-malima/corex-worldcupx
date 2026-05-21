@@ -220,6 +220,9 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
       return;
     }
     if (!window.confirm(`¿Guardar ${pending.length} partido(s) a BD ahora? Esto persiste los marcadores como resultados oficiales.`)) return;
+    // NOTA: Mantener secuencial (no Promise.all) porque saveGroupResult y saveKnockoutResult
+    // llamam reloadFixture() al final, que es un efecto global. Múltiples reloads simultáneos
+    // causaría race conditions. El estado local es acumulativo (setSaveStatusByMatch).
     for (const item of pending) {
       if (item.kind === 'group') {
         await saveGroupResult(item.id);

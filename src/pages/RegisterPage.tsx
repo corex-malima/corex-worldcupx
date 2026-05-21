@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useReducer } from 'react';
 import { CheckCircle2, TicketCheck } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -13,43 +13,78 @@ import { APP_DESCRIPTOR, APP_NAME, BRAND, COMPANY, SIGNATURE } from '../lib/cons
 // sin necesidad de un useEffect que resetee state.
 type ValidationCache = { key: string; result: RegistrationTicketValidation };
 
-export function RegisterPage({ onRegister, onNavigate, loading, error }: { onRegister: (cedula: string, ticketCode: string, password: string) => Promise<void>; onNavigate: (to: string) => void; loading?: boolean; error?: string | null }) {
-  const [cedula, setCedula] = useState('');
-  const [ticketCode, setTicketCode] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [validationCache, setValidationCache] = useState<ValidationCache | null>(null);
-  const [validating, setValidating] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
+interface RegisterFormState {
+  cedula: string;
+  ticketCode: string;
+  password: string;
+  confirm: string;
+  validationCache: ValidationCache | null;
+  validating: boolean;
+  localError: string | null;
+}
 
-  const cleanCedula = normalizeCedula(cedula);
-  const cleanTicketCode = ticketCode.trim().toUpperCase();
+type RegisterAction =
+  | { type: 'set_field'; field: 'cedula' | 'ticketCode' | 'password' | 'confirm'; value: string }
+  | { type: 'set_validation_cache'; value: ValidationCache | null }
+  | { type: 'set_validating'; value: boolean }
+  | { type: 'set_local_error'; value: string | null };
+
+function registerReducer(state: RegisterFormState, action: RegisterAction): RegisterFormState {
+  switch (action.type) {
+    case 'set_field':
+      return { ...state, [action.field]: action.value };
+    case 'set_validation_cache':
+      return { ...state, validationCache: action.value };
+    case 'set_validating':
+      return { ...state, validating: action.value };
+    case 'set_local_error':
+      return { ...state, localError: action.value };
+    default:
+      return state;
+  }
+}
+
+const INITIAL_STATE: RegisterFormState = {
+  cedula: '',
+  ticketCode: '',
+  password: '',
+  confirm: '',
+  validationCache: null,
+  validating: false,
+  localError: null,
+};
+
+export function RegisterPage({ onRegister, onNavigate, loading, error }: { onRegister: (cedula: string, ticketCode: string, password: string) => Promise<void>; onNavigate: (to: string) => void; loading?: boolean; error?: string | null }) {
+  const [state, dispatch] = useReducer(registerReducer, INITIAL_STATE);
+
+  const cleanCedula = normalizeCedula(state.cedula);
+  const cleanTicketCode = state.ticketCode.trim().toUpperCase();
   const currentKey = `${cleanCedula}|${cleanTicketCode}`;
-  const validation = validationCache?.key === currentKey ? validationCache.result : null;
+  const validation = state.validationCache?.key === currentKey ? state.validationCache.result : null;
 
   async function validateTicket() {
-    if (!validateCedulaBasic(cleanCedula)) return setLocalError('La cédula debe tener entre 10 y 13 dígitos.');
-    if (!validateTicketCodeBasic(cleanTicketCode)) return setLocalError('El codigo de ticket debe ser ABC123 o WCX-XXXXXXXX.');
-    setValidating(true);
-    setLocalError(null);
+    if (!validateCedulaBasic(cleanCedula)) return dispatch({ type: 'set_local_error', value: 'La cédula debe tener entre 10 y 13 dígitos.' });
+    if (!validateTicketCodeBasic(cleanTicketCode)) return dispatch({ type: 'set_local_error', value: 'El codigo de ticket debe ser ABC123 o WCX-XXXXXXXX.' });
+    dispatch({ type: 'set_validating', value: true });
+    dispatch({ type: 'set_local_error', value: null });
     try {
       const result = await validateRegistrationTicket(cleanCedula, cleanTicketCode);
-      setValidationCache({ key: currentKey, result });
-      if (!result.ok) setLocalError(result.message);
+      dispatch({ type: 'set_validation_cache', value: { key: currentKey, result } });
+      if (!result.ok) dispatch({ type: 'set_local_error', value: result.message });
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : 'No se pudo validar el ticket.');
+      dispatch({ type: 'set_local_error', value: err instanceof Error ? err.message : 'No se pudo validar el ticket.' });
     } finally {
-      setValidating(false);
+      dispatch({ type: 'set_validating', value: false });
     }
   }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!validation?.ok) return setLocalError('Primero valida tu cédula y código de ticket.');
-    if (password.length < 6) return setLocalError('La contraseña debe tener al menos 6 caracteres.');
-    if (password !== confirm) return setLocalError('Las contraseñas no coinciden.');
-    setLocalError(null);
-    await onRegister(cleanCedula, cleanTicketCode, password);
+    if (!validation?.ok) return dispatch({ type: 'set_local_error', value: 'Primero valida tu cédula y código de ticket.' });
+    if (state.password.length < 6) return dispatch({ type: 'set_local_error', value: 'La contraseña debe tener al menos 6 caracteres.' });
+    if (state.password !== state.confirm) return dispatch({ type: 'set_local_error', value: 'Las contraseñas no coinciden.' });
+    dispatch({ type: 'set_local_error', value: null });
+    await onRegister(cleanCedula, cleanTicketCode, state.password);
   }
 
   return (
@@ -68,12 +103,12 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
 
         <form onSubmit={submit} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-[1fr_180px] sm:items-end">
-            <Input label="Cédula" value={cedula} onChange={(event) => { setCedula(event.target.value); setLocalError(null); }} placeholder="0102030405" />
-            <Input label="Codigo de ticket" value={ticketCode} onChange={(event) => { setTicketCode(event.target.value.toUpperCase()); setLocalError(null); }} maxLength={12} placeholder="WCX-ABC12345" />
+            <Input label="Cédula" value={state.cedula} onChange={(event) => { dispatch({ type: 'set_field', field: 'cedula', value: event.target.value }); dispatch({ type: 'set_local_error', value: null }); }} placeholder="0102030405" />
+            <Input label="Codigo de ticket" value={state.ticketCode} onChange={(event) => { dispatch({ type: 'set_field', field: 'ticketCode', value: event.target.value.toUpperCase() }); dispatch({ type: 'set_local_error', value: null }); }} maxLength={12} placeholder="WCX-ABC12345" />
           </div>
 
-          <Button type="button" variant={validation?.ok ? 'secondary' : 'primary'} className="w-full" disabled={validating || loading} onClick={() => void validateTicket()} icon={validation?.ok ? <CheckCircle2 size={17} /> : <TicketCheck size={17} />}>
-            {validating ? 'Validando ticket' : validation?.ok ? 'Ticket validado' : 'Validar cédula y ticket'}
+          <Button type="button" variant={validation?.ok ? 'secondary' : 'primary'} className="w-full" disabled={state.validating || loading} onClick={() => void validateTicket()} icon={validation?.ok ? <CheckCircle2 size={17} /> : <TicketCheck size={17} />}>
+            {state.validating ? 'Validando ticket' : validation?.ok ? 'Ticket validado' : 'Validar cédula y ticket'}
           </Button>
 
           {validation?.ok && (
@@ -85,11 +120,11 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
           )}
 
           <div className={`grid gap-3 sm:grid-cols-2 ${validation?.ok ? '' : 'opacity-50'}`}>
-            <Input label="Contraseña" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mínimo 6 caracteres" disabled={!validation?.ok || loading} />
-            <Input label="Confirmar contraseña" type="password" value={confirm} onChange={(event) => setConfirm(event.target.value)} disabled={!validation?.ok || loading} />
+            <Input label="Contraseña" type="password" value={state.password} onChange={(event) => dispatch({ type: 'set_field', field: 'password', value: event.target.value })} placeholder="Mínimo 6 caracteres" disabled={!validation?.ok || loading} />
+            <Input label="Confirmar contraseña" type="password" value={state.confirm} onChange={(event) => dispatch({ type: 'set_field', field: 'confirm', value: event.target.value })} disabled={!validation?.ok || loading} />
           </div>
 
-          {(localError || error) && <p className="rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-cup-red">{localError || error}</p>}
+          {(state.localError || error) && <p className="rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-cup-red">{state.localError || error}</p>}
           <Button className="w-full" disabled={loading || !validation?.ok}>{loading ? 'Registrando' : 'Crear cuenta y reclamar ticket'}</Button>
         </form>
         <button onClick={() => onNavigate('#/login')} className="mt-5 w-full text-sm font-bold text-cup-blue hover:underline">Ya tengo cuenta</button>

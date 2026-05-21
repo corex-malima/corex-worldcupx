@@ -138,7 +138,7 @@ export function InfoButton({ title, children, size = 14, ariaLabel = 'Más infor
         style={isMobile ? undefined : (pos ? { top: pos.top, left: pos.left, width: pos.width } : { visibility: 'hidden' })}
       >
         <div className="mb-2 flex items-start justify-between gap-2">
-          <h4 className="text-sm font-bold text-corex-ink">{title}</h4>
+          <h4 className="text-sm font-semibold text-corex-ink">{title}</h4>
           <button
             type="button"
             aria-label="Cerrar"

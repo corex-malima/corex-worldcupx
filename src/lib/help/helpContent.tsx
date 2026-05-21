@@ -54,7 +54,7 @@ export const help = {
         <p>Llena el marcador exacto de los <strong>72 partidos</strong> de la fase de grupos (12 grupos × 6 partidos).</p>
         <ul>
           <li><strong>Marcador exacto</strong> = +3 pts (ej. predijiste 2-1, salió 2-1).</li>
-          <li><strong>Resultado correcto</strong> = +1 pt (ej. predijiste 2-1, salió 3-2 — ambos ganó el local).</li>
+          <li><strong>Resultado correcto</strong> = +1 pt (ej. predijiste 2-1, salió 3-2; ambos ganó el local).</li>
           <li>Cada vez que escribes una posición se autocalcula la <strong>tabla de posiciones</strong> abajo.</li>
         </ul>
         <p>Lo que escribes se guarda automáticamente. Puedes volver y editar antes del deadline.</p>

@@ -4,8 +4,8 @@ import { Button } from '../ui/Button';
 
 /**
  * Exporta los rows como archivo XLSX descargable. Lazy-loadea la librería
- * SheetJS para no inflar el bundle inicial — solo se carga cuando el admin
- * presiona el botón. Si SheetJS no está disponible (offline) cae a CSV.
+ * SheetJS para no inflar el bundle inicial (solo se carga cuando el admin
+ * presiona el botón). Si SheetJS no está disponible (offline) cae a CSV.
  */
 export function ExportCsvButton({ filename, rows }: { filename: string; rows: Array<Record<string, unknown>> }) {
   const [busy, setBusy] = useState(false);

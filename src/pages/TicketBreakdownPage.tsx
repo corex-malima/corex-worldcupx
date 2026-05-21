@@ -44,13 +44,157 @@ function scoreCellClass(actual: number | null, predicted: number | null, officia
 
 function ResultBadge({ official, points, exact, stage, cruceStatus }: { official: boolean; points: number; exact: boolean; stage: Stage; cruceStatus: MatchRowView['cruceStatus'] }) {
   if (!official) return <Badge tone="slate">Sin resultado</Badge>;
-  // Eliminatorias con cruce fallido: el doc oficial dice que el marcador solo se premia si el cruce acierta.
   if (stage !== 'GROUP' && cruceStatus === 'missed') {
     return <Badge tone="red"><X size={11} className="inline" /> Cruce fallido · 0 pts</Badge>;
   }
   if (exact) return <Badge tone="green"><Check size={11} className="inline" /> Exacto +{points}</Badge>;
   if (points > 0) return <Badge tone="gold">+{points} pts</Badge>;
   return <Badge tone="red"><X size={11} className="inline" /> 0 pts</Badge>;
+}
+
+// Sub-component: TicketHeader (ticket info + total points)
+function TicketHeader({ alias, ownerName, areaName, total, onNavigate }: { alias: string; ownerName: string | null; areaName: string | null; total: { total_points: number; calculated_at: string | null } | null; onNavigate: (to: string) => void }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="min-w-0">
+        <button onClick={() => onNavigate('#/ranking')} className="mb-2 inline-flex items-center gap-1 text-xs font-bold text-cup-blue hover:underline">
+          <ArrowLeft size={13} /> Volver al ranking
+        </button>
+        <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Detalle</p>
+        <h1 className="text-3xl font-semibold text-corex-ink">{alias}</h1>
+        <p className="mt-1 text-sm text-corex-ink/65">{ownerName ?? '—'} · {areaName ?? 'SIN ÁREA'}</p>
+      </div>
+      <Card className="!p-4 text-right">
+        <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Puntos totales</p>
+        <p className="mt-1 text-4xl font-black text-corex-ink">{total?.total_points ?? 0}</p>
+        <p className="mt-1 text-xs text-corex-ink/55">{total?.calculated_at ? `Recalc: ${new Date(total.calculated_at).toLocaleString('es-EC')}` : 'Sin recálculo'}</p>
+      </Card>
+    </div>
+  );
+}
+
+// Sub-component: ScoreSummary (breakdown by category)
+function ScoreSummary({ total, categoryStats }: { total: { group_match_points: number; group_position_points: number; knockout_points: number; advancement_points: number; champion_bonus: number; runner_up_bonus: number; total_points: number } | null; categoryStats: { groupExact: number; groupResult: number; koExact: number; koResult: number } }) {
+  return (
+    <Card>
+      <h2 className="text-lg font-semibold text-corex-ink">Desglose de puntos</h2>
+      <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 xl:grid-cols-4">
+        <div className="rounded-2xl bg-pitch-800 p-3">
+          <p className="text-xs font-bold text-corex-ink/45">Grupo · marcador</p>
+          <p className="mt-1 text-2xl font-black text-corex-ink">{total?.group_match_points ?? 0}</p>
+          <p className="text-xs text-corex-ink/45">{categoryStats.groupExact} exactos · {categoryStats.groupResult} aciertos de resultado</p>
+        </div>
+        <div className="rounded-2xl bg-pitch-800 p-3">
+          <p className="text-xs font-bold text-corex-ink/45">Grupo · posiciones</p>
+          <p className="mt-1 text-2xl font-black text-corex-ink">{total?.group_position_points ?? 0}</p>
+          <p className="text-xs text-corex-ink/45">+1 por equipo en 1.º/2.º/3.º exacto</p>
+        </div>
+        <div className="rounded-2xl bg-pitch-800 p-3">
+          <p className="text-xs font-bold text-corex-ink/45">Eliminatoria · marcador</p>
+          <p className="mt-1 text-2xl font-black text-corex-ink">{total?.knockout_points ?? 0}</p>
+          <p className="text-xs text-corex-ink/45">{categoryStats.koExact} exactos · {categoryStats.koResult} aciertos de resultado</p>
+          <p className="mt-1 text-[10px] text-corex-ink/35">+3 exacto / +1 resultado · solo si el cruce acierta</p>
+        </div>
+        <div className="rounded-2xl bg-pitch-800 p-3">
+          <p className="text-xs font-bold text-corex-ink/45">Avance por ronda</p>
+          <p className="mt-1 text-2xl font-black text-corex-ink">{total?.advancement_points ?? 0}</p>
+          <p className="text-xs text-corex-ink/45">R32=1 · R16=2 · QF=3 · SF=4</p>
+        </div>
+        <div className="rounded-2xl bg-pitch-800 p-3">
+          <p className="text-xs font-bold text-corex-ink/45">Bono campeón</p>
+          <p className="mt-1 text-2xl font-black text-corex-ink">{total?.champion_bonus ?? 0}</p>
+          <p className="text-xs text-corex-ink/45">+10 si acertaste</p>
+        </div>
+        <div className="rounded-2xl bg-pitch-800 p-3">
+          <p className="text-xs font-bold text-corex-ink/45">Bono 3.º puesto</p>
+          <p className="mt-1 text-2xl font-black text-corex-ink">{total?.runner_up_bonus ?? 0}</p>
+          <p className="text-xs text-corex-ink/45">+5 si acertaste</p>
+        </div>
+        <div className="rounded-2xl bg-pitch-800 p-3">
+          <p className="text-xs font-bold text-corex-ink/45">Total</p>
+          <p className="mt-1 text-2xl font-black text-cup-green">{total?.total_points ?? 0}</p>
+          <p className="text-xs text-corex-ink/45">Suma de las categorías</p>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Sub-component: MatchRow (single match card)
+function MatchRow({ row }: { row: MatchRowView }) {
+  return (
+    <div className="grid items-center gap-2 rounded-2xl border border-corex-ink/10 bg-pitch-800 p-3 sm:grid-cols-[60px_1fr_120px_1fr_140px]">
+      <div className="text-xs font-bold text-corex-ink/45">
+        <p>#{row.match.matchNo}</p>
+        {row.match.groupCode && <p className="mt-1">Grupo {row.match.groupCode}</p>}
+      </div>
+
+      {/* Predicción */}
+      <div className="min-w-0 rounded-xl bg-pitch-900 p-2">
+        <p className="text-[10px] font-black uppercase tracking-widest text-corex-ink/35">
+          Tu predicción
+          {row.predictedFromMatchNo !== null && row.predictedFromMatchNo !== row.match.matchNo && (
+            <span className="ml-1 text-cup-blue normal-case">· cruce flexible desde P{row.predictedFromMatchNo}</span>
+          )}
+        </p>
+        <div className="mt-1 flex items-center justify-between gap-2 text-sm">
+          <TeamIdentity team={row.predictedHomeTeam ?? undefined} label="—" size="sm" />
+          <span className="font-black text-corex-ink/85">
+            {row.predictedHomeScore ?? <Minus size={12} className="inline opacity-50" />} - {row.predictedAwayScore ?? <Minus size={12} className="inline opacity-50" />}
+          </span>
+          <TeamIdentity team={row.predictedAwayTeam ?? undefined} label="—" size="sm" align="right" />
+        </div>
+      </div>
+
+      {/* Resultado real */}
+      <div className="min-w-0 rounded-xl bg-pitch-900 p-2 text-center">
+        <p className="text-[10px] font-black uppercase tracking-widest text-corex-ink/35">Resultado real</p>
+        <p className={`mt-1 text-lg font-black ${scoreCellClass(row.actualHomeScore, row.predictedHomeScore, row.actualIsOfficial)}`}>
+          {row.actualIsOfficial ? `${row.actualHomeScore} - ${row.actualAwayScore}` : 'Pendiente'}
+        </p>
+      </div>
+
+      {/* Equipos reales */}
+      <div className="min-w-0 rounded-xl bg-pitch-900 p-2">
+        <p className="text-[10px] font-black uppercase tracking-widest text-corex-ink/35">
+          Equipos oficiales
+          {row.match.stage !== 'GROUP' && row.actualIsOfficial && (
+            row.cruceStatus === 'matched'
+              ? <span className="ml-1 text-cup-green normal-case">· cruce ✓</span>
+              : row.cruceStatus === 'missed'
+                ? <span className="ml-1 text-red-300 normal-case">· cruce ✗</span>
+                : null
+          )}
+        </p>
+        <div className="mt-1 flex items-center justify-between gap-2 text-sm">
+          <TeamIdentity team={row.homeTeam ?? undefined} label={row.match.homeSlot ?? '—'} size="sm" />
+          <TeamIdentity team={row.awayTeam ?? undefined} label={row.match.awaySlot ?? '—'} size="sm" align="right" />
+        </div>
+      </div>
+
+      <div className="text-right">
+        <ResultBadge official={row.actualIsOfficial} points={row.pointsEarned} exact={row.pointsExact} stage={row.match.stage} cruceStatus={row.cruceStatus} />
+      </div>
+    </div>
+  );
+}
+
+// Sub-component: StageMatches (matches grouped by stage with header)
+function StageMatches({ stage, rows, stageLabel }: { stage: Stage; rows: MatchRowView[]; stageLabel: Record<Stage, string> }) {
+  if (rows.length === 0) return null;
+  return (
+    <Card key={stage}>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-lg font-semibold text-corex-ink">{stageLabel[stage]}</h3>
+        <Badge tone="slate">{rows.filter((r) => r.actualIsOfficial).length}/{rows.length} oficiales</Badge>
+      </div>
+      <div className="space-y-2">
+        {rows.map((row) => (
+          <MatchRow key={row.match.id} row={row} />
+        ))}
+      </div>
+    </Card>
+  );
 }
 
 // helpers para leer score_details
@@ -243,132 +387,13 @@ export function TicketBreakdownPage({ ticketId, onNavigate }: { ticketId: string
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="min-w-0">
-          <button onClick={() => onNavigate('#/ranking')} className="mb-2 inline-flex items-center gap-1 text-xs font-bold text-cup-blue hover:underline">
-            <ArrowLeft size={13} /> Volver al ranking
-          </button>
-          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Detalle</p>
-          <h1 className="text-3xl font-semibold text-corex-ink">{bundle.alias}</h1>
-          <p className="mt-1 text-sm text-corex-ink/65">{bundle.ownerName ?? '—'} · {bundle.areaName ?? 'SIN ÁREA'}</p>
-        </div>
-        <Card className="!p-4 text-right">
-          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Puntos totales</p>
-          <p className="mt-1 text-4xl font-black text-corex-ink">{total?.total_points ?? 0}</p>
-          <p className="mt-1 text-xs text-corex-ink/55">{total?.calculated_at ? `Recalc: ${new Date(total.calculated_at).toLocaleString('es-EC')}` : 'Sin recálculo'}</p>
-        </Card>
-      </div>
+      <TicketHeader alias={bundle.alias} ownerName={bundle.ownerName} areaName={bundle.areaName} total={total} onNavigate={onNavigate} />
 
-      <Card>
-        <h2 className="text-lg font-semibold text-corex-ink">Desglose de puntos</h2>
-        <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3 xl:grid-cols-4">
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-corex-ink/45">Grupo · marcador</p>
-            <p className="mt-1 text-2xl font-black text-corex-ink">{total?.group_match_points ?? 0}</p>
-            <p className="text-xs text-corex-ink/45">{categoryStats.groupExact} exactos · {categoryStats.groupResult} aciertos de resultado</p>
-          </div>
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-corex-ink/45">Grupo · posiciones</p>
-            <p className="mt-1 text-2xl font-black text-corex-ink">{total?.group_position_points ?? 0}</p>
-            <p className="text-xs text-corex-ink/45">+1 por equipo en 1.º/2.º/3.º exacto</p>
-          </div>
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-corex-ink/45">Eliminatoria · marcador</p>
-            <p className="mt-1 text-2xl font-black text-corex-ink">{total?.knockout_points ?? 0}</p>
-            <p className="text-xs text-corex-ink/45">{categoryStats.koExact} exactos · {categoryStats.koResult} aciertos de resultado</p>
-            <p className="mt-1 text-[10px] text-corex-ink/35">+3 exacto / +1 resultado · solo si el cruce acierta</p>
-          </div>
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-corex-ink/45">Avance por ronda</p>
-            <p className="mt-1 text-2xl font-black text-corex-ink">{total?.advancement_points ?? 0}</p>
-            <p className="text-xs text-corex-ink/45">R32=1 · R16=2 · QF=3 · SF=4</p>
-          </div>
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-corex-ink/45">Bono campeón</p>
-            <p className="mt-1 text-2xl font-black text-corex-ink">{total?.champion_bonus ?? 0}</p>
-            <p className="text-xs text-corex-ink/45">+10 si acertaste</p>
-          </div>
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-corex-ink/45">Bono 3.º puesto</p>
-            <p className="mt-1 text-2xl font-black text-corex-ink">{total?.runner_up_bonus ?? 0}</p>
-            <p className="text-xs text-corex-ink/45">+5 si acertaste</p>
-          </div>
-          <div className="rounded-2xl bg-pitch-800 p-3">
-            <p className="text-xs font-bold text-corex-ink/45">Total</p>
-            <p className="mt-1 text-2xl font-black text-cup-green">{total?.total_points ?? 0}</p>
-            <p className="text-xs text-corex-ink/45">Suma de las categorías</p>
-          </div>
-        </div>
-      </Card>
+      <ScoreSummary total={total} categoryStats={categoryStats} />
 
       {stageOrder.map((stage) => {
         const rows = matchesByStage.get(stage) ?? [];
-        if (rows.length === 0) return null;
-        return (
-          <Card key={stage}>
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-lg font-semibold text-corex-ink">{stageLabel[stage]}</h3>
-              <Badge tone="slate">{rows.filter((r) => r.actualIsOfficial).length}/{rows.length} oficiales</Badge>
-            </div>
-            <div className="space-y-2">
-              {rows.map((row) => (
-                <div key={row.match.id} className="grid items-center gap-2 rounded-2xl border border-corex-ink/10 bg-pitch-800 p-3 sm:grid-cols-[60px_1fr_120px_1fr_140px]">
-                  <div className="text-xs font-bold text-corex-ink/45">
-                    <p>#{row.match.matchNo}</p>
-                    {row.match.groupCode && <p className="mt-1">Grupo {row.match.groupCode}</p>}
-                  </div>
-
-                  {/* Predicción */}
-                  <div className="min-w-0 rounded-xl bg-pitch-900 p-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-corex-ink/35">
-                      Tu predicción
-                      {row.predictedFromMatchNo !== null && row.predictedFromMatchNo !== row.match.matchNo && (
-                        <span className="ml-1 text-cup-blue normal-case">· cruce flexible desde P{row.predictedFromMatchNo}</span>
-                      )}
-                    </p>
-                    <div className="mt-1 flex items-center justify-between gap-2 text-sm">
-                      <TeamIdentity team={row.predictedHomeTeam ?? undefined} label="—" size="sm" />
-                      <span className="font-black text-corex-ink/85">
-                        {row.predictedHomeScore ?? <Minus size={12} className="inline opacity-50" />} - {row.predictedAwayScore ?? <Minus size={12} className="inline opacity-50" />}
-                      </span>
-                      <TeamIdentity team={row.predictedAwayTeam ?? undefined} label="—" size="sm" align="right" />
-                    </div>
-                  </div>
-
-                  {/* Resultado real */}
-                  <div className="min-w-0 rounded-xl bg-pitch-900 p-2 text-center">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-corex-ink/35">Resultado real</p>
-                    <p className={`mt-1 text-lg font-black ${scoreCellClass(row.actualHomeScore, row.predictedHomeScore, row.actualIsOfficial)}`}>
-                      {row.actualIsOfficial ? `${row.actualHomeScore} - ${row.actualAwayScore}` : 'Pendiente'}
-                    </p>
-                  </div>
-
-                  {/* Equipos reales */}
-                  <div className="min-w-0 rounded-xl bg-pitch-900 p-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-corex-ink/35">
-                      Equipos oficiales
-                      {row.match.stage !== 'GROUP' && row.actualIsOfficial && (
-                        row.cruceStatus === 'matched'
-                          ? <span className="ml-1 text-cup-green normal-case">· cruce ✓</span>
-                          : row.cruceStatus === 'missed'
-                            ? <span className="ml-1 text-red-300 normal-case">· cruce ✗</span>
-                            : null
-                      )}
-                    </p>
-                    <div className="mt-1 flex items-center justify-between gap-2 text-sm">
-                      <TeamIdentity team={row.homeTeam ?? undefined} label={row.match.homeSlot ?? '—'} size="sm" />
-                      <TeamIdentity team={row.awayTeam ?? undefined} label={row.match.awaySlot ?? '—'} size="sm" align="right" />
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <ResultBadge official={row.actualIsOfficial} points={row.pointsEarned} exact={row.pointsExact} stage={row.match.stage} cruceStatus={row.cruceStatus} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        );
+        return <StageMatches key={stage} stage={stage} rows={rows} stageLabel={stageLabel} />;
       })}
 
       <div className="flex justify-end">
