@@ -15,6 +15,13 @@ export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate:
   const claimed = tickets.filter((ticket) => ticket.status === 'claimed').length;
   const pending = tickets.filter((ticket) => ticket.status === 'sold').length;
 
+  // Para "Continuar predicción": preferir un ticket reclamado con predicción
+  // en progreso o pendiente (no enviada). Si no hay, caer al primer claimed.
+  // Si no hay ninguno claimed, ocultamos el botón (no tendría a dónde ir).
+  const continueTicket =
+    tickets.find((t) => t.status === 'claimed' && t.predictionStatus !== 'submitted')
+    ?? tickets.find((t) => t.status === 'claimed');
+
   return (
     <div className="space-y-6">
       <section className="grid gap-4 lg:grid-cols-[1.4fr_.6fr]">
@@ -27,7 +34,11 @@ export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate:
           <p className="mt-3 max-w-2xl text-corex-ink/65">Cada ticket es una jugada independiente. Activa el código que te entregó TTHH y completa marcadores, clasificados, cruces y campeón antes del deadline.</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Button onClick={() => onNavigate('#/ranking')} icon={<Medal size={18} />}>Ver ranking</Button>
-            <Button variant="secondary" onClick={() => onNavigate('#/prediction/ticket-1')} icon={<Trophy size={18} />}>Continuar predicción</Button>
+            {continueTicket && (
+              <Button variant="secondary" onClick={() => onNavigate(`#/prediction/${continueTicket.id}`)} icon={<Trophy size={18} />}>
+                {continueTicket.predictionStatus === 'submitted' ? 'Ver predicción' : 'Continuar predicción'}
+              </Button>
+            )}
           </div>
         </Card>
         <Card>

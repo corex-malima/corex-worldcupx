@@ -37,6 +37,7 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
   const [tab, setTab] = useState<Tab>('groups');
   const [errors, setErrors] = useState<string[]>([]);
   const [ticketMeta, setTicketMeta] = useState<{ alias: string; ownerName: string | null }>({ alias: '', ownerName: null });
+  const [ticketNotFound, setTicketNotFound] = useState(false);
   const { fixture } = useTournamentFixture();
   const prediction = usePrediction(ticketId, { teams: fixture.teams, matches: fixture.matches, adminMode });
   const locked = isPredictionLocked(DEFAULT_DEADLINE_ISO);
@@ -56,21 +57,26 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
 
   // Carga alias amigable ("Ticket N") + ownerName para que el comprobante PDF
   // y el header del wizard muestren la info real en vez del UUID.
+  // Si la query devuelve null, marca ticketNotFound para mostrar error.
   useEffect(() => {
     let cancelled = false;
     if (USE_MOCKS || !supabase || !ticketId) return;
+    setTicketNotFound(false);
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('v_admin_tickets')
         .select('alias, person_name')
         .eq('id', ticketId)
         .maybeSingle();
-      if (!cancelled && data) {
-        setTicketMeta({
-          alias: (data.alias as string) ?? '',
-          ownerName: (data.person_name as string | null) ?? null
-        });
+      if (cancelled) return;
+      if (error || !data) {
+        setTicketNotFound(true);
+        return;
       }
+      setTicketMeta({
+        alias: (data.alias as string) ?? '',
+        ownerName: (data.person_name as string | null) ?? null
+      });
     })();
     return () => { cancelled = true; };
   }, [ticketId]);
@@ -116,11 +122,26 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
     setTab('groups');
   }
 
+  // Si el ticketId del URL no existe en BD, mostrar error en vez del wizard vacío.
+  // Esto pasa cuando alguien navega a /prediction/<id-inválido> directo en la URL.
+  if (ticketNotFound) {
+    return (
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-cup-red/40 bg-cup-red/10 p-6 text-center">
+          <p className="text-xs font-black uppercase tracking-widest text-cup-red">Ticket no encontrado</p>
+          <h1 className="mt-2 text-2xl font-semibold text-corex-ink">Este ticket no existe o no tienes acceso</h1>
+          <p className="mt-3 text-sm text-corex-ink/65">El ID del ticket no se encontró en la base de datos. Es posible que el enlace esté roto o que el ticket haya sido anulado.</p>
+          <a href="#/dashboard" className="mt-5 inline-block rounded-full bg-corex-signal px-5 py-2 text-sm font-bold text-white">Volver al inicio</a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? `Modo TTHH · ${ticketMeta.alias || 'editando ticket'}` : (ticketMeta.alias || `Ticket ${ticketId.slice(0, 8)}`)}</p>
+          <p className="text-xs font-black uppercase tracking-widest text-cup-blue">{adminMode ? `Modo TTHH · ${ticketMeta.alias || 'editando ticket'}` : (ticketMeta.alias || 'Ticket')}</p>
           <h1 className="text-3xl font-semibold text-corex-ink">
             {adminMode ? 'Cargar predicción del colaborador' : 'Tu predicción WorldCupX'}
             <InfoButton title={help.deadline.title} className="ml-2 align-middle">{help.deadline.body}</InfoButton>
