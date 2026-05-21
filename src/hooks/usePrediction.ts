@@ -75,7 +75,11 @@ export function usePrediction(ticketId: string, options: UsePredictionOptions = 
   const groupMatches = useMemo(() => matches.filter((match) => match.stage === 'GROUP'), [matches]);
   const knockoutMatches = useMemo(() => matches.filter((match) => match.stage !== 'GROUP'), [matches]);
 
-  const autoSave = usePredictionAutoSave(ticketId);
+  // Skip autosave cuando la predicción ya fue enviada: el usuario debe hacer
+  // click explícito en "Reenviar predicción" para confirmar cambios. Esto
+  // previene modificaciones accidentales que sobrescriban una predicción ya enviada.
+  const autoSaveEnabled = bundle.draft.status !== 'submitted';
+  const autoSave = usePredictionAutoSave(ticketId, autoSaveEnabled);
   const remote = useTicketPrediction(!USE_MOCKS && supabase ? ticketId : null);
 
   // Persiste localStorage como cache rápido (solo modo usuario; admin no necesita).

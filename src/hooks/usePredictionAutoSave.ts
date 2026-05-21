@@ -36,7 +36,7 @@ const DEBOUNCE_MS = 500;
  *
  * En USE_MOCKS no hace nada (el estado local + localStorage del wizard alcanza).
  */
-export function usePredictionAutoSave(ticketId: string) {
+export function usePredictionAutoSave(ticketId: string, enabled = true) {
   const timers = useRef<Map<string, number>>(new Map());
   const inflight = useRef<Set<string>>(new Set());
   const [status, setStatus] = useState<AutoSaveStatus>('idle');
@@ -60,6 +60,7 @@ export function usePredictionAutoSave(ticketId: string) {
 
   const enqueue = useCallback((key: string, run: () => Promise<{ error?: { message: string } | null }>) => {
     if (USE_MOCKS || !supabase) return;
+    if (!enabled) return;  // ← NUEVO: si está desactivado, no guardar
     const prev = timers.current.get(key);
     if (prev) window.clearTimeout(prev);
     setStatus('saving');

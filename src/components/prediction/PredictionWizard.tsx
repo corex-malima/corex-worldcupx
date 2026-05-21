@@ -41,6 +41,19 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
   const prediction = usePrediction(ticketId, { teams: fixture.teams, matches: fixture.matches, adminMode });
   const locked = isPredictionLocked(DEFAULT_DEADLINE_ISO);
 
+  // Auto-redirigir a 'summary' cuando el ticket abre y la predicción ya fue
+  // enviada. Solo dispara una vez tras la hidratación inicial (luego el
+  // usuario puede navegar libremente entre tabs).
+  const didLandOnSummary = useRef(false);
+  useEffect(() => {
+    if (didLandOnSummary.current) return;
+    if (prediction.hydrating) return;
+    if (prediction.draft.status === 'submitted') {
+      setTab('summary');
+      didLandOnSummary.current = true;
+    }
+  }, [prediction.hydrating, prediction.draft.status]);
+
   // Carga alias amigable ("Ticket N") + ownerName para que el comprobante PDF
   // y el header del wizard muestren la info real en vez del UUID.
   useEffect(() => {
