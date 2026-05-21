@@ -143,7 +143,7 @@ export const help = {
     title: 'Panel de resumen',
     body: (
       <>
-        <p>Vista general del estado de la quiniela:</p>
+        <p>Vista general del estado de la polla:</p>
         <ul>
           <li><strong>Tickets vendidos</strong>: total emitidos (sin contar anulados).</li>
           <li><strong>Reclamados</strong>: colaboradores que ya activaron su ticket en la app.</li>

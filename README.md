@@ -2,7 +2,7 @@
 
 > Producto **WorldCupX** · plataforma **CoreX** · _by P&P_ · **Malima**
 
-Aplicación interna para gestionar la quiniela mundialista empresarial con dos experiencias: colaborador y TTHH/Admin. Diseño sobre la familia visual CoreX (paleta Loriva rosa `#fb6f92` sobre light mode, símbolo orbital).
+Aplicación interna para gestionar la polla mundialista empresarial con dos experiencias: colaborador y TTHH/Admin. Diseño sobre la familia visual CoreX (paleta Loriva rosa `#fb6f92` sobre light mode, símbolo orbital).
 
 **Producción**: [https://wcx-malima.riloq.net](https://wcx-malima.riloq.net)
 

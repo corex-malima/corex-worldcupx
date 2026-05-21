@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**WorldCupX** (producto · `Polla Mundialista` como descriptor) — Quiniela corporativa Mundial 2026.
+**WorldCupX** (producto · `Polla Mundialista` como descriptor) — Polla corporativa Mundial 2026.
 Marca: **CoreX** · firma **by P&P** · empresa **Malima**.
 
 Dos experiencias:

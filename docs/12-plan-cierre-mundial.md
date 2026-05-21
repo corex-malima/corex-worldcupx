@@ -1,6 +1,6 @@
 # Plan de Cierre — Polla Mundialista (Mundial 2026)
 
-> Plan extenso de auditoría + plan de cierre para dejar la quiniela lista para ejecutar SQL en Supabase y entrar a pruebas. Generado tras auditar `src/`, `supabase/sql/` y el Edge Function `pull-person-profile`.
+> Plan extenso de auditoría + plan de cierre para dejar la polla lista para ejecutar SQL en Supabase y entrar a pruebas. Generado tras auditar `src/`, `supabase/sql/` y el Edge Function `pull-person-profile`.
 
 ---
 
@@ -11,7 +11,7 @@ La aplicación ya tiene la UI mock funcionando para los 104 partidos del Mundial
 El objetivo de este plan es:
 
 1. Auditar fin a fin (compra → registro → login → predicción → resultados → ranking).
-2. Validar la lógica de la quiniela contra los cruces reales 2026 que envió el usuario.
+2. Validar la lógica de la polla contra los cruces reales 2026 que envió el usuario.
 3. Cerrar los SQL para que sólo haya que correrlos en Supabase en orden y empezar a probar.
 4. Documentar el contrato con `pull-person-profile` y los casos límite del personal real.
 
@@ -19,7 +19,7 @@ El objetivo de este plan es:
 
 ## 1. Hallazgos de la auditoría
 
-### 1.1 Cruces y reglas de la quiniela (UI / mocks)
+### 1.1 Cruces y reglas de la polla (UI / mocks)
 
 | Área | Estado | Detalle |
 |---|---|---|
@@ -108,7 +108,7 @@ Respuesta (según captura):
 
 ---
 
-## 2. Validación de la lógica de quinielas
+## 2. Validación de la lógica de pollas
 
 ### 2.1 Reglas de puntos finales que vamos a oficializar
 

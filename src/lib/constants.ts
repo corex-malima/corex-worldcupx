@@ -4,7 +4,7 @@ export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as strin
 export const USE_MOCKS = !SUPABASE_URL || !SUPABASE_ANON_KEY;
 
 export const APP_NAME = 'WorldCupX';
-export const APP_DESCRIPTOR = 'Quiniela Mundialista';
+export const APP_DESCRIPTOR = 'Polla Mundialista';
 export const BRAND = 'CoreX';
 export const SIGNATURE = 'by P&P';
 export const COMPANY = 'Malima';
