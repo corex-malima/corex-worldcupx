@@ -4,24 +4,17 @@ export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as strin
 export const USE_MOCKS = !SUPABASE_URL || !SUPABASE_ANON_KEY;
 
 export const APP_NAME = 'WorldCupX';
-export const APP_DESCRIPTOR = 'Polla Mundialista';
+export const APP_DESCRIPTOR = 'Quiniela Mundialista';
 export const BRAND = 'CoreX';
 export const SIGNATURE = 'by P&P';
 export const COMPANY = 'Malima';
 export const APP_VERSION = '0.1.9';
 // Deadline duro: 10 de junio 2026, 23:59:59 hora Ecuador (UTC-5).
-// Después de este instante, sell_ticket / claim_ticket / submit_complete_prediction
-// quedan bloqueados. Admin sigue pudiendo cargar resultados oficiales y recalcular.
+// Después de este instante:
+//   - Colaboradores normales: NO pueden enviar/editar predicciones ni reclamar tickets.
+//   - Admin (TTHH): SÍ puede seguir cargando predicciones para tickets `sold`
+//     no reclamados (transcripción de papel). Ver supabase/sql/23_admin_bypass_deadline.sql.
+//   - sell_ticket / claim_ticket → cerrados para TODOS (intencional).
+//   - Admin sigue pudiendo cargar resultados oficiales y recalcular ranking en cualquier momento.
 export const DEFAULT_DEADLINE_ISO = '2026-06-10T23:59:59-05:00';
 
-/**
- * DEMO: muestra el botón "Autorrellenar (DEMO)" en el wizard de predicción
- * y en Admin Resultados Reales para acelerar presentaciones. Cuando se cierre
- * el lanzamiento poner en `false` y los botones desaparecen — sin tocar más
- * archivos. Si quieren borrar el código por completo:
- *   - rm src/lib/demoAutofill.ts
- *   - quitar imports + autofillDemo() + JSX condicional de
- *     PredictionWizard.tsx y AdminResultsPage.tsx
- *   - borrar esta constante
- */
-export const DEMO_AUTOFILL_ENABLED = true;

@@ -35,7 +35,7 @@ function ResultCard({ result, onSelect }: { result: CollaboratorSearchResult; on
             Cedula {result.masked_national_id ?? 'sin registro'} · Codigo {result.person_id}
           </p>
         </div>
-        <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-bold ${hasCedula ? 'border-cup-blue/25 text-cup-blue' : 'border-cup-red/40 text-red-200'}`}>
+        <span className={`inline-flex w-fit items-center rounded-full border px-3 py-1 text-xs font-bold ${hasCedula ? 'border-cup-blue/25 text-cup-blue' : 'border-cup-red/40 text-cup-red/80'}`}>
           {hasCedula ? 'Seleccionar' : 'Sin cédula'}
         </span>
       </div>

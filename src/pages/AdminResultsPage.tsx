@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Calculator, RefreshCw, Save, Sparkles, Trash2 } from 'lucide-react';
+import { Calculator, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { useAdminKpis } from '../hooks/useAdminKpis';
 import { AdminGroupResultsPanel, type SaveStatus } from '../components/admin/AdminGroupResultsPanel';
 import { AdminGroupStandingsPanel } from '../components/admin/AdminGroupStandingsPanel';
@@ -18,9 +18,8 @@ import { validateGroupStep, validateThirdPlaceAssignments } from '../lib/predict
 import { calculateGroupStandings, getQualifiedTeams } from '../lib/standings';
 import { findValidThirdPlaceAssignment } from '../lib/thirdPlaceAssignment';
 import { useTournamentFixture } from '../hooks/useTournamentFixture';
-import { DEMO_AUTOFILL_ENABLED, USE_MOCKS } from '../lib/constants';
+import { USE_MOCKS } from '../lib/constants';
 import { supabase } from '../lib/supabase';
-import { randomGroupScore, randomKnockoutScore } from '../lib/demoAutofill';
 type Tab = 'groups' | 'standings' | 'thirds' | 'knockout' | 'ranking';
 
 export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => void }) {
@@ -191,43 +190,7 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
   const bracketRef = useRef(bracket);
   useEffect(() => { bracketRef.current = bracket; }, [bracket]);
 
-  function wait(ms: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, ms));
-  }
-
-  // DEMO: llena los 72 grupos + terceros + bracket KO con scores aleatorios.
-  // SOLO local — nada se persiste a BD. TTHH revisa y guarda manualmente cada
-  // partido (o usa "Guardar todo"). Borrable junto con DEMO_AUTOFILL_ENABLED.
-  async function autofillDemo() {
-    // 1) Grupos (form local, sin save)
-    groupMatches.forEach((match) => {
-      const [h, a] = randomGroupScore();
-      setGroupResult(match.id, h, a);
-    });
-    // 2) Esperar a que standings derive, asignar terceros y construir bracket
-    await wait(250);
-    autoAssignThirds();
-    await wait(250);
-    buildRealBracket();
-    await wait(250);
-
-    // 3) Llenar bracket ronda por ronda con await entre cada una para que
-    // la propagación llene las teams de R16+ antes de leer el ref
-    const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
-    for (const round of rounds) {
-      const matches = bracketRef.current.filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId);
-      matches.forEach((match) => {
-        const [h, a] = randomKnockoutScore();
-        const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
-        setKnockoutResult(match.id, h, a, winnerId);
-      });
-      await wait(200);
-    }
-    setTab('groups');
-    window.alert('Form lleno con datos aleatorios. NADA se guardó a BD — usa "Guardar todo" o los botones "Guardar" individuales para persistir.');
-  }
-
-  // Vaciar formularios (botón permanente, no solo demo). NO toca BD: solo el
+  // Vaciar formularios (botón permanente). NO toca BD: solo el
   // form local. Si querían borrar resultados ya guardados deben hacerlo desde
   // BD por separado.
   function clearAll() {
@@ -280,11 +243,6 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {DEMO_AUTOFILL_ENABLED && (
-              <Button variant="primary" onClick={autofillDemo} icon={<Sparkles size={15} />} title="DEMO: llena el form con resultados aleatorios SIN guardar">
-                Autorrellenar form (DEMO)
-              </Button>
-            )}
             <Button variant="danger" onClick={clearAll} icon={<Trash2 size={15} />} title="Vaciar todo el formulario (no toca BD)">
               Vaciar
             </Button>

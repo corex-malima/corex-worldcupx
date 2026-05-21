@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Sparkles, Trash2, Trophy } from 'lucide-react';
-import { DEFAULT_DEADLINE_ISO, DEMO_AUTOFILL_ENABLED, USE_MOCKS } from '../../lib/constants';
-import { randomGroupScore, randomKnockoutScore } from '../../lib/demoAutofill';
+import { CheckCircle2, CloudOff, Grid2X2, Loader2, Network, Trash2, Trophy } from 'lucide-react';
+import { DEFAULT_DEADLINE_ISO, USE_MOCKS } from '../../lib/constants';
 import { supabase } from '../../lib/supabase';
 import { isPredictionLocked } from '../../lib/tournament';
 import { usePrediction } from '../../hooks/usePrediction';
@@ -79,61 +78,14 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
     setErrors(nextErrors);
   }
 
-  // Refs sincronizadas que mantienen el bracket Y el objeto prediction más
-  // actualizados. Esto es CRÍTICO para el autofill: las clausuras capturadas
-  // al click del botón son stale, así que necesitamos releer el estado
-  // fresco entre cada paso para que las funciones autoAssignThirdPlaces,
-  // buildKnockoutBracket y setKnockoutScore vean los standings/terceros
-  // recién actualizados.
+  // Ref sincronizado con bracketMatches para que clearAll pueda iterar
+  // sobre el bracket más reciente sin depender de closures stale.
   const bracketRef = useRef(prediction.draft.bracketMatches);
-  const predictionRef = useRef(prediction);
   useEffect(() => {
     bracketRef.current = prediction.draft.bracketMatches;
-    predictionRef.current = prediction;
-  }, [prediction]);
+  }, [prediction.draft.bracketMatches]);
 
-  function wait(ms: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, ms));
-  }
-
-  // DEMO: llena los 72 grupos + terceros + bracket + ganadores de un click.
-  // Ronda por ronda con awaits para que la propagación (R32 → R16, etc.)
-  // surta efecto antes de leer las siguientes rondas desde el ref.
-  // Borrable junto con DEMO_AUTOFILL_ENABLED cuando se cierre el lanzamiento.
-  async function autofillDemo() {
-    // 1) Grupos
-    prediction.groupMatches.forEach((match) => {
-      const [h, a] = randomGroupScore();
-      prediction.setScore(match.id, h, a);
-    });
-    // Esperar a que React re-renderice y standings/qualified se deriven
-    await wait(250);
-
-    // 2) Auto-assign terceros usando el ref fresco (qualified.bestThirds actualizados)
-    predictionRef.current.autoAssignThirdPlaces();
-    await wait(250);
-
-    // 3) Build bracket inicial con standings y terceros actualizados
-    predictionRef.current.buildKnockoutBracket();
-    await wait(250);
-
-    // 4) Llenar bracket ronda por ronda. Después de cada ronda esperamos a
-    // que setKnockoutScore propague los ganadores a la ronda siguiente,
-    // y leemos bracketRef.current (sincronizado al último render).
-    const rounds = ['R32', 'R16', 'QF', 'SF', 'TP', 'F'] as const;
-    for (const round of rounds) {
-      const matches = bracketRef.current.filter((m) => m.roundCode === round && m.homeTeamId && m.awayTeamId);
-      matches.forEach((match) => {
-        const [h, a] = randomKnockoutScore();
-        const winnerId = h > a ? match.homeTeamId! : match.awayTeamId!;
-        predictionRef.current.setKnockoutScore(match.id, h, a, winnerId);
-      });
-      await wait(200);
-    }
-    setTab('summary');
-  }
-
-  // Limpieza de toda la predicción (botón permanente, no solo demo).
+  // Limpieza de toda la predicción (botón permanente).
   function clearAll() {
     if (!window.confirm('¿Vaciar TODOS los marcadores y selecciones de esta predicción? No se puede deshacer.')) return;
     // Grupos
@@ -162,11 +114,6 @@ export function PredictionWizard({ ticketId, adminMode = false }: { ticketId: st
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {DEMO_AUTOFILL_ENABLED && !locked && (
-            <Button variant="primary" onClick={autofillDemo} icon={<Sparkles size={15} />} title="DEMO: llena marcadores aleatorios en grupos + bracket + campeón">
-              Autorrellenar (DEMO)
-            </Button>
-          )}
           {!locked && (
             <Button variant="danger" onClick={clearAll} icon={<Trash2 size={15} />} title="Vaciar TODA la predicción (grupos + terceros + bracket)">
               Vaciar
