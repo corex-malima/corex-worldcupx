@@ -34,6 +34,9 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
     personId: employee?.personId ?? null
   });
 
+  const MAX_TICKETS = 5;
+  const limitReached = stats.ticketsSold >= MAX_TICKETS;
+
   async function sellTicket() {
     if (!employee) return;
     setLoading(true);
@@ -70,7 +73,15 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
             <div className="rounded-2xl bg-pitch-800 p-3"><b>{statsLoading ? '…' : stats.ticketsClaimed}</b><br /><span className="text-corex-ink/45">Reclamados</span></div>
             <div className="rounded-2xl bg-pitch-800 p-3"><b>{statsLoading ? '…' : stats.ticketsPending}</b><br /><span className="text-corex-ink/45">Pendientes</span></div>
           </div>
-          <Button className="mt-5 w-full" disabled={loading} onClick={() => void sellTicket()} icon={<TicketPlus size={17} />}>
+          <div className="mt-3 text-xs text-corex-ink/60">
+            Tickets activos: <strong className={limitReached ? 'text-cup-red' : 'text-corex-ink'}>{statsLoading ? '…' : stats.ticketsSold} / {MAX_TICKETS}</strong>
+          </div>
+          {limitReached && (
+            <div className="mt-5 rounded-2xl border border-cup-red/40 bg-cup-red/10 p-3 text-sm font-bold text-cup-red">
+              ⚠ Este colaborador ya tiene 5 tickets activos (límite máximo). Anula uno cancelado para liberar espacio.
+            </div>
+          )}
+          <Button className="mt-5 w-full" disabled={loading || limitReached} onClick={() => void sellTicket()} icon={<TicketPlus size={17} />} title={limitReached ? 'Máximo 5 tickets activos por colaborador' : ''}>
             {loading ? 'Generando codigo' : 'Agregar compra y generar codigo'}
           </Button>
           <p className="mt-3 text-xs text-corex-ink/55">La venta se guarda en Supabase con un codigo unico vinculado a cedula y codigo personal.</p>
