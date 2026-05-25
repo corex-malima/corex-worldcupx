@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, TicketPlus } from 'lucide-react';
 import type { EmployeeSearchResult } from '../../types/domain';
 import type { PersonProfile } from '../../types/personProfile';
@@ -40,13 +40,15 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
   const remaining = Math.max(0, MAX_TICKETS - stats.ticketsSold);
   const limitReached = remaining === 0;
 
-  // Reset quantity when employee changes
-  const prevEmployeeId = employee?.personId;
-  const [prevId, setPrevId] = useState<string | null>(null);
-  if (prevEmployeeId !== prevId) {
-    setPrevId(prevEmployeeId ?? null);
+  // Reset quantity (y feedback) cuando TTHH selecciona otro colaborador.
+  // Usar useEffect (no setState-in-render) para evitar re-renders en cascada.
+  useEffect(() => {
     setQuantity(1);
-  }
+    setLastCodes([]);
+    setSuccessMessage(null);
+    setError(null);
+    setProgressMessage(null);
+  }, [employee?.personId]);
 
   async function sellMultipleTickets() {
     if (!employee) return;
