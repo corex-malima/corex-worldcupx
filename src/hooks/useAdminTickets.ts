@@ -16,13 +16,14 @@ export interface AdminTicketRow {
   predictionStatus: 'pending' | 'in_progress' | 'submitted' | 'locked';
   groupsFilled: number;
   points: number;
+  createdAt: string | null;
   claimedAt: string | null;
 }
 
 const MOCK_ROWS: AdminTicketRow[] = [
-  { id: 'mock-1', code: 'WCX-A1B2C3D4', codeMasked: 'WCX-****', alias: 'Ticket 1', personName: 'David Rivera', cedula: '0102030405', areaId: 'CAMPO', areaName: 'Campo', jobClassificationCode: 'AGRICOLA', status: 'claimed', predictionStatus: 'submitted', groupsFilled: 72, points: 18, claimedAt: new Date().toISOString() },
-  { id: 'mock-2', code: 'WCX-F7E8D9CA', codeMasked: 'WCX-****', alias: 'Ticket 2', personName: 'David Rivera', cedula: '0102030405', areaId: 'CAMPO', areaName: 'Campo', jobClassificationCode: 'AGRICOLA', status: 'sold', predictionStatus: 'pending', groupsFilled: 0, points: 0, claimedAt: null },
-  { id: 'mock-3', code: 'WCX-K9L0M1N2', codeMasked: 'WCX-****', alias: 'Ticket 1', personName: 'Paola León', cedula: '1700000000', areaId: 'POSCOSECHA', areaName: 'Poscosecha', jobClassificationCode: 'EMPAQUE', status: 'cancelled', predictionStatus: 'pending', groupsFilled: 0, points: 0, claimedAt: null }
+  { id: 'mock-1', code: 'WCX-A1B2C3D4', codeMasked: 'WCX-****', alias: 'Ticket 1', personName: 'David Rivera', cedula: '0102030405', areaId: 'CAMPO', areaName: 'Campo', jobClassificationCode: 'AGRICOLA', status: 'claimed', predictionStatus: 'submitted', groupsFilled: 72, points: 18, createdAt: new Date(Date.now() - 86400000).toISOString(), claimedAt: new Date().toISOString() },
+  { id: 'mock-2', code: 'WCX-F7E8D9CA', codeMasked: 'WCX-****', alias: 'Ticket 2', personName: 'David Rivera', cedula: '0102030405', areaId: 'CAMPO', areaName: 'Campo', jobClassificationCode: 'AGRICOLA', status: 'sold', predictionStatus: 'pending', groupsFilled: 0, points: 0, createdAt: new Date().toISOString(), claimedAt: null },
+  { id: 'mock-3', code: 'WCX-K9L0M1N2', codeMasked: 'WCX-****', alias: 'Ticket 1', personName: 'Paola León', cedula: '1700000000', areaId: 'POSCOSECHA', areaName: 'Poscosecha', jobClassificationCode: 'EMPAQUE', status: 'cancelled', predictionStatus: 'pending', groupsFilled: 0, points: 0, createdAt: new Date(Date.now() - 172800000).toISOString(), claimedAt: null }
 ];
 
 interface DbRow {
@@ -38,6 +39,7 @@ interface DbRow {
   prediction_status: string;
   groups_filled: number;
   points: number;
+  created_at: string | null;
   claimed_at: string | null;
 }
 
@@ -81,6 +83,7 @@ export function useAdminTickets() {
         predictionStatus: (['pending', 'in_progress', 'submitted', 'locked'].includes(r.prediction_status) ? r.prediction_status : 'pending') as AdminTicketRow['predictionStatus'],
         groupsFilled: r.groups_filled ?? 0,
         points: r.points ?? 0,
+        createdAt: r.created_at,
         claimedAt: r.claimed_at
       }));
       setRows(mapped);

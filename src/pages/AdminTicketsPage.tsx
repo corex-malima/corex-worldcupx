@@ -18,6 +18,7 @@ export function AdminTicketsPage({ onNavigate }: { onNavigate: (to: string) => v
     area: row.areaName ?? row.areaId ?? '',
     clasificacion: row.jobClassificationCode ?? '',
     estado: row.status,
+    vendido_en: row.createdAt ?? '',
     grupos_predichos: row.groupsFilled,
     puntos: row.points,
     reclamado_en: row.claimedAt ?? ''
