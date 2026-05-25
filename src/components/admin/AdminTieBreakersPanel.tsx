@@ -39,6 +39,7 @@ export function AdminTieBreakersPanel({ standings, teams, fairPlayPoints, manual
                 <input
                   type="number"
                   min={0}
+                  aria-label={`Puntos de indisciplina para ${team?.name ?? 'equipo'}`}
                   value={fairPlayPoints[row.teamId] ?? ''}
                   onChange={(event) => onFairPlayChange(row.teamId, event.target.value === '' ? null : Number(event.target.value))}
                   className="h-11 w-24 rounded-xl border border-corex-ink/10 bg-pitch-900 px-3 text-center font-black text-corex-ink outline-none focus:border-cup-blue"

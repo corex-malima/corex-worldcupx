@@ -58,6 +58,9 @@ export function useAuth() {
   const [loading, setLoading] = useState<boolean>(!USE_MOCKS && !!SUPABASE_URL);
   const [error, setError] = useState<string | null>(null);
 
+  // react-doctor: data-driven init, requires async fetch — no lazy initializer posible.
+  // loading ya arranca en el valor correcto desde useState; setLoading(false) aquí
+  // resuelve la sesión rehidratada de forma asíncrona (necesario).
   useEffect(() => {
     if (USE_MOCKS || !SUPABASE_URL) {
       setLoading(false);

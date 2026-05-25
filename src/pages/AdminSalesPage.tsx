@@ -23,7 +23,7 @@ export function AdminSalesPage({ onNavigate }: { onNavigate: (to: string) => voi
           </p>
         </div>
         <EmployeeSearch onSelect={setEmployee} />
-        <SellTicketPanel employee={employee} />
+        <SellTicketPanel key={employee?.personId ?? 'no-employee'} employee={employee} />
       </div>
     </div>
   );

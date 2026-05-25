@@ -42,15 +42,19 @@ const VIEWPORT_PADDING = 12;
 export function InfoButton({ title, children, size = 14, ariaLabel = 'Más información', className = '' }: InfoButtonProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<PopoverPos | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 639px)').matches;
+  });
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDialogElement>(null);
 
   // Detecta viewport para alternar entre modal centrado (móvil) y popover anclado (desktop).
+  // La inicialización de isMobile ya ocurre en el useState lazy initializer arriba;
+  // este effect solo suscribe al listener de cambios de viewport.
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 639px)');
     const update = () => setIsMobile(mq.matches);
-    update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
   }, []);
@@ -126,14 +130,14 @@ export function InfoButton({ title, children, size = 14, ariaLabel = 'Más infor
   const popover = open && (
     <>
       {isMobile && <div className="fixed inset-0 z-[9998] bg-corex-ink/30 backdrop-blur-sm" aria-hidden="true" />}
-      <div
+      <dialog
         ref={popoverRef}
-        role="dialog"
+        open
         aria-label={title}
         className={
           isMobile
-            ? 'fixed left-1/2 top-1/2 z-[9999] w-[min(92vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-corex-ink/10 bg-corex-white p-4 shadow-xl'
-            : 'fixed z-[9999] rounded-2xl border border-corex-ink/10 bg-corex-white p-4 shadow-xl'
+            ? 'fixed left-1/2 top-1/2 z-[9999] m-0 w-[min(92vw,360px)] max-w-none -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-corex-ink/10 bg-corex-white p-4 shadow-xl'
+            : 'fixed z-[9999] m-0 max-h-none max-w-none rounded-2xl border border-corex-ink/10 bg-corex-white p-4 shadow-xl'
         }
         style={isMobile ? undefined : (pos ? { top: pos.top, left: pos.left, width: pos.width } : { visibility: 'hidden' })}
       >
@@ -151,7 +155,7 @@ export function InfoButton({ title, children, size = 14, ariaLabel = 'Más infor
         <div className="space-y-2 text-[13px] leading-relaxed text-corex-slate [&_strong]:font-semibold [&_strong]:text-corex-ink [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1 [&_a]:text-corex-signal [&_a]:underline">
           {children}
         </div>
-      </div>
+      </dialog>
     </>
   );
 

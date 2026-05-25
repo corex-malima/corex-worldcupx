@@ -44,7 +44,7 @@ export function LoginPage({ onLogin, onNavigate, loading, error }: { onLogin: (c
           {(localError || error) && <p className="rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-cup-red">{localError || error}</p>}
           <Button className="w-full" disabled={loading} icon={<UserRound size={17} />}>{loading ? 'Ingresando' : 'Iniciar sesión'}</Button>
         </form>
-        <button onClick={() => onNavigate('#/register')} className="mt-5 w-full text-sm font-bold text-cup-blue hover:underline">Crear cuenta con ticket</button>
+        <button type="button" onClick={() => onNavigate('#/register')} className="mt-5 w-full text-sm font-bold text-cup-blue hover:underline">Crear cuenta con ticket</button>
         <p className="mt-6 text-center text-[10px] uppercase tracking-[0.3em] text-corex-ink/30">{BRAND} · {SIGNATURE} · {COMPANY}</p>
       </Card>
     </div>

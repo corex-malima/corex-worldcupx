@@ -127,7 +127,7 @@ export function RegisterPage({ onRegister, onNavigate, loading, error }: { onReg
           {(state.localError || error) && <p className="rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-cup-red">{state.localError || error}</p>}
           <Button className="w-full" disabled={loading || !validation?.ok}>{loading ? 'Registrando' : 'Crear cuenta y reclamar ticket'}</Button>
         </form>
-        <button onClick={() => onNavigate('#/login')} className="mt-5 w-full text-sm font-bold text-cup-blue hover:underline">Ya tengo cuenta</button>
+        <button type="button" onClick={() => onNavigate('#/login')} className="mt-5 w-full text-sm font-bold text-cup-blue hover:underline">Ya tengo cuenta</button>
         <p className="mt-6 text-center text-[10px] uppercase tracking-[0.3em] text-corex-ink/30">{BRAND} · {SIGNATURE} · {COMPANY}</p>
       </Card>
     </div>

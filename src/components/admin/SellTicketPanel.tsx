@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle2, TicketPlus } from 'lucide-react';
 import type { EmployeeSearchResult } from '../../types/domain';
 import type { PersonProfile } from '../../types/personProfile';
@@ -39,16 +39,6 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
   const MAX_TICKETS = 5;
   const remaining = Math.max(0, MAX_TICKETS - stats.ticketsSold);
   const limitReached = remaining === 0;
-
-  // Reset quantity (y feedback) cuando TTHH selecciona otro colaborador.
-  // Usar useEffect (no setState-in-render) para evitar re-renders en cascada.
-  useEffect(() => {
-    setQuantity(1);
-    setLastCodes([]);
-    setSuccessMessage(null);
-    setError(null);
-    setProgressMessage(null);
-  }, [employee?.personId]);
 
   async function sellMultipleTickets() {
     if (!employee) return;
@@ -137,8 +127,8 @@ export function SellTicketPanel({ employee }: { employee: EmployeeSearchResult |
             <div className="mt-4 rounded-2xl bg-pitch-800 p-4">
               <p className="mb-3 text-xs font-bold uppercase tracking-widest text-corex-ink/45">Codigos generados ({lastCodes.length}):</p>
               <div className="space-y-2">
-                {lastCodes.map((code, idx) => (
-                  <div key={idx} className="font-mono text-sm text-corex-ink">{code}</div>
+                {lastCodes.map((code) => (
+                  <div key={code} className="font-mono text-sm text-corex-ink">{code}</div>
                 ))}
               </div>
             </div>

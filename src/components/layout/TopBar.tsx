@@ -8,7 +8,7 @@ export function TopBar({ user, onNavigate, onSignOut }: { user: AppUser | null; 
   return (
     <header className="sticky top-0 z-30 border-b border-corex-ink/10 bg-pitch-950">
       <div className="mx-auto flex w-full max-w-[1720px] items-center justify-between gap-3 px-3 py-3 sm:px-4 lg:px-6 xl:px-8">
-        <button onClick={() => onNavigate('#/dashboard')} className="flex items-center gap-3 text-left">
+        <button type="button" onClick={() => onNavigate('#/dashboard')} className="flex items-center gap-3 text-left">
           <WorldCupXMark size={44} className="rounded-xl border border-corex-ink/10" />
           <span>
             <span className="block text-sm font-black uppercase tracking-wide text-corex-ink">{APP_NAME}</span>

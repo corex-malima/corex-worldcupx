@@ -81,7 +81,7 @@ export default function App() {
     }
 
     return <NotFoundPage onNavigate={navigate} />;
-  }, [route, auth.user, auth.loading, auth.error]);
+  }, [route, auth.user, auth.loading, auth.error, auth.signIn, auth.register]);
 
   return <AppShell user={auth.user} onNavigate={navigate} onSignOut={() => void handleSignOut()}>{content}</AppShell>;
 }

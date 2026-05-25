@@ -24,7 +24,7 @@ export function RankingTable({ rows, onView }: { rows: RankingRow[]; onView?: (r
                 <td>{row.bonusPoints}</td>
                 <td>
                   {onView && (
-                    <Button variant="ghost" icon={<Eye size={14} />} onClick={() => onView(row)}>Ver</Button>
+                    <Button variant="ghost" icon={<Eye size={14} />} onClick={() => onView(row)} aria-label={`Ver detalle de ${row.alias}`}>Ver</Button>
                   )}
                 </td>
               </tr>

@@ -57,7 +57,7 @@ function TicketHeader({ alias, ownerName, areaName, total, onNavigate }: { alias
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        <button onClick={() => onNavigate('#/ranking')} className="mb-2 inline-flex items-center gap-1 text-xs font-bold text-cup-blue hover:underline">
+        <button type="button" onClick={() => onNavigate('#/ranking')} className="mb-2 inline-flex items-center gap-1 text-xs font-bold text-cup-blue hover:underline">
           <ArrowLeft size={13} /> Volver al ranking
         </button>
         <p className="text-xs font-black uppercase tracking-widest text-cup-blue">Detalle</p>
