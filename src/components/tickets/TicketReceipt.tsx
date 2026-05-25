@@ -1,4 +1,4 @@
-import { Copy, Printer, Ticket } from 'lucide-react';
+import { Copy, Ticket } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 export function TicketReceipt({ code, employeeName }: { code: string; employeeName: string }) {
@@ -16,10 +16,7 @@ export function TicketReceipt({ code, employeeName }: { code: string; employeeNa
         <Ticket className="text-cup-blue" />
       </div>
       <p className="my-5 overflow-hidden rounded-2xl bg-corex-fog px-4 py-3 text-center text-2xl font-black tracking-widest text-cup-blue sm:text-3xl">{code}</p>
-      <div className="grid grid-cols-2 gap-2">
-        <Button variant="secondary" onClick={copyCode} icon={<Copy size={16} />}>Copiar</Button>
-        <Button variant="secondary" onClick={() => window.print()} icon={<Printer size={16} />}>Imprimir</Button>
-      </div>
+      <Button variant="secondary" className="w-full" onClick={copyCode} icon={<Copy size={16} />}>Copiar</Button>
     </div>
   );
 }
