@@ -1,4 +1,4 @@
-import { ClipboardCheck, DollarSign, Ticket, Trophy } from 'lucide-react';
+import { ClipboardCheck, Ticket, Trophy } from 'lucide-react';
 import { AdminMetricCard } from '../components/admin/AdminMetricCard';
 import { AdminSidebar } from '../components/layout/AdminSidebar';
 import { Button } from '../components/ui/Button';
@@ -7,10 +7,6 @@ import { InfoButton } from '../components/ui/InfoButton';
 import { TicketSalesProgress } from '../components/dashboard/TicketSalesProgress';
 import { useAdminKpis } from '../hooks/useAdminKpis';
 import { help } from '../lib/help/helpContent';
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString('es-EC', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-}
 
 export function AdminHomePage({ onNavigate }: { onNavigate: (to: string) => void }) {
   const { kpis, loading, error, reload } = useAdminKpis();
@@ -32,14 +28,13 @@ export function AdminHomePage({ onNavigate }: { onNavigate: (to: string) => void
         {error && (
           <p className="rounded-2xl bg-cup-red/15 p-3 text-sm font-bold text-cup-red">{error}</p>
         )}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           <AdminMetricCard label="Tickets vendidos" value={kpis.ticketsSold} icon={<Ticket />} />
           <AdminMetricCard label="Tickets reclamados" value={kpis.ticketsClaimed} icon={<ClipboardCheck />} />
           <AdminMetricCard label="Predicciones enviadas" value={kpis.predictionsSubmitted} icon={<Trophy />} />
-          <AdminMetricCard label="Recaudado opcional" value={formatCurrency(kpis.revenue)} icon={<DollarSign />} />
         </div>
 
-        <TicketSalesProgress />
+        <TicketSalesProgress total={kpis.ticketsSold} />
         <Card>
           <h2 className="text-xl font-semibold text-corex-ink">Accesos rápidos</h2>
           <div className="mt-4 flex flex-wrap gap-3">

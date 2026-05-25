@@ -1,19 +1,19 @@
 import { Tv, Star } from 'lucide-react';
 import { Card } from '../ui/Card';
-import { useTournamentStats } from '../../hooks/useTournamentStats';
 
 const MILESTONES = [
-  { threshold: 250, label: '250', stars: 1, iconSize: 18, prizeLabel: 'TV nivel 1' },
-  { threshold: 500, label: '500', stars: 2, iconSize: 22, prizeLabel: 'TV nivel 2' },
-  { threshold: 750, label: '750', stars: 3, iconSize: 26, prizeLabel: 'TV nivel 3' },
-  { threshold: 1000, label: '1000+', stars: 4, iconSize: 30, prizeLabel: '¡Mejor premio!' }
+  { threshold: 250, label: '250', stars: 1, iconSize: 18 },
+  { threshold: 500, label: '500', stars: 2, iconSize: 22 },
+  { threshold: 750, label: '750', stars: 3, iconSize: 26 },
+  { threshold: 1000, label: '1000+', stars: 4, iconSize: 30 }
 ] as const;
 
-export function TicketSalesProgress() {
-  const { data, loading } = useTournamentStats();
-  if (loading) return null;
+interface Props {
+  /** Total de tickets vendidos (no cancelados) en todo el sistema. */
+  total: number;
+}
 
-  const total = data.totalSold;
+export function TicketSalesProgress({ total }: Props) {
   const progressPct = Math.min((total / 1000) * 100, 100);
   const reachedAll = total >= 1000;
 
