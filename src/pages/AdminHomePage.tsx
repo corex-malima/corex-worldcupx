@@ -4,6 +4,7 @@ import { AdminSidebar } from '../components/layout/AdminSidebar';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { InfoButton } from '../components/ui/InfoButton';
+import { TicketSalesProgress } from '../components/dashboard/TicketSalesProgress';
 import { useAdminKpis } from '../hooks/useAdminKpis';
 import { help } from '../lib/help/helpContent';
 
@@ -37,6 +38,8 @@ export function AdminHomePage({ onNavigate }: { onNavigate: (to: string) => void
           <AdminMetricCard label="Predicciones enviadas" value={kpis.predictionsSubmitted} icon={<Trophy />} />
           <AdminMetricCard label="Recaudado opcional" value={formatCurrency(kpis.revenue)} icon={<DollarSign />} />
         </div>
+
+        <TicketSalesProgress />
         <Card>
           <h2 className="text-xl font-semibold text-corex-ink">Accesos rápidos</h2>
           <div className="mt-4 flex flex-wrap gap-3">

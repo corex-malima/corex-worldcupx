@@ -8,7 +8,6 @@ import { LoadingState } from '../components/ui/LoadingState';
 import { ClaimTicketForm } from '../components/tickets/ClaimTicketForm';
 import { TicketCard } from '../components/tickets/TicketCard';
 import { InfoButton } from '../components/ui/InfoButton';
-import { TicketSalesProgress } from '../components/dashboard/TicketSalesProgress';
 import { help } from '../lib/help/helpContent';
 
 export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate: (to: string) => void }) {
@@ -51,8 +50,6 @@ export function DashboardPage({ user, onNavigate }: { user: AppUser; onNavigate:
           </div>
         </Card>
       </section>
-
-      <TicketSalesProgress />
 
       <ClaimTicketForm onClaim={claimTicket} />
 
