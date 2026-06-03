@@ -22,7 +22,7 @@ export function GroupMatchCard({ match, teams, prediction, disabled, onChange }:
       </div>
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_minmax(0,1fr)] lg:items-center">
         <div className="min-w-0 rounded-2xl bg-pitch-800 px-3 py-2 lg:justify-self-end">
-          <TeamIdentity team={home} label="Equipo local" align="right" />
+          <TeamIdentity team={home} label="Equipo local" />
         </div>
         <div className="grid grid-cols-[minmax(0,1fr)_20px_minmax(0,1fr)] items-center gap-2">
           <Input aria-label="Goles local" type="number" inputMode="numeric" min={0} max={30} disabled={disabled} value={homeValue} onChange={(event) => onChange(event.target.value === '' ? null : Number(event.target.value), prediction?.awayScore ?? null)} className="h-14 text-center text-2xl font-black" />
