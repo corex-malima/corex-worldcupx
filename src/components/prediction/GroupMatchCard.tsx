@@ -29,7 +29,7 @@ export function GroupMatchCard({ match, teams, prediction, disabled, onChange }:
           <span className="text-center text-corex-ink/35">-</span>
           <Input aria-label="Goles visitante" type="number" inputMode="numeric" min={0} max={30} disabled={disabled} value={awayValue} onChange={(event) => onChange(prediction?.homeScore ?? null, event.target.value === '' ? null : Number(event.target.value))} className="h-14 text-center text-2xl font-black" />
         </div>
-        <div className="min-w-0 rounded-2xl bg-pitch-800 px-3 py-2">
+        <div className="min-w-0 rounded-2xl bg-pitch-800 px-3 py-2 flex justify-end lg:block">
           <TeamIdentity team={away} label="Equipo visitante" />
         </div>
       </div>
