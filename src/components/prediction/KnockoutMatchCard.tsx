@@ -27,6 +27,11 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange, onSave, sa
   const isDraw = match.homeScore !== null && match.awayScore !== null && match.homeScore === match.awayScore;
   const status: KnockoutSaveStatus = saveStatus ?? 'idle';
   const canSave = isReady && match.homeScore !== null && match.awayScore !== null && (!isDraw || Boolean(match.advancingTeamId));
+  // Resaltado de marcadores faltantes (solo si los equipos están definidos y el usuario puede editar).
+  const homeMissing = isReady && !disabled && match.homeScore === null;
+  const awayMissing = isReady && !disabled && match.awayScore === null;
+  const penaltyMissing = isReady && !disabled && isDraw && !match.advancingTeamId;
+  const incomplete = homeMissing || awayMissing || penaltyMissing;
 
   function badgeContent() {
     if (status === 'saving') return <Badge tone="slate"><Loader2 size={11} className="inline animate-spin" /> Guardando…</Badge>;
@@ -38,7 +43,7 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange, onSave, sa
   }
 
   return (
-    <div className={`min-w-0 rounded-2xl border p-3 sm:p-4 ${isReady ? 'border-corex-ink/10 bg-pitch-900' : 'border-corex-ink/5 bg-pitch-900/70'}`}>
+    <div className={`min-w-0 rounded-2xl border p-3 sm:p-4 ${isReady ? 'border-corex-ink/10 bg-pitch-900' : 'border-corex-ink/5 bg-pitch-900/70'} ${incomplete ? 'border-l-4 border-l-cup-gold' : ''}`}>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2 text-xs font-bold text-corex-ink/45">
         <span>Partido {match.matchNo}</span>
         {badgeContent()}
@@ -58,7 +63,7 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange, onSave, sa
             disabled={disabled || !isReady}
             value={match.homeScore ?? ''}
             onChange={(event) => onChange(match.id, event.target.value === '' ? null : Number(event.target.value), match.awayScore)}
-            className="h-12 w-16 shrink-0 text-center text-2xl font-black"
+            className={`h-12 w-16 shrink-0 text-center text-2xl font-black ${homeMissing ? 'ring-2 ring-cup-gold' : ''}`}
           />
         </div>
         <div className="flex items-center gap-3 rounded-2xl bg-pitch-800 px-3 py-2">
@@ -74,7 +79,7 @@ export function KnockoutMatchCard({ match, teams, disabled, onChange, onSave, sa
             disabled={disabled || !isReady}
             value={match.awayScore ?? ''}
             onChange={(event) => onChange(match.id, match.homeScore, event.target.value === '' ? null : Number(event.target.value))}
-            className="h-12 w-16 shrink-0 text-center text-2xl font-black"
+            className={`h-12 w-16 shrink-0 text-center text-2xl font-black ${awayMissing ? 'ring-2 ring-cup-gold' : ''}`}
           />
         </div>
       </div>
