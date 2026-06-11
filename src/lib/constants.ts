@@ -9,12 +9,12 @@ export const BRAND = 'CoreX';
 export const SIGNATURE = 'by P&P';
 export const COMPANY = 'Malima';
 export const APP_VERSION = '0.1.9';
-// Deadline duro: 10 de junio 2026, 23:59:59 hora Ecuador (UTC-5).
+// Deadline duro: 29 de mayo 2026, 11:00:00 hora Ecuador (UTC-5).
 // Después de este instante:
 //   - Colaboradores normales: NO pueden enviar/editar predicciones ni reclamar tickets.
 //   - Admin (TTHH): SÍ puede seguir cargando predicciones para tickets `sold`
 //     no reclamados (transcripción de papel). Ver supabase/sql/23_admin_bypass_deadline.sql.
 //   - sell_ticket / claim_ticket → cerrados para TODOS (intencional).
 //   - Admin sigue pudiendo cargar resultados oficiales y recalcular ranking en cualquier momento.
-export const DEFAULT_DEADLINE_ISO = '2026-06-10T23:59:59-05:00';
+export const DEFAULT_DEADLINE_ISO = '2026-05-29T11:00:00-05:00';
 
