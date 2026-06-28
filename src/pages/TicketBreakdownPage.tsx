@@ -98,17 +98,17 @@ function ScoreSummary({ total, categoryStats }: { total: { group_match_points: n
         <div className="rounded-2xl bg-pitch-800 p-3">
           <p className="text-xs font-bold text-corex-ink/45">Avance por ronda</p>
           <p className="mt-1 text-2xl font-black text-corex-ink">{total?.advancement_points ?? 0}</p>
-          <p className="text-xs text-corex-ink/45">R32=1 · R16=2 · QF=3 · SF=4</p>
+          <p className="text-xs text-corex-ink/45">R32=2 · R16=4 · QF=8 · SF=10</p>
         </div>
         <div className="rounded-2xl bg-pitch-800 p-3">
           <p className="text-xs font-bold text-corex-ink/45">Bono campeón</p>
           <p className="mt-1 text-2xl font-black text-corex-ink">{total?.champion_bonus ?? 0}</p>
-          <p className="text-xs text-corex-ink/45">+10 si acertaste</p>
+          <p className="text-xs text-corex-ink/45">+20 si acertaste</p>
         </div>
         <div className="rounded-2xl bg-pitch-800 p-3">
           <p className="text-xs font-bold text-corex-ink/45">Bono 3.º puesto</p>
           <p className="mt-1 text-2xl font-black text-corex-ink">{total?.runner_up_bonus ?? 0}</p>
-          <p className="text-xs text-corex-ink/45">+5 si acertaste</p>
+          <p className="text-xs text-corex-ink/45">+10 si acertaste</p>
         </div>
         <div className="rounded-2xl bg-pitch-800 p-3">
           <p className="text-xs font-bold text-corex-ink/45">Total</p>

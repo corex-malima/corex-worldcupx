@@ -95,7 +95,7 @@ begin
     if v_prediction_id is null then return 0; end if;
 
     for v_round, v_round_points in
-        select * from (values ('R32', 1), ('R16', 2), ('QF', 3), ('SF', 4)) as r(round, pts)
+        select * from (values ('R32', 2), ('R16', 4), ('QF', 8), ('SF', 10)) as r(round, pts)
     loop
         with actual_winners as (
             select distinct m.winner_team_id as team_id
@@ -154,9 +154,9 @@ begin
     if v_pred_champion <> v_actual_champion then return 0; end if;
 
     insert into public.score_details (ticket_id, category, item_ref, points, detail)
-    values (p_ticket_id, 'champion_bonus', 'FINAL', 10, jsonb_build_object('champion', v_actual_champion));
+    values (p_ticket_id, 'champion_bonus', 'FINAL', 20, jsonb_build_object('champion', v_actual_champion));
 
-    return 10;
+    return 20;
 end;
 $$;
 
@@ -190,9 +190,9 @@ begin
     if v_pred_third <> v_actual_third then return 0; end if;
 
     insert into public.score_details (ticket_id, category, item_ref, points, detail)
-    values (p_ticket_id, 'third_place_bonus', 'THIRD_PLACE', 5, jsonb_build_object('third', v_actual_third));
+    values (p_ticket_id, 'third_place_bonus', 'THIRD_PLACE', 10, jsonb_build_object('third', v_actual_third));
 
-    return 5;
+    return 10;
 end;
 $$;
 

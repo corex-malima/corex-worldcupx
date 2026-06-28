@@ -130,8 +130,8 @@ export const help = {
         <ul>
           <li>+3 por marcador exacto · +1 por resultado correcto</li>
           <li>+1 por equipo en posición correcta de grupo (gate de 6 partidos llenos)</li>
-          <li>Avance ronda: R32 +1 · R16 +2 · QF +3 · SF +4</li>
-          <li>Bonos: campeón +10 · tercer puesto +5</li>
+          <li>Avance ronda: R32 +2 · R16 +4 · QF +8 · SF +10</li>
+          <li>Bonos: campeón +20 · tercer puesto +10</li>
         </ul>
         <p>Los puntos oficiales se asignan cuando admin carga resultados reales y recalcula.</p>
       </>
