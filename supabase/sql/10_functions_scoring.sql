@@ -95,7 +95,7 @@ begin
     if v_prediction_id is null then return 0; end if;
 
     for v_round, v_round_points in
-        select * from (values ('R32', 2), ('R16', 4), ('QF', 8), ('SF', 10)) as r(round, pts)
+        select * from (values ('R32', 4), ('R16', 6), ('QF', 8), ('SF', 10)) as r(round, pts)
     loop
         with actual_winners as (
             select distinct m.winner_team_id as team_id

@@ -9,8 +9,8 @@ El scoring está parametrizado primero en TypeScript (`DEFAULT_SCORING_RULES`) y
 | Grupos | Posición exacta 1.º | 1 |
 | Grupos | Posición exacta 2.º | 1 |
 | Grupos | Posición exacta 3.º | 1 |
-| Dieciseisavos | País pasa a octavos | 2 |
-| Octavos | País pasa a cuartos | 4 |
+| Dieciseisavos | País pasa a octavos | 4 |
+| Octavos | País pasa a cuartos | 6 |
 | Cuartos | País pasa a semifinales | 8 |
 | Semifinal | País pasa a final | 10 |
 | Eliminatorias con cruce exacto | Marcador exacto 90 min | 3 |
