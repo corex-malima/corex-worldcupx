@@ -147,6 +147,38 @@ export function useAdminResults({ allMatches, allTeams, reloadFixture }: UseAdmi
     setTab('knockout');
   }
 
+  // Persiste los terceros asignados al bracket oficial (BD). Llama
+  // admin_set_r32_third por cada slot (fija el equipo + marca third_locked para
+  // que el auto-resolver no lo sobrescriba). Tras recargar el fixture, el bracket
+  // se reconstruye desde `matches` ya con los equipos correctos.
+  // Se aplican los 8 (gate canBuildBracket en la UI) para evitar duplicados.
+  async function applyThirdsToOfficialBracket() {
+    const assigned = thirdSlots.filter((slot) => slot.assignedTeamId);
+    if (assigned.length === 0) {
+      window.alert('No hay terceros asignados. Asigna o usa "Auto-asignar" primero.');
+      return;
+    }
+    if (USE_MOCKS || !supabase) {
+      window.alert('Modo mock: la asignación es solo vista previa, no se persiste a BD.');
+      return;
+    }
+    if (!window.confirm(`¿Aplicar ${assigned.length} tercero(s) al bracket oficial? Fija esos equipos en R32 (BD) y evita que el auto-resolver los cambie.`)) return;
+    for (const slot of assigned) {
+      const { error } = await supabase.rpc('admin_set_r32_third', {
+        p_match_no: slot.matchNo,
+        p_side: slot.side,
+        p_team_id: slot.assignedTeamId
+      });
+      if (error) {
+        window.alert(`Error al fijar el Partido ${slot.matchNo}: ${error.message}`);
+        return;
+      }
+    }
+    await reloadFixture();
+    setTab('knockout');
+    window.alert('Terceros aplicados al bracket oficial. Revisa la pestaña Eliminatorias.');
+  }
+
   function setKnockoutResult(matchId: string, homeScore: number | null, awayScore: number | null, advancingTeamId?: string | null) {
     setBracket((current) => updateBracketScore(current, matchId, homeScore, awayScore, advancingTeamId));
     setSaveStatusByMatch((current) => ({ ...current, [matchId]: 'idle' }));
@@ -272,6 +304,7 @@ export function useAdminResults({ allMatches, allTeams, reloadFixture }: UseAdmi
     setFairPlay,
     setManualTieBreaker,
     buildRealBracket,
+    applyThirdsToOfficialBracket,
     setKnockoutResult,
     saveKnockoutResult,
     recalculate,

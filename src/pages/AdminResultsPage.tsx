@@ -133,7 +133,10 @@ export function AdminResultsPage({ onNavigate }: { onNavigate: (to: string) => v
               onAssign={r.assignThird}
               onAutoAssign={r.autoAssignThirds}
             />
-            <Button disabled={!r.canBuildBracket} onClick={r.buildRealBracket}>Construir dieciseisavos reales</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" disabled={!r.canBuildBracket} onClick={r.buildRealBracket}>Construir dieciseisavos (vista previa)</Button>
+              <Button disabled={!r.canBuildBracket} onClick={() => void r.applyThirdsToOfficialBracket()}>Aplicar terceros al bracket oficial</Button>
+            </div>
           </div>
         )}
         {r.tab === 'knockout' && (
